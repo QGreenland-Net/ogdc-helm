@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: workflow-pv
+  namespace: argo
+spec:
+  capacity:
+    storage: 5Gi  # Adjust size as needed
+  accessModes:
+    - ReadWriteMany  # Allows multiple nodes to write
+  hostPath:
+    path: /Users/rushirajnenuji/K8s/test  # Adjust to the path you want on your host machine
