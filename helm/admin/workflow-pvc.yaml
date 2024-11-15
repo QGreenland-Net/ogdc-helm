@@ -1,8 +1,8 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: ice-basins-pvc
-  namespace: argo
+  name: workflow-pvc
+  namespace: argo-helm
 spec:
   accessModes:
     - ReadWriteMany

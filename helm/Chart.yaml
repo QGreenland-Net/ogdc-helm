@@ -27,3 +27,7 @@ dependencies:
   - name: argo-workflows
     version: 11.0.0
     repository: https://charts.bitnami.com/bitnami
+
+  - name: minio
+    version: 14.0.0
+    repository: https://charts.bitnami.com/bitnami
