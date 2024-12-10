@@ -4,6 +4,13 @@ Setup/config for OGDC's [Argo](https://argoproj.github.io/) installation using
 [helm](https://helm.sh/).
 
 
+* Argo will be installed to a namespace called `argo-helm`.
+* A service account will be configured with the name `argo-workflow`. This
+  service account has permissions to run workflows submitted by e.g.,
+  `ogdc-runner`.
+* No authentication mechanism is in place yet (TODO!)
+
+
 ## Getting started
 
 ### Local dev cluster via Rancher desktop
@@ -27,17 +34,10 @@ kubectl create namespace argo-helm
 kubectl apply -f helm/admin/workfow-pv.yaml -n argo-helm
 ```
 
-> [!NOTE]
-> The `qgnet-argo` bit above is the release name, which must be unique in a
-> namespace, but can be anything we choose. TODO: should this be `qgnet-argo`?
-> Something else? What do we do on the ADC k8s?
-
 * Insatall argo with helm:
 
 ```
-helm repo add minio https://charts.min.io/
-helm dependency build helm/
-helm install qgnet-argo ./helm -n argo-helm
+./scripts/install-argo.sh
 ```
 
 * Verify argo install.
@@ -45,7 +45,7 @@ helm install qgnet-argo ./helm -n argo-helm
 First, Port-forward the argo workflows server
 
 ```
-kubectl --namespace argo-helm port-forward services/qgnet-argo-argo-workflows-server 2746:2746
+./scripts/forward-ports.sh
 ```
 
 Then, visit the argo dashboard: <http://localhost:2746>.
@@ -54,6 +54,11 @@ Then, visit the argo dashboard: <http://localhost:2746>.
 ### Production setup
 
 TODO: instructions for prod on ADC infrastructure.
+
+### Uninstalling ogdc-argo
+
+To uninstall the argo from the kubernetes cluster, use the
+`./scripts/uninstal-argo.sh` script.
 
 
 ## Troubleshooting
