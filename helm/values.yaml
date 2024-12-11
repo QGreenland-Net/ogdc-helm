@@ -1,4 +1,4 @@
-# Default values for dataone-gse.
+# Default values for OGDC-argo
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -175,13 +175,13 @@ argo-workflows:
       artifactRepository:
         s3:
           bucket: argo-workflows
-          endpoint: gse-minio:9000
+          endpoint: qgnet-argo-minio:9000
           accessKeySecret:
-            name: minio
-            key: rootUser
+            name: minio-credentials
+            key: root-user
           secretKeySecret:
-            name: minio
-            key: rootPassword
+            name: minio-credentials
+            key: root-password
           insecure: true
 
   ## @section Executor configuration section
@@ -221,12 +221,7 @@ argo-workflows:
 
 minio:
   auth:
-    ## @param auth.rootUser MinIO&reg; root username
-    ##
-    rootUser: admin
-    ## @param auth.rootPassword Password for MinIO&reg; root user
-    ##
-    rootPassword: password
+    existingSecret: "minio-credentials"
   ## @param defaultBuckets Comma, semi-colon or space separated list of buckets to create at initialization (only in standalone mode)
   ## e.g:
   ## defaultBuckets: "my-bucket, my-second-bucket"

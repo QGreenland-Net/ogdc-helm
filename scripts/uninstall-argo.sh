@@ -2,4 +2,4 @@
 
 set -e
 
-helm uninstall qgnet-argo
+helm uninstall qgnet-argo -n argo-helm

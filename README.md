@@ -31,7 +31,14 @@ kubectl create namespace argo-helm
   envvar or local dev yaml file?).:
 
 ```
-kubectl apply -f helm/admin/workfow-pv.yaml -n argo-helm
+kubectl apply -f helm/admin/workflow-pv.yaml -n argo-helm
+kubectl apply -f helm/admin/workflow-pvc.yaml -n argo-helm
+```
+
+* Configure secrets:
+
+```
+kubectl apply -f helm/admin/secrets.yaml -n argo-helm
 ```
 
 * Insatall argo with helm:
