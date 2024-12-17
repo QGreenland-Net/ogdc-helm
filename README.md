@@ -70,7 +70,12 @@ To uninstall the argo from the kubernetes cluster, use the
 
 ## Troubleshooting
 
-List services in the `argo-helm` namespace:
+If something is not working as expect, start by listing services in the
+`argo-helm` namespace and confirming that `minio`, `argo-workflows-server` and
+`dataone-gse` services are running (prefixed with the namespace):
+
+> [!TODO]
+> What is `dataone-gse`? Does the OGDC need it?
 
 ```
 $ kubectl get svc -n argo-helm
@@ -79,6 +84,17 @@ qgnet-argo-minio                   ClusterIP   10.43.76.177    <none>        900
 qgnet-argo-dataone-gse             ClusterIP   10.43.86.129    <none>        80/TCP              14m
 qgnet-argo-argo-workflows-server   ClusterIP   10.43.231.175   <none>        2746/TCP            14m
 ```
+
+### Argo reports that its artifact repository is not configured
+
+If you have submitted a workflow and Argo's interface reports that there is a
+problem due to the artifact repository not being configured, it might just be
+tjhat the `minio` service is not yet fully operational. Try again after a few
+minutes!
+
+> [!TODO]
+> Is there a way to tell helm to setup minio before the `argo-workflows-server`
+> so we do not run into this issue in the future?
 
 
 ## TODOs
