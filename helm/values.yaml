@@ -154,6 +154,9 @@ argo-workflows:
     auth:
       ## @param server.auth.mode Set authentication mode. Either `server`, `client` or `sso`.
       ##
+      # https://argo-workflows.readthedocs.io/en/latest/argo-server-auth-mode/
+      # `server`: In hosted mode, use the Server's Service Account. In local
+      # mode, use your local kube config.
       mode: server
     service:
       ports:
