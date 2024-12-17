@@ -97,6 +97,15 @@ minutes!
 > so we do not run into this issue in the future?
 
 
+### local Docker image is not found by Argo
+
+If the Argo dashboard reports that a docker image that has been built locally
+(e.g., for testing purposes) is not present with a pull policy of "Never" (in
+dev), it may be because of a conflict between `rancher-desktop` and
+`minikube`. Make sure your k8s config is setup to use the `rancher-desktop`
+context when doing local development on the ogdc.
+
+
 ## TODOs
 
 * Is the `values.yaml` at the root of the project necessary? Can it be moved into the `helm/` directory?
