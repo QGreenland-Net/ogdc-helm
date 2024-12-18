@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: workflow-pvc
-  namespace: argo-helm
+  namespace: qgnet
 spec:
   accessModes:
     - ReadWriteMany
