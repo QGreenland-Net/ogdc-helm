@@ -4,10 +4,9 @@
 
 * [Argo](https://argoproj.github.io/): for managing and executing OGDC workflows.
 * [Minio](https://github.com/minio/minio): provides an artifact registry for argo
-* `ogdc`: Currently an nginx instance that serves nothing. We expect this
-  service will provide an API/webhook that utilizes the
-  [ogdc-runner](https://github.com/QGreenland-Net/ogdc-runner/) to submit OGDC
-  recipes to Argo.
+* `ogdc`: TODO. We expect this service will provide an API/webhook that utilizes
+  the [ogdc-runner](https://github.com/QGreenland-Net/ogdc-runner/) to submit
+  OGDC recipes to Argo.
   
 These services are installed to the `qgnet` kubernetes namespace.
 
@@ -84,7 +83,6 @@ If something is not working as expect, start by listing services in the
 $ kubectl get svc -n argo-helm
 NAME                               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
 qgnet-argo-minio                   ClusterIP   10.43.76.177    <none>        9000/TCP,9001/TCP   14m
-qgnet-argo-ogdc                    ClusterIP   10.43.86.129    <none>        80/TCP              14m
 qgnet-argo-argo-workflows-server   ClusterIP   10.43.231.175   <none>        2746/TCP            14m
 ```
 
