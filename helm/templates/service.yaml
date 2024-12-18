@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "dataone-gse.fullname" . }}
+  name: {{ include "ogdc.fullname" . }}
   labels:
-    {{- include "dataone-gse.labels" . | nindent 4 }}
+    {{- include "ogdc.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,4 +12,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "dataone-gse.selectorLabels" . | nindent 4 }}
+    {{- include "ogdc.selectorLabels" . | nindent 4 }}

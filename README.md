@@ -72,16 +72,13 @@ To uninstall the argo from the kubernetes cluster, use the
 
 If something is not working as expect, start by listing services in the
 `argo-helm` namespace and confirming that `minio`, `argo-workflows-server` and
-`dataone-gse` services are running (prefixed with the namespace):
-
-> [!TODO]
-> What is `dataone-gse`? Does the OGDC need it?
+`ogdc` services are running (prefixed with the namespace):
 
 ```
 $ kubectl get svc -n argo-helm
 NAME                               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
 qgnet-argo-minio                   ClusterIP   10.43.76.177    <none>        9000/TCP,9001/TCP   14m
-qgnet-argo-dataone-gse             ClusterIP   10.43.86.129    <none>        80/TCP              14m
+qgnet-argo-ogdc                    ClusterIP   10.43.86.129    <none>        80/TCP              14m
 qgnet-argo-argo-workflows-server   ClusterIP   10.43.231.175   <none>        2746/TCP            14m
 ```
 

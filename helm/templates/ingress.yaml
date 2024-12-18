@@ -2,9 +2,9 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "dataone-gse.fullname" . }}
+  name: {{ include "ogdc.fullname" . }}
   labels:
-    {{- include "dataone-gse.labels" . | nindent 4 }}
+    {{- include "ogdc.labels" . | nindent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -35,7 +35,7 @@ spec:
             {{- end }}
             backend:
               service:
-                name: {{ include "dataone-gse.fullname" $ }}
+                name: {{ include "ogdc.fullname" $ }}
                 port:
                   number: {{ $.Values.service.port }}
           {{- end }}
