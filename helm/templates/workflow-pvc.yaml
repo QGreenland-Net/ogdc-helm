@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: workflow-pvc
+  name: {{ .Release.Name }}-workflow-pvc
   namespace: qgnet
 spec:
   accessModes:
