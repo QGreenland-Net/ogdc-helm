@@ -9,4 +9,4 @@ spec:
   accessModes:
     - ReadWriteMany  # Allows multiple nodes to write
   hostPath:
-    path: /rancher-pv-argo-helm/  # Adjust to the path you want on your host machine
+    path: {{ .Values.OgdcPVHostPath }}
