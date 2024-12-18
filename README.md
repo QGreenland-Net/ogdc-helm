@@ -1,10 +1,16 @@
-# OGDC-argo
+# OGDC Helm charts for Kubernetes
 
-Setup/config for OGDC's [Argo](https://argoproj.github.io/) installation using
-[helm](https://helm.sh/).
+[helm](https://helm.sh/) config for the OGDC, which is composed of:
 
+* [Argo](https://argoproj.github.io/): for managing and executing OGDC workflows
+* [Minio](https://github.com/minio/minio): provides an artifact registry for argo
+* `ogdc`: Currently an nginx instance that serves nothing. We expect this
+  service will provide an API/webhook that utilizes the
+  [ogdc-runner](https://github.com/QGreenland-Net/ogdc-runner/) to submit OGDC
+  recipes to Argo.
+  
+These services are installed to the `qgnet` kubernetes namespace.
 
-* Argo will be installed to a namespace called `argo-helm`.
 * A service account will be configured with the name `argo-workflow`. This
   service account has permissions to run workflows submitted by e.g.,
   `ogdc-runner`.
@@ -20,10 +26,10 @@ installed. QGreenland-net specific information on setting up Rancher desktop can
 be found here:
 <https://qgreenland-net.github.io/how-tos/#how-to-configure-rancher-desktop>
 
-* Create a namespace called `argo-helm` (TODO: should this be `qgnet`, or will we use that namespace separately?):
+* Create a namespace called `qgnet`:
 
 ```
-kubectl create namespace argo-helm
+kubectl create namespace qgnet
 ```
 
 * Create a PV/PVC. (TODO: Paths may need to be updated in
@@ -31,20 +37,20 @@ kubectl create namespace argo-helm
   envvar or local dev yaml file?).:
 
 ```
-kubectl apply -f helm/admin/workflow-pv.yaml -n argo-helm
-kubectl apply -f helm/admin/workflow-pvc.yaml -n argo-helm
+kubectl apply -f helm/admin/workflow-pv.yaml -n qgnet
+kubectl apply -f helm/admin/workflow-pvc.yaml -n qgnet
 ```
 
 * Configure secrets:
 
 ```
-kubectl apply -f helm/admin/secrets.yaml -n argo-helm
+kubectl apply -f helm/admin/secrets.yaml -n qgnet
 ```
 
 * Insatall argo with helm:
 
 ```
-./scripts/install-argo.sh
+./scripts/install-ogdc.sh
 ```
 
 * Verify argo install.
@@ -62,16 +68,16 @@ Then, visit the argo dashboard: <http://localhost:2746>.
 
 TODO: instructions for prod on ADC infrastructure.
 
-### Uninstalling ogdc-argo
+### Uninstalling ogdc
 
-To uninstall the argo from the kubernetes cluster, use the
-`./scripts/uninstal-argo.sh` script.
+To uninstall the ogdc from the kubernetes cluster, use the
+`./scripts/uninstal-ogdc.sh` script.
 
 
 ## Troubleshooting
 
 If something is not working as expect, start by listing services in the
-`argo-helm` namespace and confirming that `minio`, `argo-workflows-server` and
+`qgnet` namespace and confirming that `minio`, `argo-workflows-server` and
 `ogdc` services are running (prefixed with the namespace):
 
 ```
