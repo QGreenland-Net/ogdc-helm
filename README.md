@@ -89,7 +89,7 @@ qgnet-argo-argo-workflows-server   ClusterIP   10.43.231.175   <none>        274
 
 If you have submitted a workflow and Argo's interface reports that there is a
 problem due to the artifact repository not being configured, it might just be
-tjhat the `minio` service is not yet fully operational. Try again after a few
+that the `minio` service is not yet fully operational. Try again after a few
 minutes!
 
 > [!TODO]
