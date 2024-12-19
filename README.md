@@ -41,10 +41,10 @@ kubectl apply -f helm/admin/secrets.yaml -n qgnet
 
 > [!NOTE]
 > In dev, a PV will be created that's attached to a local directory called
-> `localmount` where this repository is checked out. To override the location of
-> the local directory used for persistant storage, set the `OGDC_PV_HOST_PATH`
-> envvar to another location that's accessible by rancher desktop (in the user's
-> home directory).
+> `ogdc-local-hostmount` where this repository is checked out. To override the
+> location of the local directory used for persistant storage, set the
+> `OGDC_PV_HOST_PATH` envvar to another location that's accessible by rancher
+> desktop (in the user's home directory).
 
 ```
 ./scripts/install-ogdc.sh dev
