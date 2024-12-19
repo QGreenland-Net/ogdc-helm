@@ -31,25 +31,23 @@ be found here:
 kubectl create namespace qgnet
 ```
 
-* Create a PV/PVC. (TODO: Paths may need to be updated in
-  `helm/admin/workfow-pv.yaml`. Can we standardize this/allow override via an
-  envvar or local dev yaml file?).:
-
-```
-kubectl apply -f helm/admin/workflow-pv.yaml -n qgnet
-kubectl apply -f helm/admin/workflow-pvc.yaml -n qgnet
-```
-
 * Configure secrets:
 
 ```
 kubectl apply -f helm/admin/secrets.yaml -n qgnet
 ```
 
-* Insatall argo with helm:
+* Install the stack with helm:
+
+> [!NOTE]
+> In dev, a PV will be created that's attached to a local directory called
+> `localmount` where this repository is checked out. To override the location of
+> the local directory used for persistant storage, set the `OGDC_PV_HOST_PATH`
+> envvar to another location that's accessible by rancher desktop (in the user's
+> home directory).
 
 ```
-./scripts/install-ogdc.sh
+./scripts/install-ogdc.sh dev
 ```
 
 * Verify argo install.
