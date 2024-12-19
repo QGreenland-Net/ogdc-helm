@@ -31,12 +31,6 @@ be found here:
 kubectl create namespace qgnet
 ```
 
-* Configure secrets:
-
-```
-kubectl apply -f helm/admin/secrets.yaml -n qgnet
-```
-
 * Install the stack with helm:
 
 > [!NOTE]
