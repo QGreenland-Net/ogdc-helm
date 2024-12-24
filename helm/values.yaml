@@ -116,3 +116,6 @@ minio:
   ## defaultBuckets: "my-bucket, my-second-bucket"
   ##
   defaultBuckets: "argo-workflows"
+
+  persistence:
+    existingClaim: qgnet-ogdc-workflow-pvc
