@@ -16,9 +16,10 @@ THIS_DIR="$( cd "$(dirname "$0")"; pwd -P )"
 # TODO: only enable this behavior in dev.
 if [ "$ENV" = "dev" ]; then
   if [ -z "$OGDC_PV_HOST_PATH" ]; then
-    OGDC_PV_HOST_PATH=$(realpath "${THIS_DIR}/../ogdc-local-hostmount/")
+    OGDC_PV_HOST_PATH="${THIS_DIR}/../ogdc-local-hostmount/"
   fi
-  mkdir -p OGDC_PV_HOST_PATH
+  mkdir -p ${OGDC_PV_HOST_PATH}
+  OGDC_PV_HOST_PATH=$(realpath "${OGDC_PV_HOST_PATH}")
   echo "Using OGDC_PV_HOST_PATH=${OGDC_PV_HOST_PATH}"
 fi
 
