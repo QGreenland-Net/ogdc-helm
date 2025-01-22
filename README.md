@@ -31,25 +31,17 @@ be found here:
 kubectl create namespace qgnet
 ```
 
-* Create a PV/PVC. (TODO: Paths may need to be updated in
-  `helm/admin/workfow-pv.yaml`. Can we standardize this/allow override via an
-  envvar or local dev yaml file?).:
+* Install the stack with helm:
+
+> [!NOTE]
+> In dev, a PV will be created that's attached to a local directory called
+> `ogdc-local-hostmount` where this repository is checked out. To override the
+> location of the local directory used for persistant storage, set the
+> `OGDC_PV_HOST_PATH` envvar to another location that's accessible by rancher
+> desktop (in the user's home directory).
 
 ```
-kubectl apply -f helm/admin/workflow-pv.yaml -n qgnet
-kubectl apply -f helm/admin/workflow-pvc.yaml -n qgnet
-```
-
-* Configure secrets:
-
-```
-kubectl apply -f helm/admin/secrets.yaml -n qgnet
-```
-
-* Insatall argo with helm:
-
-```
-./scripts/install-ogdc.sh
+./scripts/install-ogdc.sh dev
 ```
 
 * Verify argo install.
@@ -105,9 +97,3 @@ If the Argo dashboard reports that a docker image that has been built locally
 dev), it may be because of a conflict between `rancher-desktop` and
 `minikube`. Make sure your k8s config is setup to use the `rancher-desktop`
 context when doing local development on the ogdc.
-
-
-## TODOs
-
-* Is the `values.yaml` at the root of the project necessary? Can it be moved into the `helm/` directory?
-* Resolve TODOs above (e.g., how to override the PV location on local disk)
