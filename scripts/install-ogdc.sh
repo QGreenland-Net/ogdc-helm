@@ -28,6 +28,7 @@ fi
 # because we list them in the `Chart.yaml`.
 helm repo add minio https://charts.min.io/
 helm repo add bitnami https://charts.bitnami.com/bitnami
+helm dependency update helm/
 helm dependency build helm/
 
 RELEASE_NAME="qgnet-ogdc"
