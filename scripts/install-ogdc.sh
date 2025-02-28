@@ -26,7 +26,6 @@ fi
 # Add repos and bulid deps.
 # TODO: should this be unnecessary? Helm knows where our dependencies live
 # because we list them in the `Chart.yaml`.
-helm repo add minio https://charts.min.io/
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm dependency update helm/
 helm dependency build helm/
