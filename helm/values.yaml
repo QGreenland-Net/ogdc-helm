@@ -61,6 +61,12 @@ argo-workflows:
       - argo
       - qgnet
 
+    ##
+    ## @param controller.persistence.archive.enabled Save completed workflows to an SQL database.
+    persistence:
+      archive:
+        enabled: true
+
     config: |
       artifactRepository:
         s3:
@@ -95,18 +101,31 @@ argo-workflows:
     rbac:
       create: true
 
-  ## @section PostgreSQL subchart
-  ##
-
-  ## Postgresql subchart configuration
-  ## @param postgresql.enabled Enable PostgreSQL subchart and controller persistence using PostgreSQL
-  ## @param postgresql.service.ports.postgresql PostgreSQL port
-  ## @param postgresql.auth.username PostgreSQL username
-  ## @param postgresql.auth.database PortgreSQL database name
-  ## @param postgresql.auth.password PortgreSQL database password
-  ##
+  
   postgresql:
-    enabled: false
+    enabled: false 
+
+  ## External Database Configuration
+  ## @param externalDatabase.enabled Enable using externaldatabase and the controller to use persistence with it
+  ## @param externalDatabase.host External Database server host
+  ## @param externalDatabase.port External Database server port
+  ## @param externalDatabase.username External Database username
+  ## @param externalDatabase.password External Database user password
+  ## @param externalDatabase.database External Database database name
+  ## @param externalDatabase.existingSecret The name of an existing secret with database credentials
+  ## @param externalDatabase.type Either postgresql or mysql
+  ##
+  externalDatabase:
+    enabled: true
+    ## Either "postgresql" or  "mysql"
+    ##
+    type: "postgresql"
+    host: localhost
+    port: 5432
+    ## NOTE: Must contain key `database-password`
+    ## NOTE: When it's set, the `externalDatabase.password` parameter is ignored
+    ##
+    existingSecret: "{{ .Release.Name }}-postgresql-credentials"
 
 
 minio:
@@ -125,3 +144,37 @@ minio:
   ## defaultBuckets: "my-bucket, my-second-bucket"
   ##
   defaultBuckets: "argo-workflows"
+
+
+postgresql:
+  
+  ## Authentication parameters
+  ## ref: https://github.com/bitnami/containers/tree/main/bitnami/postgresql#setting-the-root-password-on-first-run
+  ## ref: https://github.com/bitnami/containers/tree/main/bitnami/postgresql#creating-a-database-on-first-run
+  ## ref: https://github.com/bitnami/containers/tree/main/bitnami/postgresql#creating-a-database-user-on-first-run
+  ##
+  auth:
+
+    ## @param auth.enablePostgresUser Assign a password to the "postgres" admin user. Otherwise, remote access will be blocked for this user
+    ##
+    enablePostgresUser: true
+    
+    ## @param auth.username Name for a custom user to create
+    ##
+    username: "ogdc"
+    
+    ## @param auth.database Name for a custom database to create
+    ##
+    database: "qgnet-ogdc"
+
+    ## @param auth.existingSecret Name of existing secret to use for PostgreSQL credentials. `auth.postgresPassword`, `auth.password`, and `auth.replicationPassword` will be ignored and picked up from this secret. The secret might also contains the key `ldap-password` if LDAP is enabled. `ldap.bind_password` will be ignored and picked from this secret in this case.
+    ##
+    existingSecret: "{{ .Release.Name }}-postgresql-credentials"
+    ## @param auth.secretKeys.adminPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
+    ## @param auth.secretKeys.userPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
+    ## @param auth.secretKeys.replicationPasswordKey Name of key in existing secret to use for PostgreSQL credentials. Only used when `auth.existingSecret` is set.
+    ##
+    secretKeys:
+      adminPasswordKey: "postgres-password"
+      userPasswordKey: "password"
+      replicationPasswordKey: "replication-password"
