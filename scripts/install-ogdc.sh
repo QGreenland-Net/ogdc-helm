@@ -26,15 +26,15 @@ fi
 # Add repos and bulid deps.
 # TODO: should this be unnecessary? Helm knows where our dependencies live
 # because we list them in the `Chart.yaml`.
-helm repo add minio https://charts.min.io/
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm dependency update helm/
 helm dependency build helm/
 
 RELEASE_NAME="qgnet-ogdc"
+NAMESPACE="qgnet"
 echo "Using RELEASE_NAME=${RELEASE_NAME}"
 QGNET_WORKFLOW_PVC_NAME="${RELEASE_NAME}-workflow-pvc"
 echo "Using QGNET_WORKFLOW_PVC_NAME=${QGNET_WORKFLOW_PVC_NAME}"
 
 # `qgnet-ogdc` is the "release name".
-helm install --set ENV="$ENV" --set QGNetWorkflowPVCName="$QGNET_WORKFLOW_PVC_NAME" --set OgdcPVHostPath="$OGDC_PV_HOST_PATH" $RELEASE_NAME "$THIS_DIR/../helm" -n qgnet
+helm install --set ENV="$ENV" --set QGNetWorkflowPVCName="$QGNET_WORKFLOW_PVC_NAME" --set OgdcPVHostPath="$OGDC_PV_HOST_PATH" $RELEASE_NAME "$THIS_DIR/../helm" -n $NAMESPACE

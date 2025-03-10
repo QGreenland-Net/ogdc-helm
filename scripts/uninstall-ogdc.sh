@@ -2,4 +2,7 @@
 
 set -e
 
-helm uninstall qgnet-ogdc -n qgnet
+RELEASE_NAME="qgnet-ogdc"
+NAMESPACE="qgnet"
+
+helm uninstall $RELEASE_NAME -n $NAMESPACE
