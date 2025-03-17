@@ -116,3 +116,13 @@ minio:
   ## defaultBuckets: "my-bucket, my-second-bucket"
   ##
   defaultBuckets: "argo-workflows"
+
+  ## Enable persistence using Persistent Volume Claims
+  ## ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+  ##
+  persistence:
+    ## @param persistence.enabled Enable MinIO&reg; data persistence using PVC. If false, use emptyDir
+    ##
+    enabled: true
+
+    existingClaim: "{{ .Release.Name }}-minio-pvc"
