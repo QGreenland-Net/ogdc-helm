@@ -1,3 +1,4 @@
+{{ if ne .Values.ENV "dev" }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -8,4 +9,6 @@ spec:
   resources:
     requests:
       storage: 10Gi
-  storageClassName: {{ if eq .Values.ENV "dev" }}""{{ else }}"csi-cephfs-sc"{{ end }}
+  storageClassName: "csi-cephfs-sc"
+{{ end }}
+

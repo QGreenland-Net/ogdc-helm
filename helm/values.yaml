@@ -66,10 +66,10 @@ argo-workflows:
           bucket: argo-workflows
           endpoint: qgnet-ogdc-minio:9000
           accessKeySecret:
-            name: minio-credentials
+            name: {{ .Release.Name }}-minio-credentials
             key: root-user
           secretKeySecret:
-            name: minio-credentials
+            name: {{ .Release.Name }}-minio-credentials
             key: root-password
           insecure: true
 
@@ -110,19 +110,9 @@ argo-workflows:
 
 minio:
   auth:
-    existingSecret: "minio-credentials"
+    existingSecret: "{{ .Release.Name }}-minio-credentials"
   ## @param defaultBuckets Comma, semi-colon or space separated list of buckets to create at initialization (only in standalone mode)
   ## e.g:
   ## defaultBuckets: "my-bucket, my-second-bucket"
   ##
   defaultBuckets: "argo-workflows"
-
-  ## Enable persistence using Persistent Volume Claims
-  ## ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
-  ##
-  persistence:
-    ## @param persistence.enabled Enable MinIO&reg; data persistence using PVC. If false, use emptyDir
-    ##
-    enabled: true
-
-    existingClaim: "{{ .Release.Name }}-minio-pvc"
