@@ -8,7 +8,7 @@
   the [ogdc-runner](https://github.com/QGreenland-Net/ogdc-runner/) to submit
   OGDC recipes to Argo.
   
-These services are installed to the `qgnet` kubernetes namespace.
+These services are installed to the `qgnet` kubernetes namespace by default.
 
 * A service account will be configured with the name `argo-workflow`. This
   service account has permissions to run workflows submitted by e.g.,
@@ -25,7 +25,7 @@ installed. QGreenland-net specific information on setting up Rancher desktop can
 be found here:
 <https://qgreenland-net.github.io/how-tos/#how-to-configure-rancher-desktop>
 
-* Create a namespace called `qgnet`:
+* Create a namespace called `qgnet` (or your preferred namespace):
 
 ```
 kubectl create namespace qgnet
@@ -34,15 +34,26 @@ kubectl create namespace qgnet
 * Install the stack with helm:
 
 > [!NOTE]
-> In dev, a PV will be created that's attached to a local directory called
+> By default, the install script uses the `dev` environment and the `qgnet` namespace.
+> You can optionally specify the environment (`dev`, `stage`, or `prod`) and namespace.
+> 
+> In `dev`, a PV will be created that's attached to a local directory called
 > `ogdc-local-hostmount` where this repository is checked out. To override the
-> location of the local directory used for persistant storage, set the
-> `OGDC_PV_HOST_PATH` envvar to another location that's accessible by rancher
-> desktop (in the user's home directory).
+> location of the local directory used for persistent storage, set the
+> `OGDC_PV_HOST_PATH` envvar to another location that's accessible by Rancher
+> Desktop (in the user's home directory).
 
-```
-./scripts/install-ogdc.sh dev
-```
+**Usage:**
+
+- Default (dev environment, qgnet namespace):
+  ```
+  ./scripts/install-ogdc.sh
+  ```
+- Specify environment (e.g., stage) and/or namespace:
+  ```
+  ./scripts/install-ogdc.sh stage my-namespace
+  ```
+  Valid environments: `dev`, `stage`, `prod`. Namespace is optional (defaults to `qgnet`).
 
 * Verify argo install.
 
@@ -72,7 +83,7 @@ If something is not working as expect, start by listing services in the
 `ogdc` services are running (prefixed with the namespace):
 
 ```
-$ kubectl get svc -n argo-helm
+$ kubectl get svc -n qgnet
 NAME                               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
 qgnet-argo-minio                   ClusterIP   10.43.76.177    <none>        9000/TCP,9001/TCP   14m
 qgnet-argo-argo-workflows-server   ClusterIP   10.43.231.175   <none>        2746/TCP            14m
