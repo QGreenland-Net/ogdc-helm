@@ -1,14 +1,12 @@
-{{ if ne .Values.ENV "dev" }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Release.Name }}-minio-pvc
+  namespace: qgnet
 spec:
   accessModes:
-    - ReadWriteMany
+    {{- toYaml (index .Values.minio.persistence .Values.env).accessModes | nindent 4 }}
   resources:
     requests:
       storage: 10Gi
-  storageClassName: "csi-cephfs-sc"
-{{ end }}
-
+  storageClassName: {{ (index .Values.minio.persistence .Values.env).storageClassName | quote }}

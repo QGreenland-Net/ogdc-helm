@@ -8,7 +8,7 @@ if [ "$#" -ne 1 ]; then
     echo "Must provide environment"
     exit 1
 fi
-echo "Using ENV=${ENV}"
+echo "Using env=${ENV}"
 
 THIS_DIR="$( cd "$(dirname "$0")"; pwd -P )"
 
@@ -37,4 +37,8 @@ QGNET_WORKFLOW_PVC_NAME="${RELEASE_NAME}-workflow-pvc"
 echo "Using QGNET_WORKFLOW_PVC_NAME=${QGNET_WORKFLOW_PVC_NAME}"
 
 # `qgnet-ogdc` is the "release name".
-helm install --set ENV="$ENV" --set QGNetWorkflowPVCName="$QGNET_WORKFLOW_PVC_NAME" --set OgdcPVHostPath="$OGDC_PV_HOST_PATH" $RELEASE_NAME "$THIS_DIR/../helm" -n qgnet
+helm install \
+  --set env="$ENV" \
+  --set QGNetWorkflowPVCName="$QGNET_WORKFLOW_PVC_NAME" \
+  --set OgdcPVHostPath="$OGDC_PV_HOST_PATH" \
+  $RELEASE_NAME "$THIS_DIR/../helm" -n qgnet

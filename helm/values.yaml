@@ -2,6 +2,8 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+env: dev
+
 general:
   ## @param rbac.singleNamespace Restrict Argo to only deploy into a single namespace by apply Roles and RoleBindings instead of the Cluster equivalents, and start argo-cli with the --namespaced flag. Use it in clusters with strict access policy.
   ##
@@ -116,3 +118,18 @@ minio:
   ## defaultBuckets: "my-bucket, my-second-bucket"
   ##
   defaultBuckets: "argo-workflows"
+
+  image:
+    debug: true
+
+  persistence:
+    existingClaim: "{{ .Release.Name }}-minio-pvc"
+    size: 10Gi
+    accessModes:
+      - ReadWriteOnce
+
+    dev:
+      storageClassName: "local-path"
+
+    stage:
+      storageClassName: "csi-cephfs-sc"

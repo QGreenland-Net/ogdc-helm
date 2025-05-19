@@ -9,7 +9,7 @@ spec:
   resources:
     requests:
       storage: 5Gi  # Match this to your PV's storage
-  {{ if eq .Values.ENV "dev" }}
+  {{ if eq .Values.env "dev" }}
   storageClassName: ""
   {{ else }}
   storageClassName: "csi-cephfs-sc"
