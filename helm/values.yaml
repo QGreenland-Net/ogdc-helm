@@ -125,11 +125,13 @@ minio:
   persistence:
     existingClaim: "{{ .Release.Name }}-minio-pvc"
     size: 10Gi
-    accessModes:
-      - ReadWriteOnce
 
     dev:
       storageClassName: "local-path"
+      accessModes:
+        - ReadWriteOnce
 
     stage:
       storageClassName: "csi-cephfs-sc"
+      accessModes:
+        - ReadWriteOnce

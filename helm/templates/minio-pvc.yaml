@@ -5,6 +5,7 @@ metadata:
   namespace: qgnet
 spec:
   accessModes:
+    {{- $env := .Values.env | default "dev" -}}
     {{- toYaml (index .Values.minio.persistence .Values.env).accessModes | nindent 4 }}
   resources:
     requests:
