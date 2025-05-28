@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Release.Name }}-minio-pvc
-  namespace: qgnet
+  namespace: {{ .Values.OgdcNamespace }}
 spec:
   accessModes:
     {{- $env := .Values.env | default "dev" -}}

@@ -66,7 +66,7 @@ argo-workflows:
       artifactRepository:
         s3:
           bucket: argo-workflows
-          endpoint: qgnet-ogdc-minio:9000
+          endpoint: {{ .Release.Name }}-minio:9000
           accessKeySecret:
             name: {{ .Release.Name }}-minio-credentials
             key: root-user
