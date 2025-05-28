@@ -2,13 +2,25 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# env: The deployment environment. Allowed values: dev, stage, prod.
 env: dev
 
-general:
+global:
   ## @param rbac.singleNamespace Restrict Argo to only deploy into a single namespace by apply Roles and RoleBindings instead of the Cluster equivalents, and start argo-cli with the --namespaced flag. Use it in clusters with strict access policy.
   ##
   rbac:
     singleNamespace: true
+
+  ## Storage class settings for each environment.
+  ## @param dev.defaultStorageClass StorageClass for dev environment (default: "")
+  ## @param stage.defaultStorageClass StorageClass for stage environment (default: "csi-cephfs-sc-ephemeral")
+  ## @param prod.defaultStorageClass StorageClass for prod environment (default: "csi-cephfs-sc")
+  dev:
+    defaultStorageClass : ""
+  stage:
+    defaultStorageClass : "csi-cephfs-sc-ephemeral"
+  prod:
+    defaultStorageClass : "csi-cephfs-sc"
 
 argo-workflows:
   # Copyright Broadcom, Inc. All Rights Reserved.
@@ -132,6 +144,11 @@ minio:
         - ReadWriteOnce
 
     stage:
+      storageClassName: "csi-cephfs-sc-ephemeral"
+      accessModes:
+        - ReadWriteOnce
+
+    prod:
       storageClassName: "csi-cephfs-sc"
       accessModes:
         - ReadWriteOnce
