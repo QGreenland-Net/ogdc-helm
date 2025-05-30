@@ -1,9 +1,9 @@
-{{ if eq .Values.ENV "dev" }}
+{{ if eq .Values.env "dev" }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: {{ .Release.Name }}-workflow-pv
-  namespace: qgnet
+  namespace: {{ .Values.OgdcNamespace }}
 spec:
   capacity:
     storage: 5Gi  # Adjust size as needed

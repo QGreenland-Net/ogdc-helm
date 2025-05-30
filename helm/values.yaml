@@ -2,11 +2,25 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-general:
+# env: The deployment environment. Allowed values: dev, stage, prod.
+env: dev
+
+global:
   ## @param rbac.singleNamespace Restrict Argo to only deploy into a single namespace by apply Roles and RoleBindings instead of the Cluster equivalents, and start argo-cli with the --namespaced flag. Use it in clusters with strict access policy.
   ##
   rbac:
     singleNamespace: true
+
+  ## Storage class settings for each environment.
+  ## @param dev.defaultStorageClass StorageClass for dev environment (default: "")
+  ## @param stage.defaultStorageClass StorageClass for stage environment (default: "csi-cephfs-sc-ephemeral")
+  ## @param prod.defaultStorageClass StorageClass for prod environment (default: "csi-cephfs-sc")
+  dev:
+    defaultStorageClass : ""
+  stage:
+    defaultStorageClass : "csi-cephfs-sc-ephemeral"
+  prod:
+    defaultStorageClass : "csi-cephfs-sc"
 
 argo-workflows:
   # Copyright Broadcom, Inc. All Rights Reserved.
@@ -71,7 +85,7 @@ argo-workflows:
       artifactRepository:
         s3:
           bucket: argo-workflows
-          endpoint: qgnet-ogdc-minio:9000
+          endpoint: {{ .Release.Name }}-minio:9000
           accessKeySecret:
             name: {{ .Release.Name }}-minio-credentials
             key: root-user
@@ -127,17 +141,31 @@ argo-workflows:
 
 minio:
   auth:
-    ## @param auth.existingSecret Use existing secret for credentials details (`auth.rootUser` and `auth.rootPassword` will be ignored and picked up from this secret).
-    ##
     existingSecret: "{{ .Release.Name }}-minio-credentials"
-    ## @param auth.rootUserSecretKey Key where the MINIO_ROOT_USER username is being stored inside the existing secret `auth.existingSecret`
-    ##
-    rootUserSecretKey: "root-user"
-    ## @param auth.rootPasswordSecretKey Key where the MINIO_ROOT_USER password is being stored inside the existing secret `auth.existingSecret`
-    ##
-    rootPasswordSecretKey: "root-password"
   ## @param defaultBuckets Comma, semi-colon or space separated list of buckets to create at initialization (only in standalone mode)
   ## e.g:
   ## defaultBuckets: "my-bucket, my-second-bucket"
   ##
   defaultBuckets: "argo-workflows"
+
+  image:
+    debug: true
+
+  persistence:
+    existingClaim: "{{ .Release.Name }}-minio-pvc"
+    size: 10Gi
+
+    dev:
+      storageClassName: "local-path"
+      accessModes:
+        - ReadWriteOnce
+
+    stage:
+      storageClassName: "csi-cephfs-sc-ephemeral"
+      accessModes:
+        - ReadWriteOnce
+
+    prod:
+      storageClassName: "csi-cephfs-sc"
+      accessModes:
+        - ReadWriteOnce

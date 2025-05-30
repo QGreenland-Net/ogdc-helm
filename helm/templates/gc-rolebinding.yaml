@@ -6,11 +6,11 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: gc-rolebinding
-  namespace: qgnet
+  namespace: {{ .Values.OgdcNamespace }}
 subjects:
 - kind: ServiceAccount
   name: argo-workflow
-  namespace: qgnet
+  namespace: {{ .Values.OgdcNamespace }}
 roleRef:
   kind: Role
   name: artifactgc
