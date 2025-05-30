@@ -73,7 +73,6 @@ argo-workflows:
     workflowNamespaces:
       - default
       - argo
-      - qgnet
 
     ##
     ## @param controller.persistence.archive.enabled Save completed workflows to an SQL database.
@@ -93,6 +92,28 @@ argo-workflows:
             name: {{ .Release.Name }}-minio-credentials
             key: root-password
           insecure: true
+
+      {{- if (include "argo-workflows.controller.persistence.enabled" .) }}
+      persistence:
+        connectionPool:
+          maxIdleConns: 100
+          maxOpenConns: 0
+        nodeStatusOffLoad: false
+        archive: true
+        postgresql:
+          host: {{ .Release.Name }}-postgresql
+          port: 5432
+          database: {{ .Release.Name }}
+          tableName: argo_workflows
+          ## the database secrets must be in the same namespace of the controller
+          ##
+          userNameSecret:
+            name: {{ .Release.Name }}-postgresql-credentials
+            key: username
+          passwordSecret:
+            name: {{ .Release.Name }}-postgresql-credentials
+            key: password
+      {{- end }}
 
   ## @section Executor configuration section
   ##
@@ -117,26 +138,26 @@ argo-workflows:
 
   
   postgresql:
-    enabled: false 
-
-  ## External Database Configuration
-  ## @param externalDatabase.enabled Enable using externaldatabase and the controller to use persistence with it
-  ## @param externalDatabase.host External Database server host
-  ## @param externalDatabase.port External Database server port
-  ## @param externalDatabase.username External Database username
-  ## @param externalDatabase.password External Database user password
-  ## @param externalDatabase.database External Database database name
-  ## @param externalDatabase.existingSecret The name of an existing secret with database credentials
-  ## @param externalDatabase.type Either postgresql or mysql
-  ##
-  externalDatabase:
     enabled: true
-    ## Either "postgresql" or  "mysql"
-    ##
-    type: "postgresql"
-    host: localhost
-    port: 5432
-
+    auth:
+      database: "{{ .Release.Name }}"
+      existingSecret: "{{ .Release.Name }}-postgresql-credentials"
+    primary:
+      persistence:
+        existingClaim: "{{ .Release.Name }}-postgresql-pvc"
+        size: 10Gi
+        dev:
+          storageClassName: "local-path"
+          accessModes:
+            - ReadWriteOnce
+        stage:
+          storageClassName: "csi-cephfs-sc"
+          accessModes:
+            - ReadWriteOnce
+        prod:
+          storageClassName: "csi-cephfs-sc"
+          accessModes:
+            - ReadWriteOnce
 
 
 minio:
