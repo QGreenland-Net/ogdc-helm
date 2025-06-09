@@ -33,6 +33,7 @@ helm dependency update helm/
 helm dependency build helm/
 
 RELEASE_NAME="qgnet-ogdc"
+NAMESPACE="qgnet"
 echo "Using RELEASE_NAME=${RELEASE_NAME}"
 QGNET_WORKFLOW_PVC_NAME="${RELEASE_NAME}-workflow-pvc"
 echo "Using QGNET_WORKFLOW_PVC_NAME=${QGNET_WORKFLOW_PVC_NAME}"
