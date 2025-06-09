@@ -2,11 +2,25 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-general:
+# env: The deployment environment. Allowed values: dev, stage, prod.
+env: dev
+
+global:
   ## @param rbac.singleNamespace Restrict Argo to only deploy into a single namespace by apply Roles and RoleBindings instead of the Cluster equivalents, and start argo-cli with the --namespaced flag. Use it in clusters with strict access policy.
   ##
   rbac:
     singleNamespace: true
+
+  ## Storage class settings for each environment.
+  ## @param dev.defaultStorageClass StorageClass for dev environment (default: "")
+  ## @param stage.defaultStorageClass StorageClass for stage environment (default: "csi-cephfs-sc-ephemeral")
+  ## @param prod.defaultStorageClass StorageClass for prod environment (default: "csi-cephfs-sc")
+  dev:
+    defaultStorageClass : ""
+  stage:
+    defaultStorageClass : "csi-cephfs-sc-ephemeral"
+  prod:
+    defaultStorageClass : "csi-cephfs-sc"
 
 argo-workflows:
   # Copyright Broadcom, Inc. All Rights Reserved.
@@ -64,12 +78,12 @@ argo-workflows:
       artifactRepository:
         s3:
           bucket: argo-workflows
-          endpoint: qgnet-ogdc-minio:9000
+          endpoint: {{ .Release.Name }}-minio:9000
           accessKeySecret:
-            name: minio-credentials
+            name: {{ .Release.Name }}-minio-credentials
             key: root-user
           secretKeySecret:
-            name: minio-credentials
+            name: {{ .Release.Name }}-minio-credentials
             key: root-password
           insecure: true
 
@@ -110,19 +124,31 @@ argo-workflows:
 
 minio:
   auth:
-    existingSecret: "minio-credentials"
+    existingSecret: "{{ .Release.Name }}-minio-credentials"
   ## @param defaultBuckets Comma, semi-colon or space separated list of buckets to create at initialization (only in standalone mode)
   ## e.g:
   ## defaultBuckets: "my-bucket, my-second-bucket"
   ##
   defaultBuckets: "argo-workflows"
 
-  ## Enable persistence using Persistent Volume Claims
-  ## ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
-  ##
-  persistence:
-    ## @param persistence.enabled Enable MinIO&reg; data persistence using PVC. If false, use emptyDir
-    ##
-    enabled: true
+  image:
+    debug: true
 
+  persistence:
     existingClaim: "{{ .Release.Name }}-minio-pvc"
+    size: 10Gi
+
+    dev:
+      storageClassName: "local-path"
+      accessModes:
+        - ReadWriteOnce
+
+    stage:
+      storageClassName: "csi-cephfs-sc-ephemeral"
+      accessModes:
+        - ReadWriteOnce
+
+    prod:
+      storageClassName: "csi-cephfs-sc"
+      accessModes:
+        - ReadWriteOnce
