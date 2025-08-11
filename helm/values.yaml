@@ -23,112 +23,23 @@ global:
     defaultStorageClass : "csi-cephfs-sc"
 
 argo-workflows:
-  # Copyright Broadcom, Inc. All Rights Reserved.
-  # SPDX-License-Identifier: APACHE-2.0
+  ## Custom resource configuration
+  crds:
+    # -- Install and upgrade CRDs
+    install: true
+    # -- Keep CRDs on chart uninstall
+    keep: false
+    # -- Annotations to be added to all CRDs
+    annotations: {}
 
-  ## @param clusterDomain Kubernetes cluster domain name
-  ##
-  clusterDomain: cluster.local
+  # Use single namespace mode
+  singleNamespace: true
 
-  rbac:
-    singleNamespace: true
+  # Create aggregate roles
+  createAggregateRoles: false
 
-  ## @param createAggregateRoles Create Aggregated cluster roles
-  ##
-  createAggregateRoles: true
-
-  ## @section Argo Workflows Server configuration parameters
-  ##
-
-  ## Argo Workflows server (based on the CLI) image
-  ##
-  server:
-    
-    ## server resource requests and limits
-    ## ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
-    ## @param server.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if server.resources is set (server.resources is recommended for production).
-    ## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
-    ##
-    resourcesPreset: "medium"
-    
-    auth:
-      ## @param server.auth.mode Set authentication mode. Either `server`, `client` or `sso`.
-      ##
-      # https://argo-workflows.readthedocs.io/en/latest/argo-server-auth-mode/
-      # `server`: In hosted mode, use the Server's Service Account. In local
-      # mode, use your local kube config.
-      mode: server
-    service:
-      ports:
-        http: 2746
-      
-  ## @section Argo Workflows Controller configuration parameters
-  ##
-
-  ## Argo Workflows Controller
-  ##
-  controller:
-    resourcesPreset: "large"
-    
-    workflowNamespaces:
-      - default
-      - argo
-
-    ##
-    ## @param controller.persistence.archive.enabled Save completed workflows to an SQL database.
-    persistence:
-      archive:
-        enabled: true
-
-    config: |
-      artifactRepository:
-        s3:
-          bucket: argo-workflows
-          endpoint: {{ .Release.Name }}-minio:9000
-          accessKeySecret:
-            name: {{ .Release.Name }}-minio-credentials
-            key: root-user
-          secretKeySecret:
-            name: {{ .Release.Name }}-minio-credentials
-            key: root-password
-          insecure: true
-
-      {{- if (include "argo-workflows.controller.persistence.enabled" .) }}
-      persistence:
-        connectionPool:
-          maxIdleConns: 100
-          maxOpenConns: 0
-        nodeStatusOffLoad: false
-        archive: true
-        postgresql:
-          host: {{ .Release.Name }}-postgresql
-          port: 5432
-          database: {{ .Release.Name }}
-          tableName: argo_workflows
-          ## the database secrets must be in the same namespace of the controller
-          ##
-          userNameSecret:
-            name: {{ .Release.Name }}-postgresql-credentials
-            key: username
-          passwordSecret:
-            name: {{ .Release.Name }}-postgresql-credentials
-            key: password
-      {{- end }}
-
-  ## @section Executor configuration section
-  ##
-  executor:
-    ## Init container's resource requests and limits
-    ## ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
-    ## @param executor.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if executor.resources is set (executor.resources is recommended for production).
-    ## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
-    ##
-    resourcesPreset: "nano"
-
-  ## @section Workflows configuration
-  ##
-  workflows:
-    enabled: true
+  # Workflow service account configuration
+  workflow:
     serviceAccount:
       create: true
       name: "argo-workflow"
@@ -136,43 +47,91 @@ argo-workflows:
     rbac:
       create: true
 
-  
-  postgresql:
+  # Controller configuration
+  controller:
+    # Set resource requirements
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+    
+    # Workflow namespaces
+    workflowNamespaces:
+      - default
+      - argo
+      - qgnet
+
+    # Configure metrics
+    metricsConfig:
+      enabled: false
+
+  # Server configuration
+  server:
     enabled: true
-    auth:
-      database: "{{ .Release.Name }}"
-      existingSecret: "{{ .Release.Name }}-postgresql-credentials"
-    primary:
-      persistence:
-        existingClaim: "{{ .Release.Name }}-postgresql-pvc"
-        size: 10Gi
-        dev:
-          storageClassName: "local-path"
-          accessModes:
-            - ReadWriteOnce
-        stage:
-          storageClassName: "csi-cephfs-sc"
-          accessModes:
-            - ReadWriteOnce
-        prod:
-          storageClassName: "csi-cephfs-sc"
-          accessModes:
-            - ReadWriteOnce
+    
+    # Set resource requirements
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    
+    # Authentication mode
+    authModes:
+      - server
+    
+    service:
+      type: ClusterIP
+      port: 2746
+      
+  # Executor configuration  
+  executor:
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+
+  # Artifact repository configuration
+  artifactRepository:
+    s3:
+      bucket: argo-workflows
+      endpoint: "{{ .Release.Name }}-minio:9000"
+      # For now using direct credentials (can be improved with secrets later)
+      accessKeySecret:
+        name: "{{ .Release.Name }}-minio-credentials"
+        key: rootUser
+      secretKeySecret:
+        name: "{{ .Release.Name }}-minio-credentials"
+        key: rootPassword
+      insecure: true
 
 
+# MinIO configuration
 minio:
-  auth:
-    existingSecret: "{{ .Release.Name }}-minio-credentials"
-  ## @param defaultBuckets Comma, semi-colon or space separated list of buckets to create at initialization (only in standalone mode)
-  ## e.g:
-  ## defaultBuckets: "my-bucket, my-second-bucket"
-  ##
-  defaultBuckets: "argo-workflows"
+  # Set to standalone mode for simplicity 
+  mode: standalone
+  replicas: 1
+  
+  # Set credentials
+  existingSecret: "{{ .Release.Name }}-minio-credentials"
 
-  image:
-    debug: true
-
+  # Create buckets needed for Argo Workflows
+  buckets:
+    - name: argo-workflows
+      policy: none
+      purge: false
+  
+  # Persistence configuration
   persistence:
+    enabled: true
     existingClaim: "{{ .Release.Name }}-minio-pvc"
     size: 10Gi
 
