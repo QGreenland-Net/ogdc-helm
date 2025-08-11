@@ -26,9 +26,14 @@ if [ "$ENV" = "dev" ]; then
   echo "Using OGDC_PV_HOST_PATH=${OGDC_PV_HOST_PATH}"
 fi
 
-# Add repos and build deps.
+echo "=== Setting up Community Helm Repositories ==="
+# Add all required community repositories (no more Bitnami!)
+echo "Adding official Argo Workflows repository..."
+helm repo add argo https://argoproj.github.io/argo-helm
+
+echo "Adding official MinIO repository..."
 helm repo add minio https://charts.min.io/
-helm repo add bitnami https://charts.bitnami.com/bitnami
+
 helm dependency update helm/
 helm dependency build helm/
 
