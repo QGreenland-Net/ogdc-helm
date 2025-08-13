@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ .Release.Name }}-minio-pvc
+  name: minio-pvc
   namespace: {{ .Values.OgdcNamespace }}
 spec:
   accessModes:

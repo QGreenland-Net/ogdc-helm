@@ -24,6 +24,13 @@ if [ "$ENV" = "dev" ]; then
   mkdir -p "${OGDC_PV_HOST_PATH}"
   OGDC_PV_HOST_PATH=$(realpath "${OGDC_PV_HOST_PATH}")
   echo "Using OGDC_PV_HOST_PATH=${OGDC_PV_HOST_PATH}"
+  
+  if [ -z "$MINIO_PV_HOST_PATH" ]; then
+    MINIO_PV_HOST_PATH="${THIS_DIR}/../ogdc-minio-local-mount/"
+  fi
+  mkdir -p "${MINIO_PV_HOST_PATH}"
+  MINIO_PV_HOST_PATH=$(realpath "${MINIO_PV_HOST_PATH}")
+  echo "Using MINIO_PV_HOST_PATH=${MINIO_PV_HOST_PATH}"
 fi
 
 echo "=== Setting up Community Helm Repositories ==="
@@ -49,5 +56,6 @@ helm install \
   --set OgdcNamespace="$NAMESPACE" \
   --set QGNetWorkflowPVCName="$QGNET_WORKFLOW_PVC_NAME" \
   --set OgdcPVHostPath="$OGDC_PV_HOST_PATH" \
+  --set MinioPVHostPath="$MINIO_PV_HOST_PATH" \
   "$RELEASE_NAME" "$THIS_DIR/../helm" \
   -n "$NAMESPACE" --create-namespace

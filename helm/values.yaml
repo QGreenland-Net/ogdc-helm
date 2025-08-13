@@ -32,17 +32,14 @@ argo-workflows:
     # -- Annotations to be added to all CRDs
     annotations: {}
 
-  # Use single namespace mode
+  # Use single namespace mode - this should prevent cluster resource access
   singleNamespace: true
-
-  # Create aggregate roles
-  createAggregateRoles: false
 
   # Workflow service account configuration
   workflow:
     serviceAccount:
       create: true
-      name: "argo-workflow"
+      name: "argo-workflows"
       automountServiceAccountToken: true
     rbac:
       create: true
@@ -58,11 +55,12 @@ argo-workflows:
         memory: "2Gi"
         cpu: "1000m"
     
-    # Workflow namespaces
+    # Configure for single namespace mode - restrict to current namespace only
     workflowNamespaces:
-      - default
-      - argo
-      - qgnet
+      - "{{ .Release.Namespace }}"
+
+    clusterWorkflowTemplates:
+      enabled: false
 
     # Configure metrics
     metricsConfig:
@@ -106,10 +104,10 @@ argo-workflows:
       endpoint: "{{ .Release.Name }}-minio:9000"
       # For now using direct credentials (can be improved with secrets later)
       accessKeySecret:
-        name: "{{ .Release.Name }}-minio-credentials"
+        name: "minio-credentials"
         key: rootUser
       secretKeySecret:
-        name: "{{ .Release.Name }}-minio-credentials"
+        name: "minio-credentials"
         key: rootPassword
       insecure: true
 
@@ -121,7 +119,8 @@ minio:
   replicas: 1
   
   # Set credentials
-  existingSecret: "{{ .Release.Name }}-minio-credentials"
+  rootUser: "admin"
+  rootPassword: "admin123"
 
   # Create buckets needed for Argo Workflows
   buckets:
@@ -132,7 +131,7 @@ minio:
   # Persistence configuration
   persistence:
     enabled: true
-    existingClaim: "{{ .Release.Name }}-minio-pvc"
+    existingClaim: "minio-pvc"
     size: 10Gi
 
     dev:
@@ -149,3 +148,12 @@ minio:
       storageClassName: "csi-cephfs-sc"
       accessModes:
         - ReadWriteOnce
+
+  # Resource configuration
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
