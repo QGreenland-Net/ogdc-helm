@@ -5,12 +5,10 @@
 # env: The deployment environment. Allowed values: dev, stage, prod.
 env: dev
 
-global:
-  ## @param rbac.singleNamespace Restrict Argo to only deploy into a single namespace by apply Roles and RoleBindings instead of the Cluster equivalents, and start argo-cli with the --namespaced flag. Use it in clusters with strict access policy.
-  ##
-  rbac:
-    singleNamespace: true
+# OgdcNamespace: The namespace where OGDC is deployed
+OgdcNamespace: qgnet
 
+global:
   ## Storage class settings for each environment.
   ## @param dev.defaultStorageClass StorageClass for dev environment (default: "")
   ## @param stage.defaultStorageClass StorageClass for stage environment (default: "csi-cephfs-sc-ephemeral")
@@ -32,21 +30,20 @@ argo-workflows:
     # -- Annotations to be added to all CRDs
     annotations: {}
 
-  # Use single namespace mode - this should prevent cluster resource access
-  singleNamespace: true
+  # Disable cluster-level roles and resources entirely
+  createAggregateRoles: true
 
   # Workflow service account configuration
   workflow:
     serviceAccount:
       create: true
-      name: "argo-workflows"
+      name: "argo-workflow"
       automountServiceAccountToken: true
     rbac:
       create: true
 
   # Controller configuration
   controller:
-    # Set resource requirements
     resources:
       requests:
         memory: "1Gi"
@@ -54,22 +51,14 @@ argo-workflows:
       limits:
         memory: "2Gi"
         cpu: "1000m"
-    
-    # Configure for single namespace mode - restrict to current namespace only
-    workflowNamespaces:
-      - "{{ .Release.Namespace }}"
-
-    clusterWorkflowTemplates:
-      enabled: false
 
     # Configure metrics
     metricsConfig:
       enabled: false
 
-  # Server configuration
   server:
     enabled: true
-    
+
     # Set resource requirements
     resources:
       requests:

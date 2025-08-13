@@ -57,5 +57,7 @@ helm install \
   --set QGNetWorkflowPVCName="$QGNET_WORKFLOW_PVC_NAME" \
   --set OgdcPVHostPath="$OGDC_PV_HOST_PATH" \
   --set MinioPVHostPath="$MINIO_PV_HOST_PATH" \
+  --set argo-workflows.controller.workflowNamespaces[0]="default" \
+  --set argo-workflows.controller.workflowNamespaces[1]="$NAMESPACE" \
   "$RELEASE_NAME" "$THIS_DIR/../helm" \
   -n "$NAMESPACE" --create-namespace
