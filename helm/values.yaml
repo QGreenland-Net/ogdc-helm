@@ -46,10 +46,10 @@ argo-workflows:
   controller:
     resources:
       requests:
-        memory: "1Gi"
+        memory: "2Gi"
         cpu: "500m"
       limits:
-        memory: "2Gi"
+        memory: "4Gi"
         cpu: "1000m"
 
     # Configure metrics
@@ -62,10 +62,10 @@ argo-workflows:
     # Set resource requirements
     resources:
       requests:
-        memory: "256Mi"
-        cpu: "100m"
+        memory: "1Gi"
+        cpu: "200m"
       limits:
-        memory: "512Mi"
+        memory: "2Gi"
         cpu: "500m"
     
     # Authentication mode
@@ -80,11 +80,11 @@ argo-workflows:
   executor:
     resources:
       requests:
-        memory: "64Mi"
-        cpu: "50m"
+        memory: "1Gi"
+        cpu: "200m"
       limits:
-        memory: "128Mi"
-        cpu: "100m"
+        memory: "4Gi"
+        cpu: "1000m"
 
   # Artifact repository configuration
   artifactRepository:
@@ -93,10 +93,10 @@ argo-workflows:
       endpoint: "{{ .Release.Name }}-minio:9000"
       # For now using direct credentials (can be improved with secrets later)
       accessKeySecret:
-        name: "minio-credentials"
+        name: "{{ .Release.Name }}-minio"
         key: rootUser
       secretKeySecret:
-        name: "minio-credentials"
+        name: "{{ .Release.Name }}-minio"
         key: rootPassword
       insecure: true
 
@@ -141,8 +141,8 @@ minio:
   # Resource configuration
   resources:
     requests:
-      memory: "256Mi"
-      cpu: "100m"
+      memory: "1Gi"
+      cpu: "200m"
     limits:
-      memory: "512Mi"
+      memory: "2Gi"
       cpu: "500m"
