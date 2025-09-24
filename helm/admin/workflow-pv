@@ -1,5 +1,5 @@
 # For development use:
-# Create a persistent volume using the filesystem on the local machine.
+# Create a persistent volume using the filesystem on local machine.
 #
 # 1.  Edit this file to set the "spec.hostpath.path" parameter below
 
@@ -19,6 +19,8 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: ${RELEASE_NAME}-workflow-pv
+  labels:
+    velero.io/exclude-from-backup: "true"
 spec:
   storageClassName: local-path
   capacity:

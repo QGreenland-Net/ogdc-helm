@@ -19,6 +19,8 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: ${RELEASE_NAME}-minio-pv
+  labels:
+    velero.io/exclude-from-backup: "true"
 spec:
   storageClassName: local-path
   capacity:
