@@ -128,6 +128,43 @@ argo-workflows:
     authModes:
       - server
 
+    ## Ingress configuration.
+    # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+    ingress:
+      # -- Enable an ingress resource
+      enabled: true
+
+      # -- Additional ingress annotations
+      annotations: { cert-manager.io/cluster-issuer: letsencrypt-prod }
+      # -- Additional ingress labels
+      labels: {}
+      # -- Defines which ingress controller will implement the resource
+      ingressClassName: "nginx"
+
+      # -- List of ingress hosts
+      ## Hostnames must be provided if Ingress is enabled.
+      ## Secrets must be manually created in the namespace
+      hosts:
+        - api.test.dataone.org
+
+      # -- List of ingress paths
+      paths:
+        - backend:
+            service:
+              name: "{{ .Release.Name }}-argo-workflows-server"
+              port:
+                number: 2746
+          path: /ogdc
+
+      # -- Ingress path type. One of `Exact`, `Prefix` or `ImplementationSpecific`
+      pathType: Prefix
+
+      # -- Ingress TLS configuration
+      tls:
+        - hosts:
+            - api.test.dataone.org
+          secretName: ingress-nginx-tls-cert
+
   ## Argo Executor configuration
   executor:
     ## Set resource requirements
