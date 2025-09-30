@@ -26,4 +26,5 @@ spec:
   resources:
     requests:
       storage: 5Gi
-  storageClassName: ""
+  storageClassName: local-path
+  volumeName: ${RELEASE_NAME}-minio-pv
