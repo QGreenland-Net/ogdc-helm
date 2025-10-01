@@ -10,7 +10,6 @@
 ##             --debug --render-subchart-notes
 ##
 
-
 global:
   ## @param global.passwordsSecret The name of the Secret containing application passwords
   ## This is the secret deployed using your own private, edited version of `../admin/secrets.yaml`.
@@ -33,7 +32,6 @@ global:
   ## (e.g. for Rancher Desktop, use:   defaultStorageClass: local-path)
   ##
   defaultStorageClass: local-path
-
 
 ## argo-workflows configuration
 ## See https://argoproj.github.io/argo-workflows/
@@ -63,7 +61,6 @@ argo-workflows:
   workflow:
     ## -- Create a dedicated service account for running workflows
     serviceAccount:
-
       ## -- Specifies whether a service account should be created
       create: true
 
@@ -78,17 +75,16 @@ argo-workflows:
     rbac:
       create: true
 
-
   ## Controller configuration
   controller:
-     ## -- Resource limits and requests for the controller
+    ## -- Resource limits and requests for the controller
     resources:
       ## -- Set resource requirements
       requests:
         ## CPU and memory requests for the workflow controller
         memory: "2Gi"
         cpu: "500m"
-      
+
       ## CPU and memory limits for the workflow controller
       limits:
         memory: "4Gi"
@@ -106,7 +102,6 @@ argo-workflows:
     metricsConfig:
       ## -- Enables prometheus metrics server
       enabled: false
-
 
   ## Argo Server configuration
   server:
@@ -130,9 +125,8 @@ argo-workflows:
 
     ## -- A list of supported authentication modes. Available values are `server`, `client`, or `sso`. If you provide sso, please configure `.Values.server.sso` as well.
     ## Ref: https://argo-workflows.readthedocs.io/en/stable/argo-server-auth-mode/
-    authModes: 
+    authModes:
       - server
-
 
   ## Argo Executor configuration
   executor:
@@ -150,7 +144,6 @@ argo-workflows:
       limits:
         memory: "4Gi"
         cpu: "1000m"
-
 
   ## Artifact repository configuration
   artifactRepository:
@@ -176,16 +169,13 @@ argo-workflows:
       ## insecure will disable TLS. Primarily used for minio installs not configured with TLS
       insecure: true
 
-
 ## MinIO configuration
 minio:
   ## minio mode, i.e. standalone or distributed
   mode: standalone ## other supported values are "distributed"
 
-
   ## Number of MinIO containers running
   replicas: 1
-
 
   ## List of buckets to be created after minio install
   buckets:
@@ -195,7 +185,6 @@ minio:
       policy: none
       ## Purge if bucket exists already
       purge: false
-
 
   ## Enable persistence using Persistent Volume Claims
   ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
@@ -208,7 +197,6 @@ minio:
     ## If defined, PVC must be created manually before volume will be bound
     existingClaim: "minio-pvc"
 
-
   ## Use existing Secret that store following variables:
   ##
   ## | Chart var             | .data.<key> in Secret    |
@@ -220,7 +208,6 @@ minio:
   ## .data.rootUser and .data.rootPassword are mandatory,
   ## others depend on enabled status of corresponding sections.
   existingSecret: *passwordSecretName
-
 
   ## Configure resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
