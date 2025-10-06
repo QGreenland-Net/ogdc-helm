@@ -43,5 +43,8 @@ helm install \
   --set OgdcNamespace="$NAMESPACE" \
   --set QGNetWorkflowPVCName="$QGNET_WORKFLOW_PVC_NAME" \
   --set OgdcPVHostPath="$OGDC_PV_HOST_PATH" \
+  --set global.security.allowInsecureImages=true \
+  --set argo-workflows.executor.image.registry=docker.io \
+  --set argo-workflows.executor.image.repository=bitnamilegacy/argo-workflow-exec \
   "$RELEASE_NAME" "$THIS_DIR/../helm" \
   -n "$NAMESPACE" --create-namespace
