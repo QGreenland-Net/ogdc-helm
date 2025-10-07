@@ -57,7 +57,7 @@ argo-workflows:
     ## only updates base url of resources on client side,
     ## it's expected that a proxy server rewrites the request URL and gets rid of this prefix
     ## https://github.com/argoproj/argo-workflows/issues/716#issuecomment-433213190
-    baseHref: /ogdc
+    baseHref: /
 
     ## Ingress configuration.
     # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
@@ -85,7 +85,7 @@ argo-workflows:
       ## If you are using a path other than '/', make sure to also set
       ## server.baseHref to match!
       paths:
-        - /ogdc
+        - /
       ## -- Path type
       ## Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
       pathType: Prefix
