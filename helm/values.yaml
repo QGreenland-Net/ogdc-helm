@@ -74,6 +74,11 @@ argo-workflows:
       - default
       - argo
 
+    workflowDefaults:
+      spec:
+        podGC:
+          strategy: OnWorkflowSuccess
+
     config: |
       artifactRepository:
         s3:
@@ -86,8 +91,6 @@ argo-workflows:
             name: {{ .Release.Name }}-minio-credentials
             key: root-password
           insecure: true
-        podGC:
-          strategy: OnWorkflowSuccess
 
 
   ## @section Executor configuration section
