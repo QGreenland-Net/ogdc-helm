@@ -1,0 +1,145 @@
+## override values.yaml with values to use for running on the NCEAS dev cluster
+##
+## example:
+##
+##  helm upgrade --install ogdc --debug -n qgnet \
+##                          -f ./helm/examples/values-dev-cluster-ogdc-example.yaml \
+##                          oci://ghcr.io/qgreenland/charts/ogdc-helm --version [version]
+##
+## (or to install from local helm chart code, replace:
+##  oci://ghcr.io/qgreenland/charts/ogdc-helm --version [version]
+##  with: ./helm)
+##
+## see values.yaml for full documentation on the following parameters
+##
+
+
+global:
+  ## @param global.passwordsSecret The name of the Secret containing application passwords
+  ## This is the secret deployed using your own private, edited version of `../admin/secrets.yaml`.
+  ##
+  ## (Note the actual key passwordsSecret is not used anywhere; only the yaml anchor/alias
+  ##  &passwordSecretName. IF YOU OVERRIDE THIS VALUE IN ANOTHER VALUES-OVERLAY FILE, YOU ALSO
+  ## NEED TO OVERRIDE THE VALUES THAT USE THIS ANCHOR - search this file for 'passwordSecretName')
+  ##
+  ## IMPORTANT NOTE: make sure you edit this, since IT INCLUDES THE RELEASE NAME! For
+  ## example, if the release name is 'myrelease', the value of name: would be
+  ## 'myrelease-secrets'.
+  ##
+  passwordsSecret: &passwordSecretName qgnet-ogdc-secrets
+
+## argo-workflows configuration
+## See https://argoproj.github.io/argo-workflows/
+argo-workflows:
+  ## -- Restrict Argo to operate only in a single namespace (the namespace of the
+  ## Helm release) by apply Roles and RoleBindings instead of the Cluster
+  ## equivalents, and start workflow-controller with the --namespaced flag. Use it
+  ## in clusters with strict access policy.
+  singleNamespace: false
+
+  ## Custom resource configuration
+  crds:
+    ## -- Install and upgrade CRDs
+    install: false
+
+    ## -- Keep CRDs on chart uninstall
+    keep: false
+
+    ## -- Annotations to be added to all CRDs
+    annotations: {}
+
+  ## Argo Server configuration
+  server:
+    ## -- Deploy the Argo Server
+    enabled: true
+
+    ## -- Value for base href in index.html. Used if the server is running behind reverse proxy under subpath different from /.
+    ## only updates base url of resources on client side,
+    ## it's expected that a proxy server rewrites the request URL and gets rid of this prefix
+    ## https://github.com/argoproj/argo-workflows/issues/716#issuecomment-433213190
+    baseHref: /
+
+    ## Ingress configuration.
+    # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+    ingress:
+      ## -- Enable an ingress resource
+      ## Enable an ingress resource for the Argo server
+      enabled: true
+      # -- Ingress class name
+      ## Your cluster may require this to be set to match your IngressClass resource.
+      ## For nginx ingress controller, use:  ingressClassName: "nginx"
+      ingressClassName: "nginx"
+      # -- Additional ingress annotations
+      ## Add any additional annotations that your ingress controller may need.
+      ## For example, for cert-manager TLS using the 'letsencrypt-prod' ClusterIssuer
+      ## (which must be created separately), and to specify that the backend protocol
+      ## is HTTPS, use the following annotations:
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        nginx.ingress.kubernetes.io/backend-protocol: https
+      ## -- Ingress hosts
+      ## Add host names (without http(s):// or path) that map to the argo server service.
+      ## You may need to add multiple hosts if you have multiple DNS names that map to the
+      ## same service.
+      hosts:
+        - api.test.dataone.org
+      ## -- Ingress endpoint paths
+      ## If you are using a path other than '/', make sure to also set
+      ## server.baseHref to match!
+      paths:
+        - /ogdc
+      ## -- Path type
+      ## Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
+      pathType: Prefix
+      ## -- Ingress service backend configuration
+      ## This is the port for the argo server service.
+      servicePort: 2746
+      ## -- Ingress TLS configuration
+      ## Add TLS configuration for the Ingress, if desired.
+      ## This example assumes you have created a TLS secret named
+      ## 'ingress-nginx-tls-cert' in the same namespace as the argo server.
+      ## The TLS secret must contain the certificate and private key for the host(s)
+      ## specified above.
+      tls:
+        - hosts:
+            - api.test.dataone.org
+          secretName: ingress-nginx-tls-cert
+
+    # -- Run the argo server in "secure" mode. Configure this value instead of `--secure` in extraArgs.
+    ## See the following documentation for more details on secure mode:
+    ## https://argo-workflows.readthedocs.io/en/stable/tls/
+    secure: false
+
+
+
+## MinIO configuration
+minio:
+  ## Enable persistence using Persistent Volume Claims
+  ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+  ##
+  persistence:
+    enabled: true
+
+    ## A manually managed Persistent Volume and Claim
+    ## Requires persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    existingClaim: "cephfs-qgnet-ogdc-minio-pvc"
+
+    # ## minio data Persistent Volume Storage Class
+    # ## If defined, storageClassName: <storageClass>
+    # ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    # ## If undefined (the default) or set to null, no storageClassName spec is
+    # ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    # ##   GKE, AWS & OpenStack)
+    # ##
+    # ## Storage class of PV to bind. By default it looks for standard storage class.
+    # ## If the PV uses a different storage class, specify that here.
+    # storageClass: *defaultStorageClass
+    # ## Name of data volume
+    # volumeName: "qgnet-ogdc-minio-pv"
+    # ## Persistent Volume Access Mode
+    # accessMode: ReadWriteOnce
+    # ## Persistent Volume Size
+    # size: 5Gi
+
+  existingSecret: *passwordSecretName
