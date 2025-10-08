@@ -57,7 +57,7 @@ argo-workflows:
     ## only updates base url of resources on client side,
     ## it's expected that a proxy server rewrites the request URL and gets rid of this prefix
     ## https://github.com/argoproj/argo-workflows/issues/716#issuecomment-433213190
-    baseHref: /
+    baseHref: /ogdc
 
     ## Ingress configuration.
     # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
@@ -74,7 +74,11 @@ argo-workflows:
       ## For example, for cert-manager TLS using the 'letsencrypt-prod' ClusterIssuer
       ## (which must be created separately), and to specify that the backend protocol
       ## is HTTPS, use the following annotations:
-      annotations: { cert-manager.io/cluster-issuer: letsencrypt-prod }
+      annotations: { 
+        cert-manager.io/cluster-issuer: letsencrypt-prod,
+        nginx.ingress.kubernetes.io/rewrite-target: /$2,
+        nginx.ingress.kubernetes.io/use-regex: "true"
+      }
       ## -- Ingress hosts
       ## Add host names (without http(s):// or path) that map to the argo server service.
       ## You may need to add multiple hosts if you have multiple DNS names that map to the
@@ -85,10 +89,10 @@ argo-workflows:
       ## If you are using a path other than '/', make sure to also set
       ## server.baseHref to match!
       paths:
-        - /
+        - /ogdc(/|$)(.*)
       ## -- Path type
       ## Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
-      pathType: Prefix
+      pathType: ImplementationSpecific
       ## -- Ingress service backend configuration
       ## This is the port for the argo server service.
       servicePort: 2746

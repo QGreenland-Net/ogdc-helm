@@ -94,7 +94,6 @@ argo-workflows:
     ## workflows. This controls where the service account and RBAC resources will
     ## be created. Only valid when singleNamespace is false.
     workflowNamespaces:
-      - default
       - qgnet
 
     ## Configure metrics
