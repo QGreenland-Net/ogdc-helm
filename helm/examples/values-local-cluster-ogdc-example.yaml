@@ -75,26 +75,20 @@ minio:
   persistence:
     enabled: true
 
-    ## A manually managed Persistent Volume and Claim
-    ## Requires persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    existingClaim: "qgnet-ogdc-minio-pvc"
+    ## minio data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    ## Storage class of PV to bind. By default it looks for standard storage class.
+    ## If the PV uses a different storage class, specify that here.
+    storageClass: *defaultStorageClass
+    ## Persistent Volume Access Mode
+    accessMode: ReadWriteOnce
+    ## Persistent Volume Size
+    size: 5Gi
 
-    # ## minio data Persistent Volume Storage Class
-    # ## If defined, storageClassName: <storageClass>
-    # ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    # ## If undefined (the default) or set to null, no storageClassName spec is
-    # ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    # ##   GKE, AWS & OpenStack)
-    # ##
-    # ## Storage class of PV to bind. By default it looks for standard storage class.
-    # ## If the PV uses a different storage class, specify that here.
-    # storageClass: *defaultStorageClass
-    # ## Name of data volume
-    # volumeName: "qgnet-ogdc-minio-pv"
-    # ## Persistent Volume Access Mode
-    # accessMode: ReadWriteOnce
-    # ## Persistent Volume Size
-    # size: 5Gi
 
   existingSecret: *passwordSecretName
