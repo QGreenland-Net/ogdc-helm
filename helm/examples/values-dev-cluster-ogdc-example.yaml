@@ -107,6 +107,17 @@ argo-workflows:
             - api.test.dataone.org
           secretName: ingress-nginx-tls-cert
 
+  ## Artifact repository configuration## Artifact repository configuration
+  artifactRepository:
+    s3:
+      ## Note the `key` attribute is not the actual secret, it's the PATH to
+      ## the contents in the associated secret, as defined by the `name` attribute.
+      accessKeySecret:
+        name: *passwordSecretName
+        key: rootUser
+      secretKeySecret:
+        name: *passwordSecretName
+        key: rootPassword
 
 
 ## MinIO configuration
