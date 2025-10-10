@@ -76,9 +76,9 @@ envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
   ```
   ./scripts/install-ogdc.sh
   ```
-- Specify environment (e.g., dev) and/or namespace:
+- Specify environment (e.g., local) and/or namespace:
   ```
-  ./scripts/install-ogdc.sh dev my-namespace
+  ./scripts/install-ogdc.sh local my-namespace
   ```
   Valid environments: `local`, `dev`, `prod`. Namespace is optional (defaults to `qgnet`).
 
