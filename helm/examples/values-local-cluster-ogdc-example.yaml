@@ -66,6 +66,17 @@ argo-workflows:
       # -- Enable an ingress resource
       enabled: false
 
+  ## Artifact repository configuration
+  artifactRepository:
+    s3:
+      ## Note the `key` attribute is not the actual secret, it's the PATH to
+      ## the contents in the associated secret, as defined by the `name` attribute.
+      accessKeySecret:
+        name: *passwordSecretName
+        key: rootUser
+      secretKeySecret:
+        name: *passwordSecretName
+        key: rootPassword
 
 ## MinIO configuration
 minio:
