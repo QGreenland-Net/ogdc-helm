@@ -37,5 +37,4 @@ echo "Using QGNET_WORKFLOW_PVC_NAME=${QGNET_WORKFLOW_PVC_NAME}"
 # `qgnet-ogdc` is the "release name".
 helm install \
   "$RELEASE_NAME" "$THIS_DIR/../helm" \
-  -n "$NAMESPACE" --create-namespace \
-  -f "$VALUES_FILE"
+  -n "$NAMESPACE" -f "$VALUES_FILE"
