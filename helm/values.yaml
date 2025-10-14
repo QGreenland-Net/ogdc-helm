@@ -128,11 +128,9 @@ argo-workflows:
   ##
   workflows:
     enabled: true
-=======
   ## Workflow service account configuration
   workflow:
     ## -- Create a dedicated service account for running workflows
->>>>>>> feature-23-simplify-ogdc-install
     serviceAccount:
       ## -- Specifies whether a service account should be created
       create: true
