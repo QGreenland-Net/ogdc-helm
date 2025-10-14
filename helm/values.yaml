@@ -96,7 +96,11 @@ argo-workflows:
     workflowNamespaces:
       - default
       - qgnet
-
+    
+    workflowDefaults:
+      spec:
+        podGC:
+          strategy: OnWorkflowSuccess
     ## Configure metrics
     ## Ref: https://argoproj.github.io/argo-workflows/metrics/
     metricsConfig:

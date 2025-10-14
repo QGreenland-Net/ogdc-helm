@@ -28,6 +28,11 @@ elif [[ "$ENV" == "dev" ]]; then
     VALUES_FILE="$THIS_DIR/../helm/examples/values-dev-cluster-ogdc-example.yaml"
 fi
 
+helm repo add minio https://charts.min.io/
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm dependency update helm/
+helm dependency build helm/
+
 RELEASE_NAME="qgnet-ogdc"
 NAMESPACE="qgnet"
 echo "Using RELEASE_NAME=${RELEASE_NAME}"
