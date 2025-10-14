@@ -2,12 +2,18 @@
 
 set -e
 
-ENV="${1:-dev}"
+ENV="${1:-local}"
 NAMESPACE="${2:-qgnet}"
 
-if [[ "$ENV" != "dev" && "$ENV" != "stage" && "$ENV" != "prod" ]]; then
+# Validate environment
+# Only allow local, dev, prod
+# Defaults to local
+# local: for local development with rancher desktop
+# dev: for development/staging environment deployment on ADC dev-k8s cluster
+# prod: for production environment (e.g. GKE, EKS, AKS)
+if [[ "$ENV" != "local" && "$ENV" != "dev" && "$ENV" != "prod" ]]; then
     echo "Invalid environment: $ENV"
-    echo "Usage: $0 [dev|stage|prod] [namespace]"
+    echo "Usage: $0 [local|dev|prod] [namespace]"
     exit 1
 fi
 
@@ -16,35 +22,25 @@ echo "Using namespace=${NAMESPACE}"
 
 THIS_DIR="$( cd "$(dirname "$0")"; pwd -P )"
 
-# This is used just in dev
-if [ "$ENV" = "dev" ]; then
-  if [ -z "$OGDC_PV_HOST_PATH" ]; then
-    OGDC_PV_HOST_PATH="${THIS_DIR}/../ogdc-local-hostmount/"
-  fi
-  mkdir -p "${OGDC_PV_HOST_PATH}"
-  OGDC_PV_HOST_PATH=$(realpath "${OGDC_PV_HOST_PATH}")
-  echo "Using OGDC_PV_HOST_PATH=${OGDC_PV_HOST_PATH}"
+if [[ "$ENV" == "local" ]]; then
+    VALUES_FILE="$THIS_DIR/../helm/examples/values-local-cluster-ogdc-example.yaml"
+elif [[ "$ENV" == "dev" ]]; then
+    VALUES_FILE="$THIS_DIR/../helm/examples/values-dev-cluster-ogdc-example.yaml"
 fi
 
-# Add repos and build deps.
 helm repo add minio https://charts.min.io/
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm dependency update helm/
 helm dependency build helm/
 
 RELEASE_NAME="qgnet-ogdc"
+NAMESPACE="qgnet"
 echo "Using RELEASE_NAME=${RELEASE_NAME}"
 QGNET_WORKFLOW_PVC_NAME="${RELEASE_NAME}-workflow-pvc"
 echo "Using QGNET_WORKFLOW_PVC_NAME=${QGNET_WORKFLOW_PVC_NAME}"
 
 # `qgnet-ogdc` is the "release name".
 helm install \
-  --set env="$ENV" \
-  --set OgdcNamespace="$NAMESPACE" \
-  --set QGNetWorkflowPVCName="$QGNET_WORKFLOW_PVC_NAME" \
-  --set OgdcPVHostPath="$OGDC_PV_HOST_PATH" \
-  --set global.security.allowInsecureImages=true \
-  --set argo-workflows.executor.image.registry=docker.io \
-  --set argo-workflows.executor.image.repository=bitnamilegacy/argo-workflow-exec \
   "$RELEASE_NAME" "$THIS_DIR/../helm" \
-  -n "$NAMESPACE" --create-namespace
+  -n "$NAMESPACE" --create-namespace \
+  -f "$VALUES_FILE"

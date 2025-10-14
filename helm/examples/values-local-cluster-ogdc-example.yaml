@@ -1,0 +1,105 @@
+## override values.yaml with values to use for running on a local Rancher Desktop cluster
+##
+## example:
+##
+##  helm upgrade --install ogdc --debug -n qgnet --create-namespace \
+##                          -f ./helm/examples/values-dev-cluster-ogdc-example.yaml \
+##                          oci://ghcr.io/qgreenland/charts/ogdc-helm --version [version]
+##
+## (or to install from local helm chart code, replace: oci://ghcr.io/qgreenland/charts/ogdc-helm
+##  with: ./helm)
+## see values.yaml for full documentation on the following parameters
+##
+
+
+global:
+  ## @param global.passwordsSecret The name of the Secret containing application passwords
+  ## This is the secret deployed using your own private, edited version of `../admin/secrets.yaml`.
+  ##
+  ## (Note the actual key passwordsSecret is not used anywhere; only the yaml anchor/alias
+  ##  &passwordSecretName. IF YOU OVERRIDE THIS VALUE IN ANOTHER VALUES-OVERLAY FILE, YOU ALSO
+  ## NEED TO OVERRIDE THE VALUES THAT USE THIS ANCHOR - search this file for 'passwordSecretName')
+  ##
+  ## IMPORTANT NOTE: make sure you edit this, since IT INCLUDES THE RELEASE NAME! For
+  ## example, if the release name is 'myrelease', the value of name: would be
+  ## 'myrelease-secrets'.
+  ##
+  passwordsSecret: &passwordSecretName qgnet-ogdc-secrets
+
+  ## @param global.defaultStorageClass Global default StorageClass for Persistent Volume(s)
+  ##
+  ## Inspect your cluster to see what storageClass is set as default:
+  ##    $  kubectl get storageclass
+  ## ...and then explicitly set defaultStorageClass to match the name of the default storageclass
+  ## (e.g. for Rancher Desktop, use:   defaultStorageClass: local-path)
+  ##
+  defaultStorageClass: &defaultStorageClass local-path
+
+## argo-workflows configuration
+## See https://argoproj.github.io/argo-workflows/
+argo-workflows:
+  ## -- Restrict Argo to operate only in a single namespace (the namespace of the
+  ## Helm release) by apply Roles and RoleBindings instead of the Cluster
+  ## equivalents, and start workflow-controller with the --namespaced flag. Use it
+  ## in clusters with strict access policy.
+  singleNamespace: false
+
+  ## Custom resource configuration
+  crds:
+    ## -- Install and upgrade CRDs
+    install: true
+
+    ## -- Keep CRDs on chart uninstall
+    keep: false
+
+    ## -- Annotations to be added to all CRDs
+    annotations: {}
+
+  ## Argo Server configuration
+  server:
+    ## -- Deploy the Argo Server
+    enabled: true
+
+    ## Ingress configuration.
+    # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+    ingress:
+      # -- Enable an ingress resource
+      enabled: false
+
+  ## Artifact repository configuration
+  artifactRepository:
+    s3:
+      ## Note the `key` attribute is not the actual secret, it's the PATH to
+      ## the contents in the associated secret, as defined by the `name` attribute.
+      accessKeySecret:
+        name: *passwordSecretName
+        key: rootUser
+      secretKeySecret:
+        name: *passwordSecretName
+        key: rootPassword
+
+## MinIO configuration
+minio:
+  ## Enable persistence using Persistent Volume Claims
+  ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+  ##
+  persistence:
+    enabled: true
+
+    ## minio data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    ## Storage class of PV to bind. By default it looks for standard storage class.
+    ## If the PV uses a different storage class, specify that here.
+    storageClass: *defaultStorageClass
+    ## Persistent Volume Access Mode
+    accessMode: ReadWriteOnce
+    ## Persistent Volume Size
+    size: 5Gi
+
+
+  existingSecret: *passwordSecretName
