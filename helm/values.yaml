@@ -96,11 +96,14 @@ argo-workflows:
     workflowNamespaces:
       - default
       - qgnet
-    
+
+    ## Automatically cleanup pods on successful workflow completion
+    ## Ref: https://argo-workflows.readthedocs.io/en/latest/fields/#podgc
     workflowDefaults:
       spec:
         podGC:
           strategy: OnWorkflowSuccess
+          
     ## Configure metrics
     ## Ref: https://argoproj.github.io/argo-workflows/metrics/
     metricsConfig:
