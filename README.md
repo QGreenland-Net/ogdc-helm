@@ -94,9 +94,31 @@ First, port-forward the Argo Workflows server:
 Then, visit the Argo dashboard: <http://localhost:2746>.
 
 
-### Production setup
+### Dev/Production setup
 
-TODO: instructions for prod on ADC infrastructure.
+For deploying the stack on the DataONE dev cluster:
+
+1. Create the CephFS-backed PVCs (update the config in `cephfs-{release}-{function}-pvc.yaml` if needed), then apply:
+
+```sh
+export RELEASE_NAME=${RELEASE_NAME:-qgnet-ogdc}
+export NAMESPACE=${NAMESPACE:-qgnet}
+
+envsubst < helm/admin/cephfs-releasename-minio-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/cephfs-releasename-workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
+```
+
+2. Create credentials for MinIO:
+```sh
+envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+```
+
+3. Perform the installation for the OGDC service
+
+- Specify environment (e.g., dev) and/or namespace:
+  ```
+  ./scripts/install-ogdc.sh dev my-namespace
+  ```
 
 ### Uninstalling ogdc
 
