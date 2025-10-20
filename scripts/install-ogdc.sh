@@ -38,5 +38,4 @@ helm dependency build helm/
 # `qgnet-ogdc` is the "release name".
 envsubst < "$VALUES_FILE" | helm install \
   "$RELEASE_NAME" "$THIS_DIR/../helm" \
-  -n "$NAMESPACE" --create-namespace \
-  -f -
+  -n "$NAMESPACE" -f -
