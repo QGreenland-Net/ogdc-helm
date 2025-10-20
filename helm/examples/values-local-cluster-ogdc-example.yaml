@@ -20,11 +20,16 @@ global:
   ##  &passwordSecretName. IF YOU OVERRIDE THIS VALUE IN ANOTHER VALUES-OVERLAY FILE, YOU ALSO
   ## NEED TO OVERRIDE THE VALUES THAT USE THIS ANCHOR - search this file for 'passwordSecretName')
   ##
-  ## IMPORTANT NOTE: make sure you edit this, since IT INCLUDES THE RELEASE NAME! For
-  ## example, if the release name is 'myrelease', the value of name: would be
-  ## 'myrelease-secrets'.
+  ## 
+  ## 1. Define the release name on the command line:
+  ##     $  RELEASE_NAME=my-release  envsubst < helm/examples/values-dev-cluster-ogdc-example.yaml | kubectl apply -n <mynamespace> -f -
   ##
-  passwordsSecret: &passwordSecretName qgnet-ogdc-secrets
+  ##     # if this results in "command not found: envsubst", you can install envsubst (e.g. on Mac OS:
+  ##        $  brew install gettext && brew link --force gettext
+  ##
+  ## 2. Alternatively, you can simply replace "${RELEASE_NAME}" in the file below 
+  ##
+  passwordsSecret: &passwordSecretName ${RELEASE_NAME}-secrets
 
   ## @param global.defaultStorageClass Global default StorageClass for Persistent Volume(s)
   ##
@@ -49,17 +54,8 @@ argo-workflows:
     ## -- Install and upgrade CRDs
     install: true
 
-    ## -- Keep CRDs on chart uninstall
-    keep: false
-
-    ## -- Annotations to be added to all CRDs
-    annotations: {}
-
   ## Argo Server configuration
   server:
-    ## -- Deploy the Argo Server
-    enabled: true
-
     ## Ingress configuration.
     # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
     ingress:

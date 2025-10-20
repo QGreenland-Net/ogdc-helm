@@ -2,10 +2,8 @@
 #
 # This should be done only one time, separately from the helm install/upgrade cycle
 #
-# Replace <mynamespace> with the namespace you are using.
-#
-# Update the RELEASE_NAME variable below to match your release name, using envsubst or
-# manually replacing ${RELEASE_NAME} with your release name.
+# Update the RELEASE_NAME and NAMESPACE variables below to match your release name, using envsubst or
+# manually replacing ${RELEASE_NAME} and ${NAMESPACE} with your release name and namespace.
 #
 # NOTE: ensure that a PersistentVolume has already been created before creating
 #       the PersistentVolumeClaim!
@@ -19,7 +17,7 @@ metadata:
   ## Use your own release name
   name: cephfs-${RELEASE_NAME}-minio-pvc
   ## Use your own namespace
-  namespace: <mynamespace>
+  namespace: ${NAMESPACE}
   labels:
     velero.io/exclude-from-backup: "true"
 spec:

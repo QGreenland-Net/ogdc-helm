@@ -94,7 +94,6 @@ argo-workflows:
     ## workflows. This controls where the service account and RBAC resources will
     ## be created. Only valid when singleNamespace is false.
     workflowNamespaces:
-      - default
       - qgnet
 
     ## Automatically cleanup pods on successful workflow completion
@@ -134,6 +133,54 @@ argo-workflows:
     ## Ref: https://argo-workflows.readthedocs.io/en/stable/argo-server-auth-mode/
     authModes:
       - server
+
+    ## Ingress configuration.
+    # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+    ingress:
+      ## -- Enable an ingress resource
+      ## Enable an ingress resource for the Argo server
+      enabled: false
+      # -- Ingress class name
+      ## Your cluster may require this to be set to match your IngressClass resource.
+      ## For nginx ingress controller, use:  ingressClassName: "nginx"
+      ingressClassName: "nginx"
+      # -- Additional ingress annotations
+      ## Add any additional annotations that your ingress controller may need.
+      ## For example, for cert-manager TLS using the 'letsencrypt-prod' ClusterIssuer
+      ## (which must be created separately), and to specify that the backend protocol
+      ## is HTTPS, use the following annotations:
+      annotations: { 
+        cert-manager.io/cluster-issuer: letsencrypt-prod,
+        nginx.ingress.kubernetes.io/rewrite-target: /$2,
+        nginx.ingress.kubernetes.io/use-regex: "true"
+      }
+      ## -- Ingress hosts
+      ## Add host names (without http(s):// or path) that map to the argo server service.
+      ## You may need to add multiple hosts if you have multiple DNS names that map to the
+      ## same service.
+      hosts:
+        - api.test.dataone.org
+      ## -- Ingress endpoint paths
+      ## If you are using a path other than '/', make sure to also set
+      ## server.baseHref to match!
+      paths:
+        - /ogdc(/|$)(.*)
+      ## -- Path type
+      ## Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
+      pathType: ImplementationSpecific
+      ## -- Ingress service backend configuration
+      ## This is the port for the argo server service.
+      servicePort: 2746
+      ## -- Ingress TLS configuration
+      ## Add TLS configuration for the Ingress, if desired.
+      ## This example assumes you have created a TLS secret named
+      ## 'ingress-nginx-tls-cert' in the same namespace as the argo server.
+      ## The TLS secret must contain the certificate and private key for the host(s)
+      ## specified above.
+      tls:
+        - hosts:
+            - api.test.dataone.org
+          secretName: ingress-nginx-tls-cert
 
   ## Argo Executor configuration
   executor:

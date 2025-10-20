@@ -46,14 +46,15 @@ kubectl create namespace qgnet
 **Usage:**
 
 
-1. Set common variables (optional, but makes the following commands copy/paste-friendly):
+1. Set common variables:
 
 ```sh
 export RELEASE_NAME=qgnet-ogdc
 export NAMESPACE=qgnet
+export OGDC_PV_HOST_PATH=/Users/yourname/your-pv-directory
 ```
 
-2. Create the Workflow PV (update the hostPath in `helm/admin/workflow-pv.yaml` if needed), then apply:
+2. Create the Workflow PV (update the hostPath in `helm/admin/workflow-pv.yaml` first), then apply:
 
 ```sh
 envsubst < helm/admin/workflow-pv.yaml | kubectl apply -n "$NAMESPACE" -f -
@@ -76,9 +77,9 @@ envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
   ```
   ./scripts/install-ogdc.sh
   ```
-- Specify environment (e.g., local) and/or namespace:
+- Specify environment (e.g., local):
   ```
-  ./scripts/install-ogdc.sh local my-namespace
+  ./scripts/install-ogdc.sh local
   ```
   Valid environments: `local`, `dev`, `prod`. Namespace is optional (defaults to `qgnet`).
 
@@ -93,14 +94,55 @@ First, port-forward the Argo Workflows server:
 Then, visit the Argo dashboard: <http://localhost:2746>.
 
 
-### Production setup
+### Dev/Production setup
 
-TODO: instructions for prod on ADC infrastructure.
+For deploying the stack on the DataONE dev cluster:
+
+1. Create the CephFS-backed PVCs (update the config in `cephfs-{release}-{function}-pvc.yaml` if needed), then apply:
+
+```sh
+export RELEASE_NAME=${RELEASE_NAME:-qgnet-ogdc}
+export NAMESPACE=${NAMESPACE:-qgnet}
+
+envsubst < helm/admin/cephfs-releasename-minio-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/cephfs-releasename-workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
+```
+
+2. Create credentials for MinIO:
+```sh
+envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+```
+
+3. Perform the installation for the OGDC service
+
+- Specify environment (e.g., dev) and/or namespace:
+  ```
+  ./scripts/install-ogdc.sh dev my-namespace
+  ```
 
 ### Uninstalling ogdc
 
 To uninstall the ogdc from the kubernetes cluster, use the
 `./scripts/uninstall-ogdc.sh` script.
+
+### Cleaning up Argo CRDs
+
+The `./scripts/cleanup-argo-crds.sh` script is used to remove Argo Custom Resource Definitions (CRDs) from your cluster. 
+
+**Main usage:** This script is primarily intended for **dev/prod environments** when upgrading Argo CRDs that are managed outside of the Helm install process. It removes existing Argo CRDs and workflow resources before installing newer versions.
+
+> [!NOTE]
+> This script is **not necessary for local installations**, where Argo CRDs are managed as part of the standard Helm chart installation and upgrade process.
+
+**Usage:**
+```sh
+./scripts/cleanup-argo-crds.sh
+```
+
+This will:
+- Remove all workflow resources across all namespaces
+- Delete all Argo CRDs
+- Force remove any stuck CRDs with finalizers
 
 
 ## Troubleshooting
