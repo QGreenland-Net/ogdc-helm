@@ -18,11 +18,11 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: ${RELEASE_NAME}-workflow-pv
+  name: cephfs-${RELEASE_NAME}-workflow-pv
   labels:
     velero.io/exclude-from-backup: "true"
 spec:
-  storageClassName: local-path
+  storageClassName: local-storage
   capacity:
     storage: 5Gi
   volumeMode: Filesystem
@@ -60,4 +60,4 @@ spec:
   #  within /Users/yourname/... if you need access outside of k8s. It may be necessary to chmod 777
   # so the OGDC user can write to it - so be careful! Again, this is for testing/dev only!
   hostPath:
-    path: /Users/yourname/your-pv-directory
+    path: ${OGDC_PV_HOST_PATH}
