@@ -103,6 +103,25 @@ TODO: instructions for prod on ADC infrastructure.
 To uninstall the ogdc from the kubernetes cluster, use the
 `./scripts/uninstall-ogdc.sh` script.
 
+### Cleaning up Argo CRDs
+
+The `./scripts/cleanup-argo-crds.sh` script is used to remove Argo Custom Resource Definitions (CRDs) from your cluster. 
+
+**Main usage:** This script is primarily intended for **dev/prod environments** when upgrading Argo CRDs that are managed outside of the Helm install process. It removes existing Argo CRDs and workflow resources before installing newer versions.
+
+> [!NOTE]
+> This script is **not necessary for local installations**, where Argo CRDs are managed as part of the standard Helm chart installation and upgrade process.
+
+**Usage:**
+```sh
+./scripts/cleanup-argo-crds.sh
+```
+
+This will:
+- Remove all workflow resources across all namespaces
+- Delete all Argo CRDs
+- Force remove any stuck CRDs with finalizers
+
 
 ## Troubleshooting
 
