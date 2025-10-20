@@ -27,4 +27,4 @@ spec:
     requests:
       storage: 5Gi
   storageClassName: local-storage
-  volumeName: ${RELEASE_NAME}-workflow-pv
+  volumeName: cephfs-${RELEASE_NAME}-workflow-pv
