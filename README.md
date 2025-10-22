@@ -54,7 +54,7 @@ export NAMESPACE=qgnet
 export OGDC_PV_HOST_PATH=/Users/yourname/your-pv-directory
 ```
 
-2. Create the Workflow PV (update the hostPath in `helm/admin/workflow-pv.yaml` first), then apply:
+2. Create the Workflow PV:
 
 ```sh
 envsubst < helm/admin/workflow-pv.yaml | kubectl apply -n "$NAMESPACE" -f -
@@ -73,7 +73,7 @@ envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 
 5. Perform the installation for the OGDC service
 
-- Default (local environment, qgnet namespace):
+- Default (local environment):
   ```
   ./scripts/install-ogdc.sh
   ```
@@ -81,7 +81,7 @@ envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
   ```
   ./scripts/install-ogdc.sh local
   ```
-  Valid environments: `local`, `dev`, `prod`. Namespace is optional (defaults to `qgnet`).
+  Valid environments: `local`, `dev`, `prod`.
 
 * Verify Argo install.
 
@@ -115,9 +115,9 @@ envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 
 3. Perform the installation for the OGDC service
 
-- Specify environment (e.g., dev) and/or namespace:
+- Specify environment (e.g., dev):
   ```
-  ./scripts/install-ogdc.sh dev my-namespace
+  ./scripts/install-ogdc.sh dev
   ```
 
 ### Uninstalling ogdc
