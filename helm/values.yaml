@@ -1,154 +1,275 @@
 # Default values for OGDC
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-# env: The deployment environment. Allowed values: dev, stage, prod.
-env: dev
+## This is a YAML-formatted file.
+##
+##     * * *   NOTE: SOME VALUES INCLUDE THE PLACEHOLDER "${RELEASE_NAME}",   * * *
+##     * * *         WHICH MUST BE REPLACED BY THE ACTUAL RELEASE NAME        * * *
+##
+## Make sure you're in the correct k8s context, then:
+##  $  helm upgrade --install ns -n ogdc -f values-dev-cluster-ogdc.yaml \
+##         oci://ghcr.io/QGreenland/charts/ogdc --version [version] \
+##             --debug --render-subchart-notes
+##
 
 global:
-  ## @param rbac.singleNamespace Restrict Argo to only deploy into a single namespace by apply Roles and RoleBindings instead of the Cluster equivalents, and start argo-cli with the --namespaced flag. Use it in clusters with strict access policy.
+  ## @param global.passwordsSecret The name of the Secret containing application passwords
+  ## This is the secret deployed using your own private, edited version of `../admin/secrets.yaml`.
   ##
-  rbac:
-    singleNamespace: true
+  ## (Note the actual key passwordsSecret is not used anywhere; only the yaml anchor/alias
+  ##  &passwordSecretName. IF YOU OVERRIDE THIS VALUE IN ANOTHER VALUES-OVERLAY FILE, YOU ALSO
+  ## NEED TO OVERRIDE THE VALUES THAT USE THIS ANCHOR - search this file for 'passwordSecretName')
+  ##
+  ## IMPORTANT NOTE: make sure you edit this, since IT INCLUDES THE RELEASE NAME! For
+  ## example, if the release name is 'myrelease', the value of name: would be
+  ## 'myrelease-secrets'.
+  ##
+  passwordsSecret: &passwordSecretName ${RELEASE_NAME}-secrets
 
-  ## Storage class settings for each environment.
-  ## @param dev.defaultStorageClass StorageClass for dev environment (default: "")
-  ## @param stage.defaultStorageClass StorageClass for stage environment (default: "csi-cephfs-sc-ephemeral")
-  ## @param prod.defaultStorageClass StorageClass for prod environment (default: "csi-cephfs-sc")
-  dev:
-    defaultStorageClass : ""
-  stage:
-    defaultStorageClass : "csi-cephfs-sc-ephemeral"
-  prod:
-    defaultStorageClass : "csi-cephfs-sc"
+  ## @param global.defaultStorageClass Global default StorageClass for Persistent Volume(s)
+  ##
+  ## Inspect your cluster to see what storageClass is set as default:
+  ##    $  kubectl get storageclass
+  ## ...and then explicitly set defaultStorageClass to match the name of the default storageclass
+  ## (e.g. for Rancher Desktop, use:   defaultStorageClass: local-path)
+  ##
+  defaultStorageClass: local-path
 
+## argo-workflows configuration
+## See https://argoproj.github.io/argo-workflows/
 argo-workflows:
-  # Copyright Broadcom, Inc. All Rights Reserved.
-  # SPDX-License-Identifier: APACHE-2.0
+  ## -- Restrict Argo to operate only in a single namespace (the namespace of the
+  ## Helm release) by apply Roles and RoleBindings instead of the Cluster
+  ## equivalents, and start workflow-controller with the --namespaced flag. Use it
+  ## in clusters with strict access policy.
+  singleNamespace: false
 
-  ## @param clusterDomain Kubernetes cluster domain name
-  ##
-  clusterDomain: cluster.local
+  ## Custom resource configuration
+  crds:
+    ## -- Install and upgrade CRDs
+    install: true
 
-  rbac:
-    singleNamespace: true
+    ## -- Keep CRDs on chart uninstall
+    keep: false
 
-  ## @param createAggregateRoles Create Aggregated cluster roles
-  ##
+    ## -- Annotations to be added to all CRDs
+    annotations: {}
+
+  ## -- Create ClusterRoles that extend existing ClusterRoles to interact with Argo Workflows CRDs.
+  ## Ref: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#aggregated-clusterroles
   createAggregateRoles: true
 
-  ## @section Argo Workflows Server configuration parameters
-  ##
-
-  ## Argo Workflows server (based on the CLI) image
-  ##
-  server:
-    
-    ## server resource requests and limits
-    ## ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
-    ## @param server.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if server.resources is set (server.resources is recommended for production).
-    ## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
-    ##
-    resourcesPreset: "medium"
-    
-    auth:
-      ## @param server.auth.mode Set authentication mode. Either `server`, `client` or `sso`.
-      ##
-      # https://argo-workflows.readthedocs.io/en/latest/argo-server-auth-mode/
-      # `server`: In hosted mode, use the Server's Service Account. In local
-      # mode, use your local kube config.
-      mode: server
-    service:
-      ports:
-        http: 2746
-      
-  ## @section Argo Workflows Controller configuration parameters
-  ##
-
-  ## Argo Workflows Controller
-  ##
-  controller:
-    resourcesPreset: "large"
-    
-    workflowNamespaces:
-      - default
-      - argo
-
-    config: |
-      artifactRepository:
-        s3:
-          bucket: argo-workflows
-          endpoint: {{ .Release.Name }}-minio:9000
-          accessKeySecret:
-            name: {{ .Release.Name }}-minio-credentials
-            key: root-user
-          secretKeySecret:
-            name: {{ .Release.Name }}-minio-credentials
-            key: root-password
-          insecure: true
-
-  ## @section Executor configuration section
-  ##
-  executor:
-    ## Init container's resource requests and limits
-    ## ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
-    ## @param executor.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if executor.resources is set (executor.resources is recommended for production).
-    ## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
-    ##
-    resourcesPreset: "nano"
-
-  ## @section Workflows configuration
-  ##
-  workflows:
-    enabled: true
+  ## Workflow service account configuration
+  workflow:
+    ## -- Create a dedicated service account for running workflows
     serviceAccount:
+      ## -- Specifies whether a service account should be created
       create: true
+
+      ## -- Service account which is used to run workflows
       name: "argo-workflow"
+
+      ## -- Automount service account token for the workflow pods
       automountServiceAccountToken: true
+
+    ## -- Adds Role and RoleBinding for the above specified service account to be able to run workflows.
+    ## A Role and Rolebinding pair is also created for each namespace in controller.workflowNamespaces (see below)
     rbac:
       create: true
 
-  ## @section PostgreSQL subchart
-  ##
+  ## Controller configuration
+  controller:
+    ## -- Resource limits and requests for the controller
+    resources:
+      ## -- Set resource requirements
+      requests:
+        ## CPU and memory requests for the workflow controller
+        memory: "2Gi"
+        cpu: "500m"
 
-  ## Postgresql subchart configuration
-  ## @param postgresql.enabled Enable PostgreSQL subchart and controller persistence using PostgreSQL
-  ## @param postgresql.service.ports.postgresql PostgreSQL port
-  ## @param postgresql.auth.username PostgreSQL username
-  ## @param postgresql.auth.database PortgreSQL database name
-  ## @param postgresql.auth.password PortgreSQL database password
-  ##
-  postgresql:
-    enabled: false
+      ## CPU and memory limits for the workflow controller
+      limits:
+        memory: "4Gi"
+        cpu: "1000m"
 
+    ## -- Specify all namespaces where this workflow controller instance will manage
+    ## workflows. This controls where the service account and RBAC resources will
+    ## be created. Only valid when singleNamespace is false.
+    workflowNamespaces:
+      - qgnet
 
+    ## Automatically cleanup pods on successful workflow completion
+    ## Ref: https://argo-workflows.readthedocs.io/en/latest/fields/#podgc
+    workflowDefaults:
+      spec:
+        podGC:
+          strategy: OnWorkflowSuccess
+          
+    ## Configure metrics
+    ## Ref: https://argoproj.github.io/argo-workflows/metrics/
+    metricsConfig:
+      ## -- Enables prometheus metrics server
+      enabled: false
+
+  ## Argo Server configuration
+  server:
+    ## -- Deploy the Argo Server
+    enabled: true
+
+    ## Set resource requirements
+    ## -- Resource limits and requests for the server
+    ## Ref: https://argoproj.github.io/argo-workflows/argo-server/
+    resources:
+      ## Set resource requirements
+      requests:
+        ## CPU and memory requests for the workflow server
+        memory: "1Gi"
+        cpu: "200m"
+
+      ## CPU and memory limits for the workflow server
+      limits:
+        memory: "2Gi"
+        cpu: "500m"
+
+    ## -- A list of supported authentication modes. Available values are `server`, `client`, or `sso`. If you provide sso, please configure `.Values.server.sso` as well.
+    ## Ref: https://argo-workflows.readthedocs.io/en/stable/argo-server-auth-mode/
+    authModes:
+      - server
+
+    ## Ingress configuration.
+    # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+    ingress:
+      ## -- Enable an ingress resource
+      ## Enable an ingress resource for the Argo server
+      enabled: false
+      # -- Ingress class name
+      ## Your cluster may require this to be set to match your IngressClass resource.
+      ## For nginx ingress controller, use:  ingressClassName: "nginx"
+      ingressClassName: "nginx"
+      # -- Additional ingress annotations
+      ## Add any additional annotations that your ingress controller may need.
+      ## For example, for cert-manager TLS using the 'letsencrypt-prod' ClusterIssuer
+      ## (which must be created separately), and to specify that the backend protocol
+      ## is HTTPS, use the following annotations:
+      annotations: { 
+        cert-manager.io/cluster-issuer: letsencrypt-prod,
+        nginx.ingress.kubernetes.io/rewrite-target: /$2,
+        nginx.ingress.kubernetes.io/use-regex: "true"
+      }
+      ## -- Ingress hosts
+      ## Add host names (without http(s):// or path) that map to the argo server service.
+      ## You may need to add multiple hosts if you have multiple DNS names that map to the
+      ## same service.
+      hosts:
+        - api.test.dataone.org
+      ## -- Ingress endpoint paths
+      ## If you are using a path other than '/', make sure to also set
+      ## server.baseHref to match!
+      paths:
+        - /ogdc(/|$)(.*)
+      ## -- Path type
+      ## Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
+      pathType: ImplementationSpecific
+      ## -- Ingress service backend configuration
+      ## This is the port for the argo server service.
+      servicePort: 2746
+      ## -- Ingress TLS configuration
+      ## Add TLS configuration for the Ingress, if desired.
+      ## This example assumes you have created a TLS secret named
+      ## 'ingress-nginx-tls-cert' in the same namespace as the argo server.
+      ## The TLS secret must contain the certificate and private key for the host(s)
+      ## specified above.
+      tls:
+        - hosts:
+            - api.test.dataone.org
+          secretName: ingress-nginx-tls-cert
+
+  ## Argo Executor configuration
+  executor:
+    ## Set resource requirements
+    ## -- Resource limits and requests for the executor
+    ## Ref: https://argoproj.github.io/argo-workflows/executor/
+    resources:
+      ## Set resource requirements
+      requests:
+        ## CPU and memory requests for the workflow executor
+        memory: "1Gi"
+        cpu: "200m"
+
+      ## CPU and memory limits for the workflow executor
+      limits:
+        memory: "4Gi"
+        cpu: "1000m"
+
+  ## Artifact repository configuration
+  artifactRepository:
+    ## -- Archive the main container logs as an artifact
+    archiveLogs: false
+    ## -- Store artifact in a S3-compliant object store
+    s3:
+      ## -- Bucket name
+      bucket: argo-workflows
+
+      ## -- S3 endpoint
+      endpoint: "${RELEASE_NAME}-minio:9000"
+
+      ## Note the `key` attribute is not the actual secret, it's the PATH to
+      ## the contents in the associated secret, as defined by the `name` attribute.
+      accessKeySecret:
+        name: *passwordSecretName
+        key: rootUser
+      secretKeySecret:
+        name: *passwordSecretName
+        key: rootPassword
+
+      ## insecure will disable TLS. Primarily used for minio installs not configured with TLS
+      insecure: true
+
+## MinIO configuration
 minio:
-  auth:
-    existingSecret: "{{ .Release.Name }}-minio-credentials"
-  ## @param defaultBuckets Comma, semi-colon or space separated list of buckets to create at initialization (only in standalone mode)
-  ## e.g:
-  ## defaultBuckets: "my-bucket, my-second-bucket"
+  ## minio mode, i.e. standalone or distributed
+  mode: standalone ## other supported values are "distributed"
+
+  ## Number of MinIO containers running
+  replicas: 1
+
+  ## List of buckets to be created after minio install
+  buckets:
+    ## -- Create a bucket named "argo-workflows" for Argo Workflows artifacts
+    - name: argo-workflows
+      ## Policy to be set on the bucket [none|download|upload|public]
+      policy: none
+      ## Purge if bucket exists already
+      purge: false
+
+  ## Enable persistence using Persistent Volume Claims
+  ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
   ##
-  defaultBuckets: "argo-workflows"
-
-  image:
-    debug: true
-
   persistence:
-    existingClaim: "{{ .Release.Name }}-minio-pvc"
-    size: 10Gi
+    ## -- Enabled? True : False
+    enabled: true
 
-    dev:
-      storageClassName: "local-path"
-      accessModes:
-        - ReadWriteOnce
+  ## Use existing Secret that store following variables:
+  ##
+  ## | Chart var             | .data.<key> in Secret    |
+  ## |:----------------------|:-------------------------|
+  ## | rootUser              | rootUser                 |
+  ## | rootPassword          | rootPassword             |
+  ##
+  ## All mentioned variables will be ignored in values file.
+  ## .data.rootUser and .data.rootPassword are mandatory,
+  ## others depend on enabled status of corresponding sections.
+  existingSecret: *passwordSecretName
 
-    stage:
-      storageClassName: "csi-cephfs-sc-ephemeral"
-      accessModes:
-        - ReadWriteOnce
+  ## Configure resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ##
+  resources:
+    ## Set resource requirements
+    requests:
+      ## CPU and memory requests for minio
+      memory: "1Gi"
+      cpu: "200m"
 
-    prod:
-      storageClassName: "csi-cephfs-sc"
-      accessModes:
-        - ReadWriteOnce
+    ## CPU and memory limits for minio
+    limits:
+      memory: "2Gi"
+      cpu: "500m"

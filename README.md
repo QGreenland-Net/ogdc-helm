@@ -34,10 +34,10 @@ kubectl create namespace qgnet
 * Install the stack with helm:
 
 > [!NOTE]
-> By default, the install script uses the `dev` environment and the `qgnet` namespace.
-> You can optionally specify the environment (`dev`, `stage`, or `prod`) and namespace.
+> By default, the install script uses the `local` environment and the `qgnet` namespace.
+> You can optionally specify the environment (`local`, `dev`, or `prod`) and namespace.
 > 
-> In `dev`, a PV will be created that's attached to a local directory called
+> In `local`, a PV will be created that's attached to a local directory called
 > `ogdc-local-hostmount` where this repository is checked out. To override the
 > location of the local directory used for persistent storage, set the
 > `OGDC_PV_HOST_PATH` envvar to another location that's accessible by Rancher
@@ -45,40 +45,109 @@ kubectl create namespace qgnet
 
 **Usage:**
 
-- Default (dev environment, qgnet namespace):
+
+1. Set common variables:
+
+```sh
+export RELEASE_NAME=qgnet-ogdc
+export NAMESPACE=qgnet
+export OGDC_PV_HOST_PATH=/Users/yourname/your-pv-directory
+```
+
+2. Create the Workflow PV:
+
+```sh
+envsubst < helm/admin/workflow-pv.yaml | kubectl apply -n "$NAMESPACE" -f -
+```
+
+3. Create the Workflow PVC:
+
+```sh
+envsubst < helm/admin/workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
+```
+
+4. Create credentials for MinIO:
+```sh
+envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+```
+
+5. Perform the installation for the OGDC service
+
+- Default (local environment):
   ```
   ./scripts/install-ogdc.sh
   ```
-- Specify environment (e.g., stage) and/or namespace:
+- Specify environment (e.g., local):
   ```
-  ./scripts/install-ogdc.sh stage my-namespace
+  ./scripts/install-ogdc.sh local
   ```
-  Valid environments: `dev`, `stage`, `prod`. Namespace is optional (defaults to `qgnet`).
+  Valid environments: `local`, `dev`, `prod`.
 
-* Verify argo install.
+* Verify Argo install.
 
-First, Port-forward the argo workflows server
+First, port-forward the Argo Workflows server:
 
 ```
 ./scripts/forward-ports.sh
 ```
 
-Then, visit the argo dashboard: <http://localhost:2746>.
+Then, visit the Argo dashboard: <http://localhost:2746>.
 
 
-### Production setup
+### Dev/Production setup
 
-TODO: instructions for prod on ADC infrastructure.
+For deploying the stack on the DataONE dev cluster:
+
+1. Create the CephFS-backed PVCs (update the config in `cephfs-{release}-{function}-pvc.yaml` if needed), then apply:
+
+```sh
+export RELEASE_NAME=${RELEASE_NAME:-qgnet-ogdc}
+export NAMESPACE=${NAMESPACE:-qgnet}
+
+envsubst < helm/admin/cephfs-releasename-minio-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/cephfs-releasename-workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
+```
+
+2. Create credentials for MinIO:
+```sh
+envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+```
+
+3. Perform the installation for the OGDC service
+
+- Specify environment (e.g., dev):
+  ```
+  ./scripts/install-ogdc.sh dev
+  ```
 
 ### Uninstalling ogdc
 
 To uninstall the ogdc from the kubernetes cluster, use the
-`./scripts/uninstal-ogdc.sh` script.
+`./scripts/uninstall-ogdc.sh` script.
+
+### Cleaning up Argo CRDs
+
+The `./scripts/cleanup-argo-crds.sh` script is used to remove Argo Custom Resource Definitions (CRDs) from your cluster. 
+
+**Main usage:** This script is primarily intended for **dev/prod environments** when upgrading Argo CRDs that are managed outside of the Helm install process. It removes existing Argo CRDs and workflow resources before installing newer versions.
+
+> [!NOTE]
+> This script is **not necessary for local installations**, where Argo CRDs are managed as part of the standard Helm chart installation and upgrade process.
+
+**Usage:**
+```sh
+./scripts/cleanup-argo-crds.sh
+```
+
+This will:
+- Remove all workflow resources across all namespaces
+- Delete all Argo CRDs
+- Force remove any stuck CRDs with finalizers
 
 
 ## Troubleshooting
 
-If something is not working as expect, start by listing services in the
+If something is not working as expected, start by listing services in the
 `qgnet` namespace and confirming that `minio`, `argo-workflows-server` and
 `ogdc` services are running (prefixed with the namespace):
 
@@ -101,7 +170,7 @@ minutes!
 > so we do not run into this issue in the future?
 
 
-### local Docker image is not found by Argo
+### Local Docker image is not found by Argo
 
 If the Argo dashboard reports that a docker image that has been built locally
 (e.g., for testing purposes) is not present with a pull policy of "Never" (in
