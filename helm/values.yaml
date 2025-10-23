@@ -22,7 +22,7 @@ global:
   ## example, if the release name is 'myrelease', the value of name: would be
   ## 'myrelease-secrets'.
   ##
-  passwordsSecret: &passwordSecretName ${RELEASE_NAME}-secrets
+  passwordsSecret: &passwordSecretName "myrelease-secrets"
 
   ## @param global.defaultStorageClass Global default StorageClass for Persistent Volume(s)
   ##
