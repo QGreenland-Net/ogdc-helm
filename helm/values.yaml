@@ -22,7 +22,7 @@ global:
   ## example, if the release name is 'myrelease', the value of name: would be
   ## 'myrelease-secrets'.
   ##
-  passwordsSecret: &passwordSecretName ${RELEASE_NAME}-secrets
+  passwordsSecret: &passwordSecretName "myrelease-secrets"
 
   ## @param global.defaultStorageClass Global default StorageClass for Persistent Volume(s)
   ##
@@ -209,7 +209,7 @@ argo-workflows:
       bucket: argo-workflows
 
       ## -- S3 endpoint
-      endpoint: "${RELEASE_NAME}-minio:9000"
+      endpoint: "{{ .Release.Name }}-minio:9000"
 
       ## Note the `key` attribute is not the actual secret, it's the PATH to
       ## the contents in the associated secret, as defined by the `name` attribute.
