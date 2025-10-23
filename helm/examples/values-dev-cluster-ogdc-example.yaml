@@ -26,7 +26,7 @@ global:
   ## example, if the release name is 'myrelease', the value of name: would be
   ## 'myrelease-secrets'.
   ##
-  passwordsSecret: &passwordSecretName qgnet-ogdc-secrets
+  passwordsSecret: &passwordSecretName ${RELEASE_NAME}-secrets
 
 ## argo-workflows configuration
 ## See https://argoproj.github.io/argo-workflows/
@@ -117,6 +117,6 @@ minio:
     ## A manually managed Persistent Volume and Claim
     ## Requires persistence.enabled: true
     ## If defined, PVC must be created manually before volume will be bound
-    existingClaim: "cephfs-qgnet-ogdc-minio-pvc"
+    existingClaim: "cephfs-${RELEASE_NAME}-minio-pvc"
 
   existingSecret: *passwordSecretName
