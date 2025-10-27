@@ -15,7 +15,7 @@ concurrency:
 
 env:
   FORCE_COLOR: 3
-  # based on 'oci://ghcr.io/qgreenland-net/charts/ogdc' from values file
+  ## oci://ghcr.io/QGreenland/charts/ogdc --version [version] \
   CHART_NAME: "ogdc"
   REGISTRY: "ghcr.io"
 
@@ -88,15 +88,23 @@ jobs:
         with:
           name: "helm-chart"
 
-          # TODO: add in actual publish part here
+			- name: "Set CHART_VERSION environment variable"
+				run: |
+					CHART_VERSION=$(ls *.tgz | sed -E 's/.*-([0-9]+\.[0-9]+\.[0-9]+.*)\.tgz/\1/')
+					echo "CHART_VERSION=$CHART_VERSION" >> $GITHUB_ENV
+
+			- name: "GHCR Login"
+				run: echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+			- name: "Push Helm chart to GHCR"
+				run: |
+					for chart in ./*.tgz; do
+						helm push "$chart" oci://ghcr.io/qgreenland/charts
+					done
 
       - name: "Generate installation instructions"
         run: |
           ## 📦 Helm Chart Published
-          
-          **Chart:** ${CHART_NAME}
-          **Version:** ${CHART_VERSION}
-          **Registry:** ${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
           
           ### Installation
           
