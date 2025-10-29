@@ -27,6 +27,8 @@ if [[ "$ENV" == "local" ]]; then
     echo "Using OGDC_PV_HOST_PATH=${OGDC_PV_HOST_PATH}"
 elif [[ "$ENV" == "dev" ]]; then
     VALUES_FILE="$THIS_DIR/../helm/examples/values-dev-cluster-ogdc-example.yaml"
+elif [[ "$ENV" == "prod" ]]; then
+    VALUES_FILE="$THIS_DIR/../helm/examples/values-prod-cluster-ogdc-example.yaml"
 fi
 
 # Add repos and build deps.
