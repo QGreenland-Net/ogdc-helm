@@ -149,7 +149,7 @@ This will:
 The OGDC Helm chart is published to GHCR and can be installed directly without cloning this repository.
 
 > [!NOTE]
-> This method requires that prerequisite resources (PVs, PVCs, secrets) are already created. For local development, use the [Local dev cluster via Rancher desktop](#local-dev-cluster-via-rancher-desktop) method below.
+> This method requires that prerequisite resources (PVs, PVCs, secrets) are already created. For local development, use the [Local dev cluster via Rancher desktop](#local-dev-cluster-via-rancher-desktop) method above.
 
 **Install the latest development version:**
 
@@ -176,10 +176,10 @@ helm upgrade --install ogdc \
 **With custom values file:**
 
 ```bash
-helm upgrade --install ogdc \
-  oci://ghcr.io/qgreenland-net/charts/ogdc \
-  --version latest \
-  -f values-dev-cluster-ogdc.yaml \
+envsubst < values-dev-cluster-ogdc.yaml | helm upgrade --install ${{ env.CHART_NAME }} \
+  oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/${{ env.CHART_NAME }} \
+  --version ${VERSION} \
+  -f - \
   -n qgnet
 ```
 
