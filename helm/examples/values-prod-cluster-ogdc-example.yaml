@@ -31,7 +31,6 @@ global:
 ## argo-workflows configuration
 ## See https://argoproj.github.io/argo-workflows/
 argo-workflows:
-  singleNamespace: true
 
   ## Custom resource configuration
   crds:

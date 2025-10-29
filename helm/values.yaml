@@ -6,7 +6,7 @@
 ##
 ## Make sure you're in the correct k8s context, then:
 ##  $  helm upgrade --install ns -n ogdc -f values-dev-cluster-ogdc.yaml \
-##         oci://ghcr.io/QGreenland/charts/ogdc --version [version] \
+##         oci://ghcr.io/qgreenland-net/charts/ogdc --version [version] \
 ##             --debug --render-subchart-notes
 ##
 
