@@ -137,6 +137,7 @@ jobs:
           # Find the chart package and extract version from filename
           CHART_PACKAGE=$(ls ${{ env.CHART_NAME }}-*.tgz)
           VERSION=$(echo "$CHART_PACKAGE" | sed 's/${{ env.CHART_NAME }}-//' | sed 's/.tgz//')
+          ORG_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           
           if [ "${{ github.ref_type }}" == "tag" ]; then
             LABEL="versioned release"
