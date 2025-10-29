@@ -16,6 +16,16 @@ These services are installed to the `qgnet` kubernetes namespace by default.
 * No authentication mechanism is in place yet (TODO!)
 
 
+## Prerequisites
+
+### Argo Workflows CRDs
+
+To install OGDC-Helm, you need to have Argo Workflows Custom Resource Definitions (CRDs) installed on your cluster. Installing CRDs requires **cluster-level permissions**.
+
+**For dev/prod environments**, refer to the [DataONE k8s-cluster authorization documentation](https://github.com/DataONEorg/k8s-cluster/blob/main/authorization/custom-rolebindings/custom-rolebindings.md#qgnet-argo-workflows) for detailed instructions on installing the CRDs with proper permissions.
+
+**For local environments** (Rancher Desktop), the CRDs are typically managed as part of the Helm chart installation process.
+
 ## Getting started
 
 ### Local dev cluster via Rancher desktop
@@ -96,7 +106,7 @@ Then, visit the Argo dashboard: <http://localhost:2746>.
 
 ### Dev/Production setup
 
-For deploying the stack on the DataONE dev cluster:
+For deploying the stack on the DataONE dev/prod cluster:
 
 1. Create the CephFS-backed PVCs (update the config in `cephfs-{release}-{function}-pvc.yaml` if needed), then apply:
 
@@ -115,7 +125,7 @@ envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 
 3. Perform the installation for the OGDC service
 
-- Specify environment (e.g., dev):
+- Specify environment (e.g., dev/prod):
   ```
   ./scripts/install-ogdc.sh dev
   ```
