@@ -128,7 +128,7 @@ jobs:
           ORG_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           
           # Push to GHCR
-          helm push "${CHART_PACKAGE}" oci://${{ env.REGISTRY }}/${ORG_LOWER}}/charts
+          helm push "${CHART_PACKAGE}" oci://${{ env.REGISTRY }}/${ORG_LOWER}/charts
           
           echo "✅ Successfully pushed ${CHART_PACKAGE} to ${{ env.REGISTRY }}/${ORG_LOWER}/charts"
 
