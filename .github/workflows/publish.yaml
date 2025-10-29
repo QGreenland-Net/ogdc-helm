@@ -124,10 +124,13 @@ jobs:
           
           echo "Found chart package: $CHART_PACKAGE"
           
-          # Push to GHCR
-          helm push "${CHART_PACKAGE}" oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
+          # Convert org name to lowercase (GHCR requires lowercase)
+          ORG_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           
-          echo "✅ Successfully pushed ${CHART_PACKAGE} to ${{ env.REGISTRY }}/${{ github.repository_owner }}/charts"
+          # Push to GHCR
+          helm push "${CHART_PACKAGE}" oci://${{ env.REGISTRY }}/${ORG_LOWER}}/charts
+          
+          echo "✅ Successfully pushed ${CHART_PACKAGE} to ${{ env.REGISTRY }}/${ORG_LOWER}/charts"
 
       - name: "Generate installation instructions"
         run: |
@@ -147,13 +150,13 @@ jobs:
           **Chart:** ${{ env.CHART_NAME }}
           **Version:** \`${VERSION}\`
           **Type:** ${LABEL}
-          **Registry:** \`oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/${{ env.CHART_NAME }}\`
+          **Registry:** \`oci://${{ env.REGISTRY }}/${ORG_LOWER}/charts/${{ env.CHART_NAME }}\`
           
           ### Installation
           
           \`\`\`bash
           helm upgrade --install ${{ env.CHART_NAME }} \\
-            oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/${{ env.CHART_NAME }} \\
+            oci://${{ env.REGISTRY }}/${ORG_LOWER}/charts/${{ env.CHART_NAME }} \\
             --version ${VERSION} \\
             -n qgnet --create-namespace
           \`\`\`
@@ -167,7 +170,7 @@ jobs:
           
           # Process values file and install
           envsubst < values-dev-cluster-ogdc.yaml | helm upgrade --install ${{ env.CHART_NAME }} \\
-            oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/${{ env.CHART_NAME }} \\
+            oci://${{ env.REGISTRY }}/${ORG_LOWER}/charts/${{ env.CHART_NAME }} \\
             --version ${VERSION} \\
             -f - \\
             -n qgnet
