@@ -15,7 +15,6 @@ concurrency:
 
 env:
   FORCE_COLOR: 3
-  ## oci://ghcr.io/QGreenland-net/charts/ogdc --version [version] \
   CHART_NAME: "ogdc"
   REGISTRY: "ghcr.io"
 
@@ -83,28 +82,28 @@ jobs:
         with:
           version: "latest"
 
-			- name: "Download chart package"
-				uses: "actions/download-artifact@v4"
-				with:
-					name: "helm-chart"
+      - name: "Download chart package"
+        uses: "actions/download-artifact@v4"
+        with:
+          name: "helm-chart"
 
-			- name: "Set CHART_VERSION environment variable"
-				run: |
-					CHART_VERSION=$(grep '^version:' helm/Chart.yaml | awk '{print $2}')
-					echo "CHART_VERSION=$CHART_VERSION" >> $GITHUB_ENV
-
-			- name: "GHCR Login"
-				run: echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: "Push helm hart to GHCR"
+      - name: "Set CHART_VERSION environment variable"
         run: |
-          CHART_PACKAGE="${{ env.CHART_NAME }}-${CHART_VERSION}.tgz"
+          CHART_VERSION=$(grep '^version:' helm/Chart.yaml | awk '{print $2}')
+          echo "CHART_VERSION=$CHART_VERSION" >> $GITHUB_ENV
+
+      - name: "GHCR Login"
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+      - name: "Push Helm chart to GHCR"
+        run: |
+          CHART_PACKAGE="${{ env.CHART_NAME }}-${{ env.CHART_VERSION }}.tgz"
           
           # Push to GHCR
           helm push "${CHART_PACKAGE}" oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
           
           echo "✅ Successfully pushed ${CHART_PACKAGE} to ${{ env.REGISTRY }}/${{ github.repository_owner }}/charts"
-
 
       - name: "Generate installation instructions"
         run: |
@@ -134,8 +133,6 @@ jobs:
             -n qgnet
           \`\`\`
           EOF
-
-
 
   #######################################################################
   # GitHub release
