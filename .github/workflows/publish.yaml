@@ -36,6 +36,21 @@ jobs:
         run: |
           helm version
 
+      - name: "Determine version from git"
+        id: version
+        run: |
+          if [ "${{ github.ref_type }}" == "tag" ]; then
+            # Extract version from tag (v0.1.0 -> 0.1.0)
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "📦 Release build: version $VERSION (from tag ${{ github.ref_name }})"
+          else
+            # Use "latest" for non-tag builds
+            VERSION="latest"
+            echo "🚀 Development build: version latest"
+          fi
+          
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
       - name: "Helm dependency update"
         run: |
           cd helm
@@ -51,7 +66,12 @@ jobs:
 
       - name: "Package Helm chart"
         run: |
-          helm package helm/ --destination .
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          
+          # Package with version override (ignores Chart.yaml version)
+          helm package helm/ --destination . --version "$VERSION" --app-version "$VERSION"
+          
+          echo "✅ Packaged as ${{ env.CHART_NAME }}-${VERSION}.tgz"
 
       - name: "Upload chart package as artifact"
         uses: "actions/upload-artifact@v4"
@@ -76,30 +96,14 @@ jobs:
       - name: "Check out repository"
         uses: "actions/checkout@v5"
 
-      - name: "Set up Helm"
-        uses: "azure/setup-helm@v4"
-        with:
-          version: "latest"
+      - name: "Verify Helm is available"
+        run: |
+          helm version
 
       - name: "Download chart package"
         uses: "actions/download-artifact@v4"
         with:
           name: "helm-chart"
-
-      - name: "Determine version from git"
-        id: version
-        run: |
-          if [ "${{ github.ref_type }}" == "tag" ]; then
-            # Extract version from tag (v0.1.0 -> 0.1.0)
-            VERSION=${GITHUB_REF#refs/tags/v}
-            echo "📦 Release build: version $VERSION (from tag ${{ github.ref_name }})"
-          else
-            # Use "latest" for non-tag builds
-            VERSION="latest"
-            echo "🚀 Development build: version latest"
-          fi
-          
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: "GHCR Login"
         run: |
@@ -107,7 +111,17 @@ jobs:
 
       - name: "Push Helm chart to GHCR"
         run: |
-          CHART_PACKAGE="${{ env.CHART_NAME }}-${{ env.CHART_VERSION }}.tgz"
+          # Find the actual chart package that was created
+          CHART_PACKAGE=$(ls ${{ env.CHART_NAME }}-*.tgz)
+          
+          if [ -z "$CHART_PACKAGE" ]; then
+            echo "❌ ERROR: No chart package found!"
+            echo "Available files:"
+            ls -la
+            exit 1
+          fi
+          
+          echo "Found chart package: $CHART_PACKAGE"
           
           # Push to GHCR
           helm push "${CHART_PACKAGE}" oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
@@ -116,16 +130,34 @@ jobs:
 
       - name: "Generate installation instructions"
         run: |
+          # Find the chart package and extract version from filename
+          CHART_PACKAGE=$(ls ${{ env.CHART_NAME }}-*.tgz)
+          VERSION=$(echo "$CHART_PACKAGE" | sed 's/${{ env.CHART_NAME }}-//' | sed 's/.tgz//')
+          
+          if [ "${{ github.ref_type }}" == "tag" ]; then
+            LABEL="versioned release"
+          else
+            LABEL="latest development build"
+          fi
+          
           cat << EOF >> $GITHUB_STEP_SUMMARY
           ## 📦 Helm Chart Published
           
           **Chart:** ${{ env.CHART_NAME }}
-          **Version:** ${{ env.CHART_VERSION }}
-          **Registry:** oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/${{ env.CHART_NAME }}
+          **Version:** \`${VERSION}\`
+          **Type:** ${LABEL}
+          **Registry:** \`oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/${{ env.CHART_NAME }}\`
           
           ### Installation
           
-          **With values file (requires envsubst)**
+          \`\`\`bash
+          helm upgrade --install ${{ env.CHART_NAME }} \\
+            oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/${{ env.CHART_NAME }} \\
+            --version ${VERSION} \\
+            -n qgnet --create-namespace
+          \`\`\`
+          
+          ### With values file (requires envsubst)
           
           \`\`\`bash
           # Set environment variables first
