@@ -15,7 +15,7 @@ concurrency:
 
 env:
   FORCE_COLOR: 3
-  ## oci://ghcr.io/QGreenland/charts/ogdc --version [version] \
+  ## oci://ghcr.io/QGreenland-net/charts/ogdc --version [version] \
   CHART_NAME: "ogdc"
   REGISTRY: "ghcr.io"
 
@@ -90,42 +90,39 @@ jobs:
 
 			- name: "Set CHART_VERSION environment variable"
 				run: |
-					CHART_VERSION=$(ls *.tgz | sed -E 's/.*-([0-9]+\.[0-9]+\.[0-9]+.*)\.tgz/\1/')
+					CHART_VERSION=$(grep '^version:' helm/Chart.yaml | awk '{print $2}')
 					echo "CHART_VERSION=$CHART_VERSION" >> $GITHUB_ENV
 
 			- name: "GHCR Login"
 				run: echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
 
-			- name: "Push Helm chart to GHCR"
+			- name: "Package Helm chart"
 				run: |
-					for chart in ./*.tgz; do
-						helm push "$chart" oci://ghcr.io/qgreenland/charts
-					done
+
+          helm package helm/
+
+      - name: "Push helm hart to GHCR"
+        run: |
+          CHART_VERSION="${{ steps.chart_version.outputs.version }}"
+          CHART_PACKAGE="${{ env.CHART_NAME }}-${CHART_VERSION}.tgz"
+          
+          # Push to GHCR
+          helm push "${CHART_PACKAGE}" oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
+          
+          echo "✅ Successfully pushed ${CHART_PACKAGE} to ${{ env.REGISTRY }}/${{ github.repository_owner }}/charts"
+
 
       - name: "Generate installation instructions"
         run: |
-          ## 📦 Helm Chart Published
-          
-          ### Installation
-          
-          \`\`\`bash
-          # Make sure you're in the correct k8s context, then:
-          helm upgrade --install ${CHART_NAME} \\
-            oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/${CHART_NAME} \\
-            --version ${CHART_VERSION} \\
-            -n qgnet --create-namespace
-          \`\`\`
-          
-          ### Using with values file
-          
-          \`\`\`bash
-          helm upgrade --install ${CHART_NAME} \\
-            oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/${CHART_NAME} \\
-            --version ${CHART_VERSION} \\
-            -f values-dev-cluster-ogdc.yaml \\
-            -n qgnet
-          \`\`\`
-          EOF
+          CHART_VERSION="${{ steps.chart_version.outputs.version }}"
+          echo "## Installation Instructions" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To install this chart, use:" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "helm upgrade --install ${{ env.CHART_NAME }} \\" >> $GITHUB_STEP_SUMMARY
+          echo "  oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/${{ env.CHART_NAME }} \\" >> $GITHUB_STEP_SUMMARY
+          echo "  --version ${CHART_VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY 
 
   #######################################################################
   # GitHub release
