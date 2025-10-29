@@ -15,7 +15,7 @@ concurrency:
 
 env:
   FORCE_COLOR: 3
-  CHART_NAME: "ogdc"
+  CHART_NAME: "ogdc-helm"
   REGISTRY: "ghcr.io"
 
 jobs:
@@ -86,10 +86,20 @@ jobs:
         with:
           name: "helm-chart"
 
-      - name: "Set CHART_VERSION environment variable"
+      - name: "Determine version from git"
+        id: version
         run: |
-          CHART_VERSION=$(grep '^version:' helm/Chart.yaml | awk '{print $2}')
-          echo "CHART_VERSION=$CHART_VERSION" >> $GITHUB_ENV
+          if [ "${{ github.ref_type }}" == "tag" ]; then
+            # Extract version from tag (v0.1.0 -> 0.1.0)
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "📦 Release build: version $VERSION (from tag ${{ github.ref_name }})"
+          else
+            # Use "latest" for non-tag builds
+            VERSION="latest"
+            echo "🚀 Development build: version latest"
+          fi
+          
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: "GHCR Login"
         run: |
