@@ -32,10 +32,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: "Set up Helm"
-        uses: "azure/setup-helm@v4"
-        with:
-          version: "v3.16.2"
+      - name: "Verify Helm is available"
+        run: |
+          helm version
 
       - name: "Helm dependency update"
         run: |
