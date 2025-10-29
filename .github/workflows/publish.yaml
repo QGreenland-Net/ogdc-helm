@@ -125,20 +125,18 @@ jobs:
           
           ### Installation
           
-          \`\`\`bash
-          helm upgrade --install ${{ env.CHART_NAME }} \\
-            oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/${{ env.CHART_NAME }} \\
-            --version ${{ env.CHART_VERSION }} \\
-            -n qgnet --create-namespace
-          \`\`\`
-          
-          ### With values file
+          **With values file (requires envsubst)**
           
           \`\`\`bash
-          helm upgrade --install ${{ env.CHART_NAME }} \\
+          # Set environment variables first
+          export RELEASE_NAME=qgnet-ogdc
+          export NAMESPACE=qgnet
+          
+          # Process values file and install
+          envsubst < values-dev-cluster-ogdc.yaml | helm upgrade --install ${{ env.CHART_NAME }} \\
             oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts/${{ env.CHART_NAME }} \\
-            --version ${{ env.CHART_VERSION }} \\
-            -f values-dev-cluster-ogdc.yaml \\
+            --version ${VERSION} \\
+            -f - \\
             -n qgnet
           \`\`\`
           EOF
