@@ -15,7 +15,7 @@ concurrency:
 
 env:
   FORCE_COLOR: 3
-  CHART_NAME: "ogdc-helm"
+  CHART_NAME: "ogdc"
   REGISTRY: "ghcr.io"
 
 jobs:
