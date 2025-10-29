@@ -144,6 +144,48 @@ This will:
 - Delete all Argo CRDs
 - Force remove any stuck CRDs with finalizers
 
+### Installing from GitHub Container Registry (GHCR)
+
+The OGDC Helm chart is published to GHCR and can be installed directly without cloning this repository.
+
+> [!NOTE]
+> This method requires that prerequisite resources (PVs, PVCs, secrets) are already created. For local development, use the [Local dev cluster via Rancher desktop](#local-dev-cluster-via-rancher-desktop) method below.
+
+**Install the latest development version:**
+
+```bash
+# Create namespace
+kubectl create namespace qgnet
+
+# Install chart
+helm upgrade --install ogdc \
+  oci://ghcr.io/qgreenland-net/charts/ogdc \
+  --version latest \
+  -n qgnet
+```
+
+**Install a specific release version:**
+
+```bash
+helm upgrade --install ogdc \
+  oci://ghcr.io/qgreenland-net/charts/ogdc \
+  --version 0.1.0 \
+  -n qgnet
+```
+
+**With custom values file:**
+
+```bash
+helm upgrade --install ogdc \
+  oci://ghcr.io/qgreenland-net/charts/ogdc \
+  --version latest \
+  -f values-dev-cluster-ogdc.yaml \
+  -n qgnet
+```
+
+**Available versions:**
+- `latest` - Latest development build from main branch
+- `0.1.0`, `0.2.0`, etc. - Specific release versions (created from git tags)
 
 ## Troubleshooting
 
