@@ -1,4 +1,5 @@
 helm/charts
 helm/Chart.lock
 ogdc-local-hostmount/
+OGDC_PV_HOST_PATH/
 .DS_Store
