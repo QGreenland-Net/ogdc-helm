@@ -1,9 +1,10 @@
 # Creates a persistent volume claim for use by workflow
 #
-# This should be done only one time, separately from the helm install/upgrade cycle
+# This should be done only one time, separately from the helm install/upgrade cycle.
 #
 # Update the RELEASE_NAME and NAMESPACE variables below to match your release name, using envsubst or
 # manually replacing ${RELEASE_NAME} and ${NAMESPACE} with your release name and namespace.
+# Update additional config as required by your environment.
 #
 # NOTE: ensure that a PersistentVolume has already been created before creating
 #       the PersistentVolumeClaim!
@@ -19,12 +20,16 @@ metadata:
   ## Use your own namespace
   namespace: ${NAMESPACE}
   labels:
+    ## This label is used by Velero to exclude the PVC from backups
+    ## Defaults to true
     velero.io/exclude-from-backup: "true"
 spec:
   ## See https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes
   accessModes:
     - ReadWriteMany
-  ## Use your own storage class
+  ## Specify appropriate dynamic storage class to create the PVC
+  ## This example uses the CephFS storage class defined in the k8s-cluster repo
+  ## See https://github.com/DataONEorg/k8s-cluster/blob/main/storage/storage.md
   storageClassName: csi-cephfs-sc-ephemeral
   resources:
     requests:
