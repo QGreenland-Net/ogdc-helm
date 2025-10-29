@@ -44,9 +44,10 @@ jobs:
             VERSION=${GITHUB_REF#refs/tags/v}
             echo "📦 Release build: version $VERSION (from tag ${{ github.ref_name }})"
           else
-            # Use "latest" for non-tag builds
-            VERSION="latest"
-            echo "🚀 Development build: version latest"
+            # Use Chart.yaml version with -latest suffix for non-tag builds
+            CHART_VERSION=$(grep '^version:' helm/Chart.yaml | awk '{print $2}' | tr -d '"')
+            VERSION="${CHART_VERSION}-latest"
+            echo "🚀 Development build: version $VERSION (from Chart.yaml)"
           fi
           
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
