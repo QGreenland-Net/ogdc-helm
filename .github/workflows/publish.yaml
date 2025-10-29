@@ -1,0 +1,207 @@
+name: "Build and publish ogdc-helm chart"
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+*"
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+env:
+  FORCE_COLOR: 3
+  CHART_NAME: "ogdc"
+  REGISTRY: "ghcr.io"
+
+jobs:
+  #######################################################################
+  # Build & Test Helm Chart
+  #######################################################################
+  build-helm:
+    name: "Build and test Helm chart"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Check out repository"
+        uses: "actions/checkout@v5"
+        with:
+          fetch-depth: 0
+
+      - name: "Verify Helm is available"
+        run: |
+          helm version
+
+      - name: "Determine version from git"
+        id: version
+        run: |
+          if [ "${{ github.ref_type }}" == "tag" ]; then
+            # Extract version from tag (v0.1.0 -> 0.1.0)
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "📦 Release build: version $VERSION (from tag ${{ github.ref_name }})"
+          else
+            # Use Chart.yaml version with -latest suffix for non-tag builds
+            CHART_VERSION=$(grep '^version:' helm/Chart.yaml | awk '{print $2}' | tr -d '"')
+            VERSION="${CHART_VERSION}-latest"
+            echo "🚀 Development build: version $VERSION (from Chart.yaml)"
+          fi
+          
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: "Helm dependency update"
+        run: |
+          cd helm
+          helm dependency update
+
+      - name: "Lint Helm chart"
+        run: |
+          helm lint helm/
+
+      - name: "Template Helm chart"
+        run: |
+          helm template test helm/ --debug
+
+      - name: "Package Helm chart"
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          
+          # Package with version override (ignores Chart.yaml version)
+          helm package helm/ --destination . --version "$VERSION" --app-version "$VERSION"
+          
+          echo "✅ Packaged as ${{ env.CHART_NAME }}-${VERSION}.tgz"
+
+      - name: "Upload chart package as artifact"
+        uses: "actions/upload-artifact@v4"
+        with:
+          name: "helm-chart"
+          path: "*.tgz"
+
+  #######################################################################
+  # Publish Helm Chart to GHCR
+  #######################################################################
+  publish-helm:
+    # Only push on tag or push to main.
+    if: github.ref_type == 'tag' || github.ref == 'refs/heads/main'
+    name: "Push Helm chart to GHCR"
+    runs-on: "ubuntu-latest"
+    needs: ["build-helm"]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: "Check out repository"
+        uses: "actions/checkout@v5"
+
+      - name: "Verify Helm is available"
+        run: |
+          helm version
+
+      - name: "Download chart package"
+        uses: "actions/download-artifact@v4"
+        with:
+          name: "helm-chart"
+
+      - name: "GHCR Login"
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+      - name: "Push Helm chart to GHCR"
+        run: |
+          # Find the actual chart package that was created
+          CHART_PACKAGE=$(ls ${{ env.CHART_NAME }}-*.tgz)
+          
+          if [ -z "$CHART_PACKAGE" ]; then
+            echo "❌ ERROR: No chart package found!"
+            echo "Available files:"
+            ls -la
+            exit 1
+          fi
+          
+          echo "Found chart package: $CHART_PACKAGE"
+          
+          # Convert org name to lowercase (GHCR requires lowercase)
+          ORG_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          
+          # Push to GHCR
+          helm push "${CHART_PACKAGE}" oci://${{ env.REGISTRY }}/${ORG_LOWER}/charts
+          
+          echo "✅ Successfully pushed ${CHART_PACKAGE} to ${{ env.REGISTRY }}/${ORG_LOWER}/charts"
+
+      - name: "Generate installation instructions"
+        run: |
+          # Find the chart package and extract version from filename
+          CHART_PACKAGE=$(ls ${{ env.CHART_NAME }}-*.tgz)
+          VERSION=$(echo "$CHART_PACKAGE" | sed 's/${{ env.CHART_NAME }}-//' | sed 's/.tgz//')
+          ORG_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          
+          if [ "${{ github.ref_type }}" == "tag" ]; then
+            LABEL="versioned release"
+          else
+            LABEL="latest development build"
+          fi
+          
+          cat << EOF >> $GITHUB_STEP_SUMMARY
+          ## 📦 Helm Chart Published
+          
+          **Chart:** ${{ env.CHART_NAME }}
+          **Version:** \`${VERSION}\`
+          **Type:** ${LABEL}
+          **Registry:** \`oci://${{ env.REGISTRY }}/${ORG_LOWER}/charts/${{ env.CHART_NAME }}\`
+          
+          ### Installation
+          
+          \`\`\`bash
+          helm upgrade --install ${{ env.CHART_NAME }} \\
+            oci://${{ env.REGISTRY }}/${ORG_LOWER}/charts/${{ env.CHART_NAME }} \\
+            --version ${VERSION} \\
+            -n qgnet --create-namespace
+          \`\`\`
+          
+          ### With values file (requires envsubst)
+          
+          \`\`\`bash
+          # Set environment variables first
+          export RELEASE_NAME=qgnet-ogdc
+          export NAMESPACE=qgnet
+          
+          # Process values file and install
+          envsubst < values-dev-cluster-ogdc.yaml | helm upgrade --install ${{ env.CHART_NAME }} \\
+            oci://${{ env.REGISTRY }}/${ORG_LOWER}/charts/${{ env.CHART_NAME }} \\
+            --version ${VERSION} \\
+            -f - \\
+            -n qgnet
+          \`\`\`
+          EOF
+
+  #######################################################################
+  # GitHub release
+  #######################################################################
+  publish-gh-release:
+    # Only publish a GH release when publish-helm task is complete
+    # and the ref type is a tag (e.g., v0.1.0).
+    if: github.ref_type == 'tag'
+    name: "Create GitHub release"
+    needs: ["publish-helm"]
+    runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v5"
+
+      - name: "Download chart package"
+        uses: "actions/download-artifact@v4"
+        with:
+          name: "helm-chart"
+
+      - name: "Release"
+        uses: "softprops/action-gh-release@v2"
+        with:
+          generate_release_notes: true
+          files: "*.tgz"
