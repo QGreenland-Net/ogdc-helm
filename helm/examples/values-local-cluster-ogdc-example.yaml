@@ -4,9 +4,9 @@
 ##
 ##  helm upgrade --install ogdc --debug -n qgnet --create-namespace \
 ##                          -f ./helm/examples/values-dev-cluster-ogdc-example.yaml \
-##                          oci://ghcr.io/qgreenland-net/charts/ogdc-helm --version [version]
+##                          oci://ghcr.io/qgreenland-net/charts/ogdc --version [version]
 ##
-## (or to install from local helm chart code, replace: oci://ghcr.io/qgreenland-net/charts/ogdc-helm
+## (or to install from local helm chart code, replace: oci://ghcr.io/qgreenland-net/charts/ogdc
 ##  with: ./helm)
 ## see values.yaml for full documentation on the following parameters
 ##
