@@ -1,9 +1,9 @@
-## override values.yaml with values to use for running on the NCEAS dev cluster
+## override values.yaml with values to use for running on the NCEAS prod cluster
 ##
 ## example:
 ##
 ##  helm upgrade --install ogdc --debug -n qgnet \
-##                          -f ./helm/examples/values-dev-cluster-ogdc-example.yaml \
+##                          -f ./helm/examples/values-prod-cluster-ogdc-example.yaml \
 ##                          oci://ghcr.io/qgreenland-net/charts/ogdc --version [version]
 ##
 ## (or to install from local helm chart code, replace:
@@ -26,7 +26,7 @@ global:
   ## example, if the release name is 'myrelease', the value of name: would be
   ## 'myrelease-secrets'.
   ##
-  passwordsSecret: &passwordSecretName ${RELEASE_NAME}-secrets
+  passwordsSecret: &passwordSecretName qgnet-ogdc-secrets
 
 ## argo-workflows configuration
 ## See https://argoproj.github.io/argo-workflows/
@@ -70,7 +70,7 @@ argo-workflows:
       ## You may need to add multiple hosts if you have multiple DNS names that map to the
       ## same service.
       hosts:
-        - api.test.dataone.org
+        - api.dataone.org
       ## -- Ingress endpoint paths
       ## If you are using a path other than '/', make sure to also set
       ## server.baseHref to match!
@@ -90,7 +90,7 @@ argo-workflows:
       ## specified above.
       tls:
         - hosts:
-            - api.test.dataone.org
+            - api.dataone.org
           secretName: ingress-nginx-tls-cert
 
   ## Artifact repository configuration## Artifact repository configuration
@@ -117,6 +117,6 @@ minio:
     ## A manually managed Persistent Volume and Claim
     ## Requires persistence.enabled: true
     ## If defined, PVC must be created manually before volume will be bound
-    existingClaim: "cephfs-${RELEASE_NAME}-minio-pvc"
+    existingClaim: "cephfs-qgnet-ogdc-minio-pvc"
 
   existingSecret: *passwordSecretName
