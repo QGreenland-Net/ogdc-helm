@@ -1,0 +1,13 @@
+[tool.bumpversion]
+current_version = "0.1.0"
+commit = false
+tag = false
+message = "Bump version: {current_version} → {new_version}"
+
+[[tool.bumpversion.files]]
+filename = "helm/Chart.yaml"
+
+[[tool.bumpversion.files]]
+filename = "CHANGELOG.md"
+search = "## NEXT_VERSION"
+replace = "## v{new_version} ({now:%Y-%m-%d})"
