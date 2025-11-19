@@ -187,6 +187,40 @@ envsubst < values-dev-cluster-ogdc.yaml | helm upgrade --install ${{ env.CHART_N
 - `latest` - Latest development build from main branch
 - `0.1.0`, `0.2.0`, etc. - Specific release versions (created from git tags)
 
+
+## Versioning and Releases
+
+Version management and the creation of release tags are automated using **bump-my-version**.
+
+* **Documentation:** [https://callowayproject.github.io/bump-my-version/](https://callowayproject.github.io/bump-my-version/)
+
+Contributors should **not** manually update version numbers (e.g., in `helm/Chart.yaml`) or create git tags. All official version changes should be performed through this tool.
+
+### How to Create a New Release
+
+To perform a version bump and create a new release:
+
+1.  Ensure all changes for the release are outlined in the CHANGELOG with the `# NEXT_VERSION` header. 
+2.  Use the `bump-my-version` command followed by the part you wish to increment (`patch` or `minor`):
+    * To bump the **patch** version (e.g., 0.1.0 → 0.1.1):
+        ```bash
+        bump-my-version patch
+        ```
+    * To bump the **minor** version (e.g., 0.1.0 → 0.2.0):
+        ```bash
+        bump-my-version minor
+        ```
+3.  The command will:
+    * Update the version in all configured files (e.g., `helm/Chart.yaml`).
+    * Create a commit with the configured message.
+    * Create a new git tag corresponding to the new version (e.g., `v0.2.0`).
+4.  Push the new commit and the new tag to the repository:
+    ```bash
+    git push && git push --tags
+    ```
+5.  This new tag will typically trigger a CI/CD workflow (e.g., GitHub Actions) to publish the new chart version to the GitHub Container Registry (GHCR).
+
+
 ## Troubleshooting
 
 If something is not working as expected, start by listing services in the
