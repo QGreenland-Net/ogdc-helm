@@ -200,7 +200,7 @@ Contributors should **not** manually update version numbers (e.g., in `helm/Char
 
 To perform a version bump and create a new release:
 
-1.  Ensure all changes for the release are outlined in the CHANGELOG with the `# NEXT_VERSION` header. 
+1.  Ensure all changes for the release are outlined in the CHANGELOG with the `## NEXT_VERSION` header. 
 2.  Use the `bump-my-version` command followed by the part you wish to increment (`patch` or `minor`):
     * To bump the **patch** version (e.g., 0.1.0 → 0.1.1):
         ```bash
