@@ -99,3 +99,10 @@ minio:
 
 
   existingSecret: *passwordSecretName
+
+# Ensures that local image of ogdc-service is used.
+# TODO: make deployment tag and this config dependent on env
+image:
+  repository: ogdc-service
+  tag: local
+  pullPolicy: Never

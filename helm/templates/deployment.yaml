@@ -1,0 +1,23 @@
+# Template from: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#creating-a-deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ogdc-service-deployment
+  labels:
+    app: ogdc-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ogdc-service
+  template:
+    metadata:
+      labels:
+        app: ogdc-service
+    spec:
+      containers:
+      - name: ogdc-service
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        ports:
+        - containerPort: 8000
+          name: ogdc-api-port
