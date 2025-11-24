@@ -212,13 +212,10 @@ To perform a version bump and create a new release:
         ```
 3.  The command will:
     * Update the version in all configured files (e.g., `helm/Chart.yaml`).
-    * Create a commit with the configured message.
-    * Create a new git tag corresponding to the new version (e.g., `v0.2.0`).
-4.  Push the new commit and the new tag to the repository:
-    ```bash
-    git push && git push --tags
-    ```
-5.  This new tag will typically trigger a CI/CD workflow (e.g., GitHub Actions) to publish the new chart version to the GitHub Container Registry (GHCR).
+
+At this point bump-my-version has done it's job so you can create a tag and commit message for the new version.
+-  Push the tag and commit that you created. 
+-  This new tag will typically trigger a CI/CD workflow (e.g., GitHub Actions) to publish the new chart version to the GitHub Container Registry (GHCR).
 
 
 ## Troubleshooting
