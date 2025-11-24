@@ -3,6 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ogdc-service-service
+  namespace: {{ .Release.Namespace }}
 spec:
   selector:
     app: ogdc-service
