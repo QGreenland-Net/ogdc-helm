@@ -8,7 +8,7 @@ build:
     push: false
 
   artifacts:
-    - image: ogdc-service
+    - image: ogdc-runner
       # https://skaffold.dev/docs/builders/builder-types/docker/
       context: ../ogdc-runner/
       sync:
@@ -27,7 +27,7 @@ build:
         cacheFrom:
           # Local Docker builder replaces cache references to the artifact image with
           # the tagged image reference, useful for caching from the previous build.
-          - ogdc-service
+          - ogdc-runner
 
 deploy:
   helm:
