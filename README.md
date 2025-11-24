@@ -81,6 +81,21 @@ envsubst < helm/admin/workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
+#### Using skaffold
+
+[Skaffold](https://skaffold.dev) can be used to install the OGDC and watch for
+changes in a local environment:
+
+```
+skaffold dev
+```
+
+This will build and deploy the stack to rancher desktop and watch the
+ogdc-runner source for changes. If changes are made, the stack will be rebuilt
+and redeployed to rancher desktop.
+
+#### Manual installation
+
 5. Perform the installation for the OGDC service
 
 - Default (local environment):
