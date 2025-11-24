@@ -84,10 +84,10 @@ envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 #### Using skaffold
 
 [Skaffold](https://skaffold.dev) can be used to install the OGDC and watch for
-changes in a local environment:
+changes in a local environment. Use the `run-local.sh` script to use skaffold:
 
 ```
-skaffold dev
+./scripts/run-local.sh
 ```
 
 This will build and deploy the stack to rancher desktop and watch the
