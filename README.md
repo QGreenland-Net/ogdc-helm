@@ -194,7 +194,7 @@ Version management and the creation of release tags are automated using **bump-m
 
 * **Documentation:** [https://callowayproject.github.io/bump-my-version/](https://callowayproject.github.io/bump-my-version/)
 
-Contributors should **not** manually update version numbers (e.g., in `helm/Chart.yaml`) or create git tags. All official version changes should be performed through this tool.
+Contributors should **not** manually update version numbers (e.g., in `helm/Chart.yaml`). All official version changes should be performed through this tool.
 
 ### How to Create a New Release
 
