@@ -23,7 +23,7 @@ build:
           - src: ".git/**/*"
             dest: "/ogdc_runner/"
       docker:
-        dockerfile: Dockerfile-service
+        dockerfile: Dockerfile
         cacheFrom:
           # Local Docker builder replaces cache references to the artifact image with
           # the tagged image reference, useful for caching from the previous build.
