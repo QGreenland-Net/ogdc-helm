@@ -16,12 +16,6 @@ build:
         manual:
           - src: "src/**/*"
             dest: "/ogdc_runner/"
-          # Sync .git because it is required for the build, and if it is not
-          # manually synced then every change to the git history will trigger a
-          # re-build of the application.
-          # TODO: remove reliance on .git (see Dockerfile-service for details on why)
-          - src: ".git/**/*"
-            dest: "/ogdc_runner/"
       docker:
         dockerfile: Dockerfile
         cacheFrom:
