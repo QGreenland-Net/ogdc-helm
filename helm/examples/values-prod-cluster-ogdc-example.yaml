@@ -120,3 +120,7 @@ minio:
     existingClaim: "cephfs-qgnet-ogdc-minio-pvc"
 
   existingSecret: *passwordSecretName
+
+image:
+  repository: ogdc-runner
+  tag: latest
