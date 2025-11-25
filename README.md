@@ -58,6 +58,11 @@ kubectl create namespace qgnet
 
 1. Set common variables:
 
+> [!NOTE]
+> for local development, the `RELEASE_NAME` is always expected to be
+> `qgnet-ogdc` and the `NAMESPACE` is expected to `qgnet`. These values are
+> expected by `skaffold` (see `skaffold.yaml`).
+
 ```sh
 export RELEASE_NAME=qgnet-ogdc
 export NAMESPACE=qgnet

@@ -36,17 +36,7 @@ deploy:
         namespace: qgnet
         chartPath: ./helm
         valuesFiles:
-          # NOTE: the yaml file below is expected to be pre-processed with
-          # `envsubst` to subsitute in envvars. Below, we use `setValues` to set
-          # appropriate values for those.
-          # TODO: remove the use of envvars in local cluster config
           - ./helm/examples/values-local-cluster-ogdc-example.yaml
-        setValues:
-          # Set values that need to be for local development
-          global.passwordsSecret: qgnet-ogdc-secrets
-          argo-workflows.artifactRepository.accessKeySecret.name: qgnet-ogdc-secrets
-          argo-workflows.artifactRepository.secretKeySecret.name: qgnet-ogdc-secrets
-          minio.existingSecret: qgnet-ogdc-secrets
 
 portForward:
   - resourceType: service
