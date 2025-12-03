@@ -22,3 +22,8 @@ spec:
         ports:
         - containerPort: 8000
           name: ogdc-api-port
+        env:
+        - name: "ENVIRONMENT"
+          value: {{ .Values.environment }}
+        - name: "OGDC_RUNNER_IMAGE_TAG"
+          value: {{ .Values.image.tag }}

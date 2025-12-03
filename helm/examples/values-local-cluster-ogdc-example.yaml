@@ -95,6 +95,8 @@ minio:
 
 # Ensures that local image of ogdc-service is used.
 image:
-  repository: ogdc-runner
+  repository: "ogdc-runner"
   tag: local
   pullPolicy: Never
+
+environment: "local"

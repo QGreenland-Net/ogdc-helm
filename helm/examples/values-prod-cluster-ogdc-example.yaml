@@ -81,7 +81,7 @@ argo-workflows:
       pathType: ImplementationSpecific
       ## -- Ingress service backend configuration
       ## This is the port for the argo server service.
-      servicePort: 2746
+      servicePort: 8000
       ## -- Ingress TLS configuration
       ## Add TLS configuration for the Ingress, if desired.
       ## This example assumes you have created a TLS secret named
@@ -122,5 +122,7 @@ minio:
   existingSecret: *passwordSecretName
 
 image:
-  repository: ogdc-runner
+  repository: "ghcr.io/qgreenland-net/ogdc-runner"
   tag: latest
+
+environment: "prod"

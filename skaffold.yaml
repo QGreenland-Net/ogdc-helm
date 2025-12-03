@@ -29,6 +29,8 @@ deploy:
       - name: qgnet-ogdc
         namespace: qgnet
         chartPath: ./helm
+        setValueTemplates:
+          image.tag: "{{.IMAGE_TAG_ogdc_runner}}"
         valuesFiles:
           - ./helm/examples/values-local-cluster-ogdc-example.yaml
 
