@@ -91,6 +91,12 @@ envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 [Skaffold](https://skaffold.dev) can be used to install the OGDC and watch for
 changes in a local environment. Use the `run-local.sh` script to use skaffold:
 
+
+> [!NOTE]
+> MacOS users may find that `brew` installs an old version of skaffold that may
+> not work with this project's configuration. We recommend installing skaffold
+> from source for the latest version.
+
 ```
 ./scripts/run-local.sh
 ```
