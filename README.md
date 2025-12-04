@@ -105,31 +105,6 @@ This will build and deploy the stack to rancher desktop and watch the
 ogdc-runner source for changes. If changes are made, the stack will be rebuilt
 and redeployed to rancher desktop.
 
-#### Manual installation
-
-5. Perform the installation for the OGDC service
-
-- Default (local environment):
-  ```
-  ./scripts/install-ogdc.sh
-  ```
-- Specify environment (e.g., local):
-  ```
-  ./scripts/install-ogdc.sh local
-  ```
-  Valid environments: `local`, `dev`, `prod`.
-
-* Verify Argo install.
-
-First, port-forward the Argo Workflows server:
-
-```
-./scripts/forward-ports.sh
-```
-
-Then, visit the Argo dashboard: <http://localhost:2746>.
-
-
 ### Dev/Production setup
 
 For deploying the stack on the DataONE dev/prod cluster:
