@@ -7,6 +7,12 @@ build:
   local:
     push: false
 
+  # Configures skaffold to push the image with the sha256 as the tag, in
+  # addition to `latest`.
+  # See: https://skaffold.dev/docs/taggers/#sha256-uses-latest-to-tag-images
+  tagPolicy:
+    sha256: {}
+
   artifacts:
     - image: ogdc-runner
       # https://skaffold.dev/docs/builders/builder-types/docker/
