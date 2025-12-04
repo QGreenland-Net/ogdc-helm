@@ -1,0 +1,53 @@
+# https://skaffold.dev/docs/references/yaml/
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: ogdc
+build:
+  local:
+    push: false
+
+  # Configures skaffold to push the image with the sha256 as the tag, in
+  # addition to `latest`.
+  # See: https://skaffold.dev/docs/taggers/#sha256-uses-latest-to-tag-images
+  tagPolicy:
+    sha256: {}
+
+  artifacts:
+    - image: ogdc-runner
+      # https://skaffold.dev/docs/builders/builder-types/docker/
+      context: ../ogdc-runner/
+      sync:
+        # See: https://skaffold.dev/docs/filesync/#manual-sync-mode
+        manual:
+          - src: "src/**/*"
+            dest: "/ogdc_runner/"
+      docker:
+        dockerfile: Dockerfile
+        cacheFrom:
+          # Local Docker builder replaces cache references to the artifact image with
+          # the tagged image reference, useful for caching from the previous build.
+          - ogdc-runner
+
+deploy:
+  helm:
+    releases:
+      - name: qgnet-ogdc
+        namespace: qgnet
+        chartPath: ./helm
+        setValueTemplates:
+          image.tag: "{{.IMAGE_TAG_ogdc_runner}}"
+        valuesFiles:
+          - ./helm/examples/values-local-cluster-ogdc-example.yaml
+
+portForward:
+  - resourceType: service
+    resourceName: ogdc-service-service
+    namespace: qgnet
+    port: 8000
+    localPort: 8000
+  - resourceType: service
+    resourceName: qgnet-ogdc-argo-workflows-server
+    namespace: qgnet
+    port: 2746
+    localPort: 2746

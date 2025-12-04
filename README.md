@@ -58,6 +58,11 @@ kubectl create namespace qgnet
 
 1. Set common variables:
 
+> [!NOTE]
+> for local development, the `RELEASE_NAME` is always expected to be
+> `qgnet-ogdc` and the `NAMESPACE` is expected to `qgnet`. These values are
+> expected by `skaffold` (see `skaffold.yaml`).
+
 ```sh
 export RELEASE_NAME=qgnet-ogdc
 export NAMESPACE=qgnet
@@ -81,28 +86,24 @@ envsubst < helm/admin/workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
-5. Perform the installation for the OGDC service
+#### Using skaffold
 
-- Default (local environment):
-  ```
-  ./scripts/install-ogdc.sh
-  ```
-- Specify environment (e.g., local):
-  ```
-  ./scripts/install-ogdc.sh local
-  ```
-  Valid environments: `local`, `dev`, `prod`.
+[Skaffold](https://skaffold.dev) can be used to install the OGDC and watch for
+changes in a local environment. Use the `run-local.sh` script to use skaffold:
 
-* Verify Argo install.
 
-First, port-forward the Argo Workflows server:
+> [!NOTE]
+> MacOS users may find that `brew` installs an old version of skaffold that may
+> not work with this project's configuration. We recommend installing skaffold
+> from source for the latest version.
 
 ```
-./scripts/forward-ports.sh
+./scripts/run-local.sh
 ```
 
-Then, visit the Argo dashboard: <http://localhost:2746>.
-
+This will build and deploy the stack to rancher desktop and watch the
+ogdc-runner source for changes. If changes are made, the stack will be rebuilt
+and redeployed to rancher desktop.
 
 ### Dev/Production setup
 

@@ -1,0 +1,32 @@
+# Template from: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#creating-a-deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ogdc-service-deployment
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: ogdc-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ogdc-service
+  template:
+    metadata:
+      labels:
+        app: ogdc-service
+    spec:
+      containers:
+      - name: ogdc-service
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        ports:
+        - containerPort: 8000
+          name: ogdc-api-port
+        env:
+        - name: "ENVIRONMENT"
+          value: {{ .Values.environment }}
+        - name: "OGDC_RUNNER_IMAGE_TAG"
+          value: {{ .Values.image.tag }}
+        - name: "ARGO_WORKFLOWS_SERVICE_URL"
+          # http://qgnet-ogdc-argo-workflows-server.qgnet.svc.cluster.local:2746
+          value: "http://{{ .Release.Name }}-argo-workflows-server.{{ .Release.Namespace }}.svc.cluster.local:2746"

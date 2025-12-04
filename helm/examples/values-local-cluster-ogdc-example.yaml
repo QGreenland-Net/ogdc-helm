@@ -19,17 +19,10 @@ global:
   ## (Note the actual key passwordsSecret is not used anywhere; only the yaml anchor/alias
   ##  &passwordSecretName. IF YOU OVERRIDE THIS VALUE IN ANOTHER VALUES-OVERLAY FILE, YOU ALSO
   ## NEED TO OVERRIDE THE VALUES THAT USE THIS ANCHOR - search this file for 'passwordSecretName')
-  ##
-  ## 
-  ## 1. Define the release name on the command line:
-  ##     $  RELEASE_NAME=my-release  envsubst < helm/examples/values-dev-cluster-ogdc-example.yaml | kubectl apply -n <mynamespace> -f -
-  ##
-  ##     # if this results in "command not found: envsubst", you can install envsubst (e.g. on Mac OS:
-  ##        $  brew install gettext && brew link --force gettext
-  ##
-  ## 2. Alternatively, you can simply replace "${RELEASE_NAME}" in the file below 
-  ##
-  passwordsSecret: &passwordSecretName ${RELEASE_NAME}-secrets
+  ## NOTE: in local development, the release name is expected to be
+  ## `qgnet-ogdc`. If this changes, the value here should be updated:
+  ## `{RELEASE_NAME}-secrets`.
+  passwordsSecret: &passwordSecretName qgnet-ogdc-secrets
 
   ## @param global.defaultStorageClass Global default StorageClass for Persistent Volume(s)
   ##
@@ -99,3 +92,11 @@ minio:
 
 
   existingSecret: *passwordSecretName
+
+# Ensures that local image of ogdc-service is used.
+image:
+  repository: "ogdc-runner"
+  tag: latest
+  pullPolicy: Never
+
+environment: "local"

@@ -273,3 +273,7 @@ minio:
     limits:
       memory: "2Gi"
       cpu: "500m"
+
+image:
+  repository: ogdc-runner
+  tag: latest

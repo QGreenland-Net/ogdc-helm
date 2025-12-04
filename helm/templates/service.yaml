@@ -1,0 +1,14 @@
+# From: https://kubernetes.io/docs/concepts/services-networking/service/
+apiVersion: v1
+kind: Service
+metadata:
+  name: ogdc-service-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: ogdc-service
+  ports:
+  - name: ogdc-service-port
+    protocol: TCP
+    port: 8000
+    targetPort: 8000
