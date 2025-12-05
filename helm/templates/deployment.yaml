@@ -26,6 +26,9 @@ spec:
         ports:
         - containerPort: 8000
           name: ogdc-api-port
+        envFrom:
+        - secretRef:
+            name: "{{ .Release.Name }}-ogdc-api-secrets"
         env:
         - name: "ENVIRONMENT"
           value: {{ .Values.environment }}
