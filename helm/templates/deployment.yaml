@@ -19,6 +19,10 @@ spec:
       containers:
       - name: ogdc-service
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        command:
+          - "bash"
+          - "-c"
+          - "{{ .Values.ogdc_service_command }}"
         ports:
         - containerPort: 8000
           name: ogdc-api-port
