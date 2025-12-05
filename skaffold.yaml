@@ -60,6 +60,7 @@ portForward:
     port: 5432
     localPort: 5432
   # Expose adminer at port 9090 (8080 is for docs)
+  # Use: http://localhost:9090/?pgsql=postgres-service&username=admin&db=ogdc
   # Connect to the postgres database with params:
   #   * System: Postgresql
   #   * Server: postgresql-service
