@@ -51,3 +51,8 @@ portForward:
     namespace: qgnet
     port: 2746
     localPort: 2746
+  - resourceType: service
+    resourceName: postgres-service
+    namespace: qgnet
+    port: 5432
+    localPort: 5432

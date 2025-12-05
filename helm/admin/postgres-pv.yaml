@@ -1,28 +1,19 @@
-# For development use:
-# Create a persistent volume using the filesystem on local machine.
+# For local development use:
+# Creates a persistent volume named "postgres-pv". 
 #
-# 1.  Edit this file to set the "spec.hostpath.path" parameter below
-
-# 2.  Then install in your cluster by one of the following methods. Assuming your release name is
-#     "my-release": (NOTE THE RELEASE NAME MUST MATCH THE ONE YOU USE WITH HELM!)
-#
-#     a. Define the release name on the command line:
-#       $ RELEASE_NAME=my-release  envsubst < workflow-pv.yaml | kubectl apply -n <mynamespace> -f -
-#
-#       If this results in "command not found: envsubst", you can install envsubst; e.g. on Mac OS:
-#           $  brew install gettext && brew link --force gettext
-#
-#     b.  Alternatively, you can simply replace "${RELEASE_NAME}" in the file below and do:
-#           $  kubectl apply -n <mynamespace> -f workflow-pv.yaml
+# This should be done only one time, separately from the helm install/upgrade cycle,
 #
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: cephfs-${RELEASE_NAME}-workflow-pv
+  name: cephfs-${RELEASE_NAME}-postgres-pv
   labels:
     velero.io/exclude-from-backup: "true"
 spec:
-  storageClassName: local-storage
+  # local-path must be used in local dev because postgres needs permissions to
+  # `chown` the data directory and that does not seem possible with
+  # `local-storage`.
+  storageClassName: local-path
   capacity:
     storage: 5Gi
   volumeMode: Filesystem
@@ -60,4 +51,4 @@ spec:
   #  within /Users/yourname/... if you need access outside of k8s. It may be necessary to chmod 777
   # so the OGDC user can write to it - so be careful! Again, this is for testing/dev only!
   hostPath:
-    path: ${OGDC_PV_HOST_PATH}/workflows
+    path: /postgres

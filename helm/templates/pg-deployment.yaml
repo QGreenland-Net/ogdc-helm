@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: 'postgres:18'
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          # TODO: get these from a configmap that gets setup once?
+          env:
+          - name: "POSTGRES_DB"
+            value: "ogdc"
+          - name: "POSTGRES_USER"
+            value: "admin"
+          - name: "POSTGRES_PASSWORD"
+            value: "password"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/
+              name: postgresdata
+      volumes:
+        - name: postgresdata
+          persistentVolumeClaim:
+            claimName: "cephfs-{{ .Release.Name }}-postgres-pvc"

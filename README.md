@@ -69,16 +69,18 @@ export NAMESPACE=qgnet
 export OGDC_PV_HOST_PATH=/Users/yourname/your-pv-directory
 ```
 
-2. Create the Workflow PV:
+2. Create the Workflow and postgres PVs:
 
 ```sh
 envsubst < helm/admin/workflow-pv.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/postgres-pv.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
-3. Create the Workflow PVC:
+3. Create the Workflow and postgres PVCs:
 
 ```sh
 envsubst < helm/admin/workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/postgres-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 4. Create credentials for MinIO:
