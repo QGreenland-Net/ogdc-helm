@@ -89,9 +89,10 @@ envsubst < helm/admin/workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst < helm/admin/postgres-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
-4. Create credentials for MinIO:
+4. Create credentials for MinIO and postgresql:
 ```sh
 envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 #### Using skaffold
@@ -128,9 +129,14 @@ envsubst < helm/admin/cephfs-releasename-workflow-pvc.yaml | kubectl apply -n "$
 envsubst < helm/admin/cephfs-releasename-postgres-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
-2. Create credentials for MinIO:
+2. Create credentials for MinIO and postgresql.:
+
+> [!WARNING]
+> Each of these secrets files need to be MANUALLY EDITED to reflect the desired secret values in dev/prod. If this is not done, public deafults will be used.
+
 ```sh
 envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 3. Perform the installation for the OGDC service

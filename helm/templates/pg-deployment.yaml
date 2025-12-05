@@ -21,14 +21,9 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5432
-          # TODO: get these from a configmap that gets setup once?
-          env:
-          - name: "POSTGRES_DB"
-            value: "ogdc"
-          - name: "POSTGRES_USER"
-            value: "admin"
-          - name: "POSTGRES_PASSWORD"
-            value: "password"
+          envFrom:
+          - secretRef:
+              name: "{{ .Release.Name }}-postgres-secrets"
           volumeMounts:
             - mountPath: /var/lib/postgresql/
               name: postgresdata
