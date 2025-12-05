@@ -2,6 +2,7 @@
 
 - Add skaffold configuration for local development
 - Add deployment configuration for ogdc-runner service
+- Add postgresql and adminer services to deployment
 
 
 ## v0.1.0 (2025-10-30)
