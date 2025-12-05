@@ -36,3 +36,29 @@ spec:
         - name: postgresdata
           persistentVolumeClaim:
             claimName: "cephfs-{{ .Release.Name }}-postgres-pvc"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adminer
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: adminer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adminer
+  template:
+    metadata:
+      labels:
+        app: adminer
+    spec:
+      containers:
+        - name: adminer
+          image: "adminer:5.4.1"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080

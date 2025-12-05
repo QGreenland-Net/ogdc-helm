@@ -41,18 +41,33 @@ deploy:
           - ./helm/examples/values-local-cluster-ogdc-example.yaml
 
 portForward:
+  # Expose ogdc-runner API at port 8000
   - resourceType: service
     resourceName: ogdc-service-service
     namespace: qgnet
     port: 8000
     localPort: 8000
+  # Expose argo dashboard at port 2746
   - resourceType: service
     resourceName: qgnet-ogdc-argo-workflows-server
     namespace: qgnet
     port: 2746
     localPort: 2746
+  # Expose postgresql at port 5432
   - resourceType: service
     resourceName: postgres-service
     namespace: qgnet
     port: 5432
     localPort: 5432
+  # Expose adminer at port 9090 (8080 is for docs)
+  # Connect to the postgres database with params:
+  #   * System: Postgresql
+  #   * Server: postgresql-service
+  #   * Username: admin
+  #   * Password: password
+  #   * Database: ogdc
+  - resourceType: service
+    resourceName: adminer-service
+    namespace: qgnet
+    port: 8080
+    localPort: 9090

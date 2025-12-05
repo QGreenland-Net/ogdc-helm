@@ -3,10 +3,16 @@
 [helm](https://helm.sh/) config for the OGDC, which is composed of:
 
 * [Argo](https://argoproj.github.io/): for managing and executing OGDC workflows.
-* [Minio](https://github.com/minio/minio): provides an artifact registry for argo
-* `ogdc`: TODO. We expect this service will provide an API/webhook that utilizes
-  the [ogdc-runner](https://github.com/QGreenland-Net/ogdc-runner/) to submit
-  OGDC recipes to Argo.
+* [Minio](https://github.com/minio/minio): provides an artifact registry for
+  argo with automatic garbage collection.
+* [ogdc-runner](https://github.com/QGreenland-Net/ogdc-runner/) service API,
+  which provides an API for users to submit OGDC recipes to the cluster for
+  execution. The API translates OGDC recipes into argo workflows that are
+  executed by Argo.
+* [postgresql](https://www.postgresql.org): provides database backend for the
+  `ogdc-runner` service API.
+* [adminer](https://www.adminer.org/en/): UI for interacting with postgresql
+  database.
   
 These services are installed to the `qgnet` kubernetes namespace by default.
 
