@@ -93,6 +93,7 @@ envsubst < helm/admin/postgres-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```sh
 envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/ogdc-api-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 #### Using skaffold
@@ -137,6 +138,7 @@ envsubst < helm/admin/cephfs-releasename-postgres-pvc.yaml | kubectl apply -n "$
 ```sh
 envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/ogdc-api-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 3. Perform the installation for the OGDC service

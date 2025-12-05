@@ -24,6 +24,8 @@ spec:
           envFrom:
           - secretRef:
               name: "{{ .Release.Name }}-postgres-secrets"
+          - secretRef:
+              name: "{{ .Release.Name }}-ogdc-api-secrets"
           volumeMounts:
             - mountPath: /var/lib/postgresql/
               name: postgresdata
