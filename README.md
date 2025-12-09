@@ -32,7 +32,26 @@ To install OGDC-Helm, you need to have Argo Workflows Custom Resource Definition
 
 **For local environments** (Rancher Desktop), the CRDs are typically managed as part of the Helm chart installation process.
 
+
+### Cloud Native PostgreSQL Operator
+
+The [Cloud Native PostgreSQL](https://cloudnative-pg.io/) operator must be
+installed on the cluster.
+
+**For dev/prod environments**, the operator should already be installed on ADC k8s clusters.
+
+**For local environments** (Rancher Desktop), manually install the operator:
+
+```
+helm repo add cnpg https://cloudnative-pg.github.io/charts
+helm upgrade --install cnpg \
+  --namespace cnpg-system \
+  --create-namespace \
+  cnpg/cloudnative-pg
+```
+
 ## Getting started
+
 
 ### Local dev cluster via Rancher desktop
 
@@ -79,20 +98,31 @@ export OGDC_PV_HOST_PATH=/Users/yourname/your-pv-directory
 
 ```sh
 envsubst < helm/admin/workflow-pv.yaml | kubectl apply -n "$NAMESPACE" -f -
-envsubst < helm/admin/postgres-pv.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 3. Create the Workflow and postgres PVCs:
 
 ```sh
 envsubst < helm/admin/workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
-envsubst < helm/admin/postgres-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 4. Create credentials for MinIO and postgresql:
 ```sh
 envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+```
+
+5. Create OGDC database.
+
+> [!NOTE] this assumes the CNPG operator is installed on the cluster. See
+> [Prerequisites](#Prerequisites) above.
+
+
+Create a db cluster for OGDC with release-name `ogdc-db` using the DataONE cnpg
+chart:
+
+```sh
+helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-local-cluster-values.yaml  --version 1.0.0 --namespace qgnet -
 ```
 
 #### Using skaffold
@@ -139,7 +169,14 @@ envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
-3. Perform the installation for the OGDC service
+3. Create a db cluster for OGDC with release-name `ogdc-db` using the DataONE
+   cnpg chart:
+
+```sh
+helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-cluster-values.yaml  --version 1.0.0 --namespace qgnet -
+```
+
+4. Perform the installation for the OGDC service
 
 - Specify environment (e.g., dev/prod):
   ```

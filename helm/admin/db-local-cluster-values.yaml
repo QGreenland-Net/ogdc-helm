@@ -1,0 +1,13 @@
+# Configuration for the OGDC CNPG postgres DB cluster.
+# This should be applied once via the the `dataone-cnpg` chart:
+# `helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-local-cluster-values.yaml  --version 1.0.0 --namespace qgnet -`
+# See: https://github.com/DataONEorg/dataone-cnpg/ for more information.
+instances: 1
+# NOTE: `ogdc-db` is the expected release name of the CNPG postgres DB cluster
+# for the OGDC.
+existingSecret: "ogdc-db-postgres-secrets"
+dbName: ogdc
+dbUser: admin
+persistence:
+  storageClass: local-path
+  size: 1Gi
