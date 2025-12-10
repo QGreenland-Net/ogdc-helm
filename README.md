@@ -122,7 +122,7 @@ Create a db cluster for OGDC with release-name `ogdc-db` using the DataONE cnpg
 chart:
 
 ```sh
-helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-local-cluster-values.yaml  --version 1.0.0 --namespace qgnet -
+helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-local-cluster-values.yaml  --version 1.0.0 --namespace qgnet
 ```
 
 #### Using skaffold
@@ -173,7 +173,7 @@ envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
    cnpg chart:
 
 ```sh
-helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-cluster-values.yaml  --version 1.0.0 --namespace qgnet -
+helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-cluster-values.yaml  --version 1.0.0 --namespace qgnet
 ```
 
 4. Perform the installation for the OGDC service
