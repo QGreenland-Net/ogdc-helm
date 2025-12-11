@@ -9,5 +9,5 @@ existingSecret: "ogdc-db-postgres-secrets"
 dbName: ogdc
 dbUser: admin
 persistence:
-  storageClass: csi-cephfs-sc-ephemeral
+  storageClass: csi-cephfs-sc
   size: 1Gi
