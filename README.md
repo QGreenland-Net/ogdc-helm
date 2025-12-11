@@ -3,10 +3,16 @@
 [helm](https://helm.sh/) config for the OGDC, which is composed of:
 
 * [Argo](https://argoproj.github.io/): for managing and executing OGDC workflows.
-* [Minio](https://github.com/minio/minio): provides an artifact registry for argo
-* `ogdc`: TODO. We expect this service will provide an API/webhook that utilizes
-  the [ogdc-runner](https://github.com/QGreenland-Net/ogdc-runner/) to submit
-  OGDC recipes to Argo.
+* [Minio](https://github.com/minio/minio): provides an artifact registry for
+  argo with automatic garbage collection.
+* [ogdc-runner](https://github.com/QGreenland-Net/ogdc-runner/) service API,
+  which provides an API for users to submit OGDC recipes to the cluster for
+  execution. The API translates OGDC recipes into argo workflows that are
+  executed by Argo.
+* [postgresql](https://www.postgresql.org): provides database backend for the
+  `ogdc-runner` service API.
+* [adminer](https://www.adminer.org/en/): UI for interacting with postgresql
+  database.
   
 These services are installed to the `qgnet` kubernetes namespace by default.
 
@@ -26,7 +32,26 @@ To install OGDC-Helm, you need to have Argo Workflows Custom Resource Definition
 
 **For local environments** (Rancher Desktop), the CRDs are typically managed as part of the Helm chart installation process.
 
+
+### Cloud Native PostgreSQL Operator
+
+The [Cloud Native PostgreSQL](https://cloudnative-pg.io/) operator must be
+installed on the cluster.
+
+**For dev/prod environments**, the operator should already be installed on ADC k8s clusters.
+
+**For local environments** (Rancher Desktop), manually install the operator:
+
+```
+helm repo add cnpg https://cloudnative-pg.github.io/charts
+helm upgrade --install cnpg \
+  --namespace cnpg-system \
+  --create-namespace \
+  cnpg/cloudnative-pg
+```
+
 ## Getting started
+
 
 ### Local dev cluster via Rancher desktop
 
@@ -69,21 +94,35 @@ export NAMESPACE=qgnet
 export OGDC_PV_HOST_PATH=/Users/yourname/your-pv-directory
 ```
 
-2. Create the Workflow PV:
+2. Create the Workflow and postgres PVs:
 
 ```sh
 envsubst < helm/admin/workflow-pv.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
-3. Create the Workflow PVC:
+3. Create the Workflow and postgres PVCs:
 
 ```sh
 envsubst < helm/admin/workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
-4. Create credentials for MinIO:
+4. Create credentials for MinIO and postgresql:
 ```sh
 envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+```
+
+5. Create OGDC database.
+
+> [!NOTE] this assumes the CNPG operator is installed on the cluster. See
+> [Prerequisites](#Prerequisites) above.
+
+
+Create a db cluster for OGDC with release-name `ogdc-db` using the DataONE cnpg
+chart:
+
+```sh
+helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-local-cluster-values.yaml  --version 1.0.0 --namespace qgnet
 ```
 
 #### Using skaffold
@@ -117,14 +156,27 @@ export NAMESPACE=${NAMESPACE:-qgnet}
 
 envsubst < helm/admin/cephfs-releasename-minio-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst < helm/admin/cephfs-releasename-workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/cephfs-releasename-postgres-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
-2. Create credentials for MinIO:
+2. Create credentials for MinIO and postgresql.:
+
+> [!WARNING]
+> Each of these secrets files need to be MANUALLY EDITED to reflect the desired secret values in dev/prod. If this is not done, public deafults will be used.
+
 ```sh
 envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
-3. Perform the installation for the OGDC service
+3. Create a db cluster for OGDC with release-name `ogdc-db` using the DataONE
+   cnpg chart:
+
+```sh
+helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-cluster-values.yaml  --version 1.0.0 --namespace qgnet
+```
+
+4. Perform the installation for the OGDC service
 
 - Specify environment (e.g., dev/prod):
   ```
