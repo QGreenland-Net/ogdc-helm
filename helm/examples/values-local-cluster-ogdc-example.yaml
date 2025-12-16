@@ -102,4 +102,4 @@ image:
 environment: "local"
 
 # Use fastapi dev server for local dev
-ogdc_service_command: ". ./.venv/bin/activate && fastapi dev --port 8000 --host 0.0.0.0 src/ogdc_runner/service.py"
+ogdc_service_command: ". ./.venv/bin/activate && fastapi dev --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
