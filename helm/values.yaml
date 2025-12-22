@@ -279,4 +279,4 @@ image:
   tag: latest
 
 # Default to production fastapi run command
-ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service.py"
+ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"

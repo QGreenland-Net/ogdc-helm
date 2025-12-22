@@ -110,6 +110,7 @@ envsubst < helm/admin/workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```sh
 envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/ogdc-api-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 5. Create OGDC database.
@@ -167,6 +168,7 @@ envsubst < helm/admin/cephfs-releasename-postgres-pvc.yaml | kubectl apply -n "$
 ```sh
 envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/ogdc-api-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 3. Create a db cluster for OGDC with release-name `ogdc-db` using the DataONE
