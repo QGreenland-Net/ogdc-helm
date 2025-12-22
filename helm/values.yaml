@@ -10,6 +10,16 @@
 ##             --debug --render-subchart-notes
 ##
 
+
+## @section Global parameters
+## Global Docker image parameters
+## Please, note that this will override the image parameters, including dependencies, configured to use the global value
+## Current available global Docker image parameters: imageRegistry, imagePullSecrets and storageClass
+##v
+
+## @section Global Configuration
+## Global configuration parameters for OGDC
+##
 global:
   ## @param global.passwordsSecret The name of the Secret containing application passwords
   ## This is the secret deployed using your own private, edited version of `../admin/secrets.yaml`.
@@ -33,150 +43,173 @@ global:
   ##
   defaultStorageClass: local-path
 
+## @section Argo Workflows Configuration
 ## argo-workflows configuration
 ## See https://argoproj.github.io/argo-workflows/
+##
 argo-workflows:
-  ## -- Restrict Argo to operate only in a single namespace (the namespace of the
+  ## @param argo-workflows.singleNamespace Restrict Argo to operate only in a single namespace
+  ## Restrict Argo to operate only in a single namespace (the namespace of the
   ## Helm release) by apply Roles and RoleBindings instead of the Cluster
   ## equivalents, and start workflow-controller with the --namespaced flag. Use it
   ## in clusters with strict access policy.
+  ##
   singleNamespace: false
 
   ## Custom resource configuration
   crds:
-    ## -- Install and upgrade CRDs
+    ## @param argo-workflows.crds.install Install and upgrade CRDs
     install: true
 
-    ## -- Keep CRDs on chart uninstall
+    ## @param argo-workflows.crds.keep Keep CRDs on chart uninstall
     keep: false
 
-    ## -- Annotations to be added to all CRDs
+    ## @param argo-workflows.crds.annotations Annotations to be added to all CRDs
     annotations: {}
 
-  ## -- Create ClusterRoles that extend existing ClusterRoles to interact with Argo Workflows CRDs.
+  ## @param argo-workflows.createAggregateRoles Create ClusterRoles that extend existing ClusterRoles to interact with Argo Workflows CRDs
   ## Ref: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#aggregated-clusterroles
+  ##
   createAggregateRoles: true
 
   ## Workflow service account configuration
   workflow:
-    ## -- Create a dedicated service account for running workflows
+    ## @param argo-workflows.workflow.serviceAccount.create Specifies whether a service account should be created
+    ## @param argo-workflows.workflow.serviceAccount.name Service account which is used to run workflows
+    ## @param argo-workflows.workflow.serviceAccount.automountServiceAccountToken Automount service account token for the workflow pods
     serviceAccount:
-      ## -- Specifies whether a service account should be created
       create: true
-
-      ## -- Service account which is used to run workflows
       name: "argo-workflow"
-
-      ## -- Automount service account token for the workflow pods
       automountServiceAccountToken: true
 
-    ## -- Adds Role and RoleBinding for the above specified service account to be able to run workflows.
+    ## @param argo-workflows.workflow.rbac.create Adds Role and RoleBinding for the above specified service account
+    ## Adds Role and RoleBinding for the above specified service account to be able to run workflows.
     ## A Role and Rolebinding pair is also created for each namespace in controller.workflowNamespaces (see below)
+    ##
     rbac:
       create: true
 
   ## Controller configuration
   controller:
-    ## -- Resource limits and requests for the controller
+    ## @param argo-workflows.controller.resources.requests.memory Memory requests for the workflow controller
+    ## @param argo-workflows.controller.resources.requests.cpu CPU requests for the workflow controller
+    ## @param argo-workflows.controller.resources.limits.memory Memory limits for the workflow controller
+    ## @param argo-workflows.controller.resources.limits.cpu CPU limits for the workflow controller
     resources:
-      ## -- Set resource requirements
       requests:
-        ## CPU and memory requests for the workflow controller
         memory: "2Gi"
         cpu: "500m"
-
-      ## CPU and memory limits for the workflow controller
       limits:
         memory: "4Gi"
         cpu: "1000m"
 
-    ## -- Specify all namespaces where this workflow controller instance will manage
+    ## @param argo-workflows.controller.workflowNamespaces Specify all namespaces where this workflow controller instance will manage workflows
+    ## Specify all namespaces where this workflow controller instance will manage
     ## workflows. This controls where the service account and RBAC resources will
     ## be created. Only valid when singleNamespace is false.
+    ##
     workflowNamespaces:
       - qgnet
 
-    ## Automatically cleanup pods on successful workflow completion
+    ## @param argo-workflows.controller.workflowDefaults.spec.podGC.strategy Automatically cleanup pods on successful workflow completion
     ## Ref: https://argo-workflows.readthedocs.io/en/latest/fields/#podgc
+    ##
     workflowDefaults:
       spec:
         podGC:
           strategy: OnWorkflowSuccess
           
+    ## @param argo-workflows.controller.metricsConfig.enabled Enables prometheus metrics server
     ## Configure metrics
     ## Ref: https://argoproj.github.io/argo-workflows/metrics/
+    ##
     metricsConfig:
-      ## -- Enables prometheus metrics server
       enabled: false
 
   ## Argo Server configuration
   server:
-    ## -- Deploy the Argo Server
+    ## @param argo-workflows.server.enabled Deploy the Argo Server
     enabled: true
 
+    ## @param argo-workflows.server.resources.requests.memory Memory requests for the workflow server
+    ## @param argo-workflows.server.resources.requests.cpu CPU requests for the workflow server
+    ## @param argo-workflows.server.resources.limits.memory Memory limits for the workflow server
+    ## @param argo-workflows.server.resources.limits.cpu CPU limits for the workflow server
     ## Set resource requirements
-    ## -- Resource limits and requests for the server
     ## Ref: https://argoproj.github.io/argo-workflows/argo-server/
+    ##
     resources:
-      ## Set resource requirements
       requests:
-        ## CPU and memory requests for the workflow server
         memory: "1Gi"
         cpu: "200m"
-
-      ## CPU and memory limits for the workflow server
       limits:
         memory: "2Gi"
         cpu: "500m"
 
-    ## -- A list of supported authentication modes. Available values are `server`, `client`, or `sso`. If you provide sso, please configure `.Values.server.sso` as well.
+    ## @param argo-workflows.server.authModes A list of supported authentication modes
+    ## Available values are `server`, `client`, or `sso`. If you provide sso, please configure `.Values.server.sso` as well.
     ## Ref: https://argo-workflows.readthedocs.io/en/stable/argo-server-auth-mode/
+    ##
     authModes:
       - server
 
     ## Ingress configuration.
-    # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+    ##
     ingress:
-      ## -- Enable an ingress resource
-      ## Enable an ingress resource for the Argo server
+      ## @param argo-workflows.server.ingress.enabled Enable an ingress resource for the Argo server
       enabled: false
-      # -- Ingress class name
+
+      ## @param argo-workflows.server.ingress.ingressClassName Ingress class name
       ## Your cluster may require this to be set to match your IngressClass resource.
       ## For nginx ingress controller, use:  ingressClassName: "nginx"
+      ##
       ingressClassName: "nginx"
-      # -- Additional ingress annotations
+
+      ## @param argo-workflows.server.ingress.annotations [object] Additional ingress annotations
       ## Add any additional annotations that your ingress controller may need.
       ## For example, for cert-manager TLS using the 'letsencrypt-prod' ClusterIssuer
       ## (which must be created separately), and to specify that the backend protocol
       ## is HTTPS, use the following annotations:
+      ##
       annotations: { 
         cert-manager.io/cluster-issuer: letsencrypt-prod,
         nginx.ingress.kubernetes.io/rewrite-target: /$2,
         nginx.ingress.kubernetes.io/use-regex: "true"
       }
-      ## -- Ingress hosts
+
+      ## @param argo-workflows.server.ingress.hosts Ingress hosts
       ## Add host names (without http(s):// or path) that map to the argo server service.
       ## You may need to add multiple hosts if you have multiple DNS names that map to the
       ## same service.
+      ##
       hosts:
         - api.test.dataone.org
-      ## -- Ingress endpoint paths
+
+      ## @param argo-workflows.server.ingress.paths Ingress endpoint paths
       ## If you are using a path other than '/', make sure to also set
       ## server.baseHref to match!
+      ##
       paths:
         - /ogdc(/|$)(.*)
-      ## -- Path type
+
+      ## @param argo-workflows.server.ingress.pathType Path type
       ## Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
+      ##
       pathType: ImplementationSpecific
-      ## -- Ingress service backend configuration
+
+      ## @param argo-workflows.server.ingress.servicePort Ingress service backend port
       ## This is the port for the argo server service.
+      ##
       servicePort: 2746
-      ## -- Ingress TLS configuration
+
+      ## @param argo-workflows.server.ingress.tls [array] Ingress TLS configuration
       ## Add TLS configuration for the Ingress, if desired.
       ## This example assumes you have created a TLS secret named
       ## 'ingress-nginx-tls-cert' in the same namespace as the argo server.
       ## The TLS secret must contain the certificate and private key for the host(s)
       ## specified above.
+      ##
       tls:
         - hosts:
             - api.test.dataone.org
@@ -184,31 +217,37 @@ argo-workflows:
 
   ## Argo Executor configuration
   executor:
+    ## @param argo-workflows.executor.resources.requests.memory Memory requests for the workflow executor
+    ## @param argo-workflows.executor.resources.requests.cpu CPU requests for the workflow executor
+    ## @param argo-workflows.executor.resources.limits.memory Memory limits for the workflow executor
+    ## @param argo-workflows.executor.resources.limits.cpu CPU limits for the workflow executor
     ## Set resource requirements
-    ## -- Resource limits and requests for the executor
     ## Ref: https://argoproj.github.io/argo-workflows/executor/
+    ##
     resources:
-      ## Set resource requirements
       requests:
-        ## CPU and memory requests for the workflow executor
         memory: "1Gi"
         cpu: "200m"
-
-      ## CPU and memory limits for the workflow executor
       limits:
         memory: "4Gi"
         cpu: "1000m"
 
   ## Artifact repository configuration
   artifactRepository:
-    ## -- Archive the main container logs as an artifact
+    ## @param argo-workflows.artifactRepository.archiveLogs Archive the main container logs as an artifact
     archiveLogs: false
-    ## -- Store artifact in a S3-compliant object store
-    s3:
-      ## -- Bucket name
-      bucket: argo-workflows
 
-      ## -- S3 endpoint
+    ## @param argo-workflows.artifactRepository.s3.bucket S3 bucket name
+    ## @param argo-workflows.artifactRepository.s3.endpoint S3 endpoint
+    ## @param argo-workflows.artifactRepository.s3.accessKeySecret.name Secret name containing S3 access key
+    ## @param argo-workflows.artifactRepository.s3.accessKeySecret.key Secret key for S3 access key
+    ## @param argo-workflows.artifactRepository.s3.secretKeySecret.name Secret name containing S3 secret key
+    ## @param argo-workflows.artifactRepository.s3.secretKeySecret.key Secret key for S3 secret key
+    ## @param argo-workflows.artifactRepository.s3.insecure Disable TLS for S3 connection
+    ## Store artifact in a S3-compliant object store
+    ##
+    s3:
+      bucket: argo-workflows
       endpoint: "{{ .Release.Name }}-minio:9000"
 
       ## Note the `key` attribute is not the actual secret, it's the PATH to
@@ -223,30 +262,33 @@ argo-workflows:
       ## insecure will disable TLS. Primarily used for minio installs not configured with TLS
       insecure: true
 
+## @section MinIO Configuration
 ## MinIO configuration
+## See https://min.io/docs/minio/kubernetes/upstream/
+##
 minio:
-  ## minio mode, i.e. standalone or distributed
+  ## @param minio.mode MinIO mode (standalone or distributed)
   mode: standalone ## other supported values are "distributed"
 
-  ## Number of MinIO containers running
+  ## @param minio.replicas Number of MinIO containers running
   replicas: 1
 
-  ## List of buckets to be created after minio install
+  ## @param minio.buckets [array] List of buckets to be created after minio install
   buckets:
-    ## -- Create a bucket named "argo-workflows" for Argo Workflows artifacts
     - name: argo-workflows
       ## Policy to be set on the bucket [none|download|upload|public]
       policy: none
       ## Purge if bucket exists already
       purge: false
 
+  ## @param minio.persistence.enabled Enable persistence using Persistent Volume Claims
   ## Enable persistence using Persistent Volume Claims
   ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
   ##
   persistence:
-    ## -- Enabled? True : False
     enabled: true
 
+  ## @param minio.existingSecret Use existing Secret that store MinIO credentials
   ## Use existing Secret that store following variables:
   ##
   ## | Chart var             | .data.<key> in Secret    |
@@ -257,26 +299,35 @@ minio:
   ## All mentioned variables will be ignored in values file.
   ## .data.rootUser and .data.rootPassword are mandatory,
   ## others depend on enabled status of corresponding sections.
+  ##
   existingSecret: *passwordSecretName
 
+  ## @param minio.resources.requests.memory Memory requests for minio
+  ## @param minio.resources.requests.cpu CPU requests for minio
+  ## @param minio.resources.limits.memory Memory limits for minio
+  ## @param minio.resources.limits.cpu CPU limits for minio
   ## Configure resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
   ##
   resources:
-    ## Set resource requirements
     requests:
-      ## CPU and memory requests for minio
       memory: "1Gi"
       cpu: "200m"
-
-    ## CPU and memory limits for minio
     limits:
       memory: "2Gi"
       cpu: "500m"
 
+## @section OGDC Configuration
+## OGDC application configuration
+##
+
+## @param image.repository OGDC container image repository
+## @param image.tag OGDC container image tag
 image:
   repository: ogdc-runner
   tag: latest
 
-# Default to production fastapi run command
+## @param ogdc_service_command Command to run the OGDC service
+## Default to production fastapi run command
+##
 ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service.py"
