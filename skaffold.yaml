@@ -72,3 +72,8 @@ portForward:
     namespace: qgnet
     port: 8080
     localPort: 9090
+  - resourceType: service
+    resourceName: qgnet-ogdc-minio
+    namespace: qgnet
+    port: 9000
+    localPort: 9000
