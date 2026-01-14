@@ -169,8 +169,8 @@ argo-workflows:
       ## Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
       pathType: ImplementationSpecific
       ## -- Ingress service backend configuration
-      ## This is the port for the argo server service.
-      servicePort: 2746
+      ## This is the port for the ogdc service
+      servicePort: 8000
       ## -- Ingress TLS configuration
       ## Add TLS configuration for the Ingress, if desired.
       ## This example assumes you have created a TLS secret named
