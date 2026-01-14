@@ -48,3 +48,13 @@ spec:
             secretKeyRef:
               name: "ogdc-db-postgres-secrets"
               key: password
+        - name: S3_SECRET_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Release.Name }}-secrets"
+              key: rootUser
+        - name: S3_SECRET_KEY_KEY
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Release.Name }}-secrets"
+              key: rootPassword
