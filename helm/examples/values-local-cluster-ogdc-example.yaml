@@ -103,3 +103,7 @@ environment: "local"
 
 # Use fastapi dev server for local dev
 ogdc_service_command: ". ./.venv/bin/activate && fastapi dev --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
+
+# This is the URL at which the s3 service is exposed at.
+internal_s3_endpoint_url: "http://qgnet-ogdc-minio:9000"
+public_s3_endpoint_url: "http://localhost:9000"
