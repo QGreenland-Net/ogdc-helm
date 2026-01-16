@@ -34,6 +34,8 @@ spec:
           value: {{ .Values.environment }}
         - name: "OGDC_RUNNER_IMAGE_TAG"
           value: {{ .Values.image.tag }}
+        - name: "DATAONE_NODE_URL"
+          value: {{ .Values.dataone_node_url }}
         - name: "ARGO_WORKFLOWS_SERVICE_URL"
           # http://qgnet-ogdc-argo-workflows-server.qgnet.svc.cluster.local:2746
           value: "http://{{ .Release.Name }}-argo-workflows-server.{{ .Release.Namespace }}.svc.cluster.local:2746"
