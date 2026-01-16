@@ -48,3 +48,20 @@ spec:
             secretKeyRef:
               name: "ogdc-db-postgres-secrets"
               key: password
+        - name: S3_SECRET_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Release.Name }}-secrets"
+              key: rootUser
+        - name: S3_SECRET_KEY_KEY
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Release.Name }}-secrets"
+              key: rootPassword
+        - name: "INTERNAL_S3_ENDPOINT_URL"
+          value: "{{ .Values.internal_s3_endpoint_url }}"
+        - name: "PUBLIC_S3_ENDPOINT_URL"
+          value: "{{ .Values.public_s3_endpoint_url }}"
+        # The root path that the API expects to live under
+        - name: "API_ROOT_PATH"
+          value: "/ogdc/api"

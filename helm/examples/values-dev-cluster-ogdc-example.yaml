@@ -50,7 +50,7 @@ argo-workflows:
     ingress:
       ## -- Enable an ingress resource
       ## Enable an ingress resource for the Argo server
-      enabled: true
+      enabled: false
       # -- Ingress class name
       ## Your cluster may require this to be set to match your IngressClass resource.
       ## For nginx ingress controller, use:  ingressClassName: "nginx"
@@ -128,3 +128,8 @@ image:
   pullPolicy: Always
 
 environment: "dev"
+
+# This is the URL at which the s3 service is exposed at.
+# TODO: setup ingress
+internal_s3_endpoint_url: "http://qgnet-ogdc-minio:9000"
+public_s3_endpoint_url: "http://api.test.dataone.org/ogdc/objectstore/"
