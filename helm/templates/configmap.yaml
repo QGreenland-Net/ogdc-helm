@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-ogdc-service-config
+  namespace: {{ .Release.Namespace }}
+data:
+  ENVIRONMENT: {{ .Values.environment | quote }}
+  OGDC_RUNNER_IMAGE_TAG: {{ .Values.image.tag | quote }}
+  DATAONE_NODE_URL: {{ .Values.dataone_node_url | quote }}
+  ARGO_WORKFLOWS_SERVICE_URL: "http://{{ .Release.Name }}-argo-workflows-server.{{ .Release.Namespace }}.svc.cluster.local:2746"
