@@ -30,7 +30,7 @@ spec:
         - secretRef:
             name: "{{ .Release.Name }}-api-secrets"
         - configMapRef:
-          name: "{{ .Release.Name }}-ogdc-service-config"
+            name: "{{ .Release.Name }}-ogdc-service-config"
         env:
         # OGDC DB username/password
         - name: OGDC_DB_USERNAME
