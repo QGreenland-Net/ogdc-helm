@@ -239,6 +239,8 @@ image:
 # Default to production fastapi run command
 ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
 
+dataone_node_url: "https://arcticdata.io/metacat/d1/mn"
+
 # This is the URL at which the s3 service is exposed at.
 internal_s3_endpoint_url: "http://qgnet-ogdc-minio:9000"
 public_s3_endpoint_url: "http://api.test.dataone.org/ogdc/objectstore/"
