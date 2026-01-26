@@ -32,7 +32,7 @@ spec:
         - configMapRef:
             name: "{{ .Release.Name }}-ogdc-service-config"
         env:
-        # OGDC DB username/password
+        # OGDC envvars from secrets
         - name: OGDC_DB_USERNAME
           valueFrom:
             secretKeyRef:
@@ -53,10 +53,3 @@ spec:
             secretKeyRef:
               name: "{{ .Release.Name }}-secrets"
               key: rootPassword
-        - name: "INTERNAL_S3_ENDPOINT_URL"
-          value: "{{ .Values.ogdc_s3_endpoint }}"
-        - name: "PUBLIC_S3_ENDPOINT_URL"
-          value: "https://{{ .Values.ogdc_public_host }}/ogdc/storage"
-        # The root path that the API expects to live under
-        - name: "API_ROOT_PATH"
-          value: "/ogdc/api"
