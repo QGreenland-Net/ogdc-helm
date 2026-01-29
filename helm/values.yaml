@@ -90,6 +90,19 @@ argo-workflows:
         memory: "4Gi"
         cpu: "1000m"
 
+    persistence:
+      archive: true
+      postgresql:
+        host: "ogdc-db-cnpg-rw"
+        database: "ogdc"
+        tableName: "argo_workflows_archive"
+        userNameSecret:
+          name: "ogdc-db-postgres-secrets"
+          key: "username"
+        passwordSecret:
+          name: "ogdc-db-postgres-secrets"
+          key: "password"
+
     ## -- Specify all namespaces where this workflow controller instance will manage
     ## workflows. This controls where the service account and RBAC resources will
     ## be created. Only valid when singleNamespace is false.
