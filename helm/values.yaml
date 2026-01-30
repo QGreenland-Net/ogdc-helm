@@ -93,10 +93,18 @@ argo-workflows:
     persistence:
       archive: true
       archiveLabelSelector:
+        # Archive workflows that are labrled with
+        # `ogdc/persist-workflow-in-archive: true` AND have a "Succeeded" status
+        # on completion.
+        # We keep non-successful workflows unarchived in order to allow
+        # inspection of logs, which are not preserved on archival.
         matchExpressions:
           - key: ogdc/persist-workflow-in-archive
             operator: In
             values: ["true"]
+          - key: workflows.argoproj.io/phase
+            operator: In
+            values: ["Succeeded"]
       postgresql:
         host: "ogdc-db-cnpg-rw"
         database: "ogdc"
@@ -178,6 +186,8 @@ argo-workflows:
   ## Artifact repository configuration
   artifactRepository:
     ## -- Archive the main container logs as an artifact
+    # Setting to true is not reccomended by the official docs! See:
+    # https://argo-workflows.readthedocs.io/en/latest/configure-archive-logs/
     archiveLogs: false
     ## -- Store artifact in a S3-compliant object store
     s3:
