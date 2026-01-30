@@ -92,6 +92,11 @@ argo-workflows:
 
     persistence:
       archive: true
+      archiveLabelSelector:
+        matchExpressions:
+          - key: ogdc/persist-workflow-in-archive
+            operator: In
+            values: ["true"]
       postgresql:
         host: "ogdc-db-cnpg-rw"
         database: "ogdc"
