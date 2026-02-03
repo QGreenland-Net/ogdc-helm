@@ -50,7 +50,7 @@ argo-workflows:
     ingress:
       ## -- Enable an ingress resource
       ## Enable an ingress resource for the Argo server
-      enabled: true
+      enabled: false
       # -- Ingress class name
       ## Your cluster may require this to be set to match your IngressClass resource.
       ## For nginx ingress controller, use:  ingressClassName: "nginx"
@@ -128,3 +128,6 @@ image:
   pullPolicy: Always
 
 environment: "dev"
+
+ogdc_public_host: "api.test.dataone.org"
+ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"

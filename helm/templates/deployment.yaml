@@ -32,7 +32,7 @@ spec:
         - configMapRef:
             name: "{{ .Release.Name }}-ogdc-service-config"
         env:
-        # OGDC DB username/password
+        # OGDC envvars from secrets
         - name: OGDC_DB_USERNAME
           valueFrom:
             secretKeyRef:
@@ -43,3 +43,13 @@ spec:
             secretKeyRef:
               name: "ogdc-db-postgres-secrets"
               key: password
+        - name: S3_SECRET_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Release.Name }}-secrets"
+              key: rootUser
+        - name: S3_SECRET_KEY_KEY
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Release.Name }}-secrets"
+              key: rootPassword

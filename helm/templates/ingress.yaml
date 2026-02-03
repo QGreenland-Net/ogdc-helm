@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ogdc-ingress
+  annotations: 
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  tls:
+  - hosts:
+      - api.dataone.org
+      - api.test.dataone.org
+      - localhost
+    secretName: "ingress-nginx-tls-cert"
+  ingressClassName: "nginx"
+  rules:
+  - http:
+      paths:
+      - path: /ogdc/api(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: ogdc-service-service
+            port:
+              number: 8000
+      # TODO: this will need some re-thinking based on how we deal with
+      # https://github.com/QGreenland-Net/ogdc-helm/issues/46. 
+      - path: /ogdc/storage(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: qgnet-ogdc-minio
+            port:
+              number: 9000
