@@ -90,6 +90,32 @@ argo-workflows:
         memory: "4Gi"
         cpu: "1000m"
 
+    persistence:
+      archive: true
+      archiveLabelSelector:
+        # Archive workflows that are labrled with
+        # `ogdc/persist-workflow-in-archive: true` AND have a "Succeeded" status
+        # on completion.
+        # We keep non-successful workflows unarchived in order to allow
+        # inspection of logs, which are not preserved on archival.
+        matchExpressions:
+          - key: ogdc/persist-workflow-in-archive
+            operator: In
+            values: ["true"]
+          - key: workflows.argoproj.io/phase
+            operator: In
+            values: ["Succeeded"]
+      postgresql:
+        host: "ogdc-db-cnpg-rw"
+        database: "ogdc"
+        tableName: "argo_workflows_archive"
+        userNameSecret:
+          name: "ogdc-db-postgres-secrets"
+          key: "username"
+        passwordSecret:
+          name: "ogdc-db-postgres-secrets"
+          key: "password"
+
     ## -- Specify all namespaces where this workflow controller instance will manage
     ## workflows. This controls where the service account and RBAC resources will
     ## be created. Only valid when singleNamespace is false.
@@ -160,6 +186,8 @@ argo-workflows:
   ## Artifact repository configuration
   artifactRepository:
     ## -- Archive the main container logs as an artifact
+    # Setting to true is not reccomended by the official docs! See:
+    # https://argo-workflows.readthedocs.io/en/latest/configure-archive-logs/
     archiveLogs: false
     ## -- Store artifact in a S3-compliant object store
     s3:
