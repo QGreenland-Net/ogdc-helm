@@ -204,7 +204,6 @@ export NAMESPACE=${NAMESPACE:-qgnet}
 
 envsubst < helm/admin/cephfs-releasename-minio-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst < helm/admin/cephfs-releasename-workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
-envsubst < helm/admin/cephfs-releasename-postgres-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 2. Create credentials for MinIO and postgresql.:
