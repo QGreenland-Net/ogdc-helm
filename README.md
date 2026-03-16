@@ -170,7 +170,28 @@ and redeployed to rancher desktop.
 
 ### Dev/Production setup
 
-For deploying the stack on the DataONE dev/prod cluster:
+**Prerequisites:** The OGDC service depends on Argo Workflows, which requires Argo CRDs to be installed. For dev/prod environments, we manage the CRDs outside of the Helm charts. 
+
+**Installing Argo CRDs:**
+
+Choose one of the following options based on your cluster requirements:
+
+- **Full CRDs**:
+  ```bash
+  kubectl apply --server-side --force-conflicts -k "https://github.com/argoproj/argo-workflows/manifests/base/crds/full?ref=<appVersion>"
+  
+  # Example with version v4.0.2:
+  kubectl apply --server-side --force-conflicts -k "https://github.com/argoproj/argo-workflows/manifests/base/crds/full?ref=v4.0.2"
+  ```
+
+- **Minimal CRDs**:
+  ```bash
+  kubectl apply -k "https://github.com/argoproj/argo-workflows/manifests/base/crds/minimal?ref=<appVersion>"
+  ```
+
+For more information, see the [Argo Workflows CRD installation guide](https://github.com/argoproj/argo-helm/tree/main/charts/argo-workflows#using-argo-cd).
+
+**Deploying the stack on the DataONE dev/prod cluster:**
 
 > [!TIP]
 > For detailed information about configuring the installation, refer to the [helm/README.md](helm/README.md).
@@ -183,7 +204,6 @@ export NAMESPACE=${NAMESPACE:-qgnet}
 
 envsubst < helm/admin/cephfs-releasename-minio-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst < helm/admin/cephfs-releasename-workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
-envsubst < helm/admin/cephfs-releasename-postgres-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 2. Create credentials for MinIO and postgresql.:
@@ -215,6 +235,16 @@ helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-clust
 
 To uninstall the ogdc from the kubernetes cluster, use the
 `./scripts/uninstall-ogdc.sh` script.
+
+**Usage:**
+```bash
+# Specify environment (local, dev, or prod). Defaults to local.
+./scripts/uninstall-ogdc.sh [local|dev|prod]
+```
+
+**Behavior:**
+- In **local** environments: Automatically removes Argo CRDs after uninstalling the Helm release
+- In **dev/prod** environments: Only uninstalls the Helm release; CRDs are preserved as they are managed separately
 
 ### Cleaning up Argo CRDs
 
