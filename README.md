@@ -170,7 +170,28 @@ and redeployed to rancher desktop.
 
 ### Dev/Production setup
 
-For deploying the stack on the DataONE dev/prod cluster:
+**Prerequisites:** The OGDC service depends on Argo Workflows, which requires Argo CRDs to be installed. For dev/prod environments, we manage the CRDs outside of the Helm charts. 
+
+**Installing Argo CRDs:**
+
+Choose one of the following options based on your cluster requirements:
+
+- **Full CRDs**:
+  ```bash
+  kubectl apply --server-side --force-conflicts -k "https://github.com/argoproj/argo-workflows/manifests/base/crds/full?ref=<appVersion>"
+  
+  # Example with version v4.0.2:
+  kubectl apply --server-side --force-conflicts -k "https://github.com/argoproj/argo-workflows/manifests/base/crds/full?ref=v4.0.2"
+  ```
+
+- **Minimal CRDs**:
+  ```bash
+  kubectl apply -k "https://github.com/argoproj/argo-workflows/manifests/base/crds/minimal?ref=<appVersion>"
+  ```
+
+For more information, see the [Argo Workflows CRD installation guide](https://github.com/argoproj/argo-helm/tree/main/charts/argo-workflows#using-argo-cd).
+
+**Deploying the stack on the DataONE dev/prod cluster:**
 
 > [!TIP]
 > For detailed information about configuring the installation, refer to the [helm/README.md](helm/README.md).
