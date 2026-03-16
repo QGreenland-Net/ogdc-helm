@@ -341,7 +341,7 @@ dataone_node_url: "https://arcticdata.io/metacat/d1/mn"
 ogdc_public_host: "api.test.dataone.org"
 
 ## @param internal_s3_endpoint_url Internal S3 endpoint URL for MinIO service
-## This is the URL at which the s3 service is exposed at (cluster-internal)
+## This is the URL at which the s3 service is exposed within the cluster.
 ##
 internal_s3_endpoint_url: "http://qgnet-ogdc-minio:9000"
 
