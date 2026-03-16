@@ -130,7 +130,7 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 | `dataone_node_url`          | DataONE member node URL for metadata retrieval             | `https://arcticdata.io/metacat/d1/mn`                                                              |
 | `ogdc_public_host`          | Public hostname for OGDC service and ingress configuration | `api.test.dataone.org`                                                                             |
 | `internal_s3_endpoint_url`  | Internal S3 endpoint URL for MinIO service                 | `http://qgnet-ogdc-minio:9000`                                                                     |
-| `public_s3_endpoint_url`    | Public S3 endpoint URL for external access                 | `https://{{ .Values.ogdc_public_host }}/ogdc/storage/`                                             |
+| `public_s3_endpoint_url`    | Public S3 endpoint URL for external access                 | `https://api.test.dataone.org/ogdc/storage/`                                                       |
 | `environment`               | Environment name (dev, prod, local)                        | `dev`                                                                                              |
 
 ### Ingress Configuration
