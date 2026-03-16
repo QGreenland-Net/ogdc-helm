@@ -103,7 +103,47 @@ argo-workflows:
         memory: "4Gi"
         cpu: "1000m"
 
-    ## @param argo-workflows.controller.workflowNamespaces Specify all namespaces where this workflow controller instance will manage workflows
+    ## @param argo-workflows.controller.persistence.archive Enable archiving completed workflows to PostgreSQL
+    persistence:
+      archive: true
+      ## @param argo-workflows.controller.persistence.archiveLabelSelector.matchExpressions[0].key Label selector key for first workflow archive condition
+      ## @param argo-workflows.controller.persistence.archiveLabelSelector.matchExpressions[0].operator Label selector operator for first workflow archive condition
+      ## @param argo-workflows.controller.persistence.archiveLabelSelector.matchExpressions[0].values Label selector values for first workflow archive condition
+      ## @param argo-workflows.controller.persistence.archiveLabelSelector.matchExpressions[1].key Label selector key for second workflow archive condition
+      ## @param argo-workflows.controller.persistence.archiveLabelSelector.matchExpressions[1].operator Label selector operator for second workflow archive condition
+      ## @param argo-workflows.controller.persistence.archiveLabelSelector.matchExpressions[1].values Label selector values for second workflow archive condition
+      archiveLabelSelector:
+        # Archive workflows that are labrled with
+        # `ogdc/persist-workflow-in-archive: true` AND have a "Succeeded" status
+        # on completion.
+        # We keep non-successful workflows unarchived in order to allow
+        # inspection of logs, which are not preserved on archival.
+        matchExpressions:
+          - key: ogdc/persist-workflow-in-archive
+            operator: In
+            values: ["true"]
+          - key: workflows.argoproj.io/phase
+            operator: In
+            values: ["Succeeded"]
+      ## @param argo-workflows.controller.persistence.postgresql.host PostgreSQL database host for workflow archive
+      ## @param argo-workflows.controller.persistence.postgresql.database PostgreSQL database name for workflow archive
+      ## @param argo-workflows.controller.persistence.postgresql.tableName PostgreSQL table name for workflow archive
+      ## @param argo-workflows.controller.persistence.postgresql.userNameSecret.name Secret name containing PostgreSQL username
+      ## @param argo-workflows.controller.persistence.postgresql.userNameSecret.key Secret key for PostgreSQL username
+      ## @param argo-workflows.controller.persistence.postgresql.passwordSecret.name Secret name containing PostgreSQL password
+      ## @param argo-workflows.controller.persistence.postgresql.passwordSecret.key Secret key for PostgreSQL password
+      postgresql:
+        host: "ogdc-db-cnpg-rw"
+        database: "ogdc"
+        tableName: "argo_workflows_archive"
+        userNameSecret:
+          name: "ogdc-db-postgres-secrets"
+          key: "username"
+        passwordSecret:
+          name: "ogdc-db-postgres-secrets"
+          key: "password"
+
+    ## @param argo-workflows.controller.workflowNamespaces Namespaces where workflow controller will manage workflows
     ## Specify all namespaces where this workflow controller instance will manage
     ## workflows. This controls where the service account and RBAC resources will
     ## be created. Only valid when singleNamespace is false.
@@ -159,62 +199,6 @@ argo-workflows:
     ingress:
       ## @param argo-workflows.server.ingress.enabled Enable an ingress resource for the Argo server
       enabled: false
-
-      ## @param argo-workflows.server.ingress.ingressClassName Ingress class name
-      ## Your cluster may require this to be set to match your IngressClass resource.
-      ## For nginx ingress controller, use:  ingressClassName: "nginx"
-      ##
-      ingressClassName: "nginx"
-
-      ## @param argo-workflows.server.ingress.annotations [object] Additional ingress annotations
-      ## Add any additional annotations that your ingress controller may need.
-      ## For example, for cert-manager TLS using the 'letsencrypt-prod' ClusterIssuer
-      ## (which must be created separately), and to specify that the backend protocol
-      ## is HTTPS, use the following annotations:
-      ##
-      annotations: { 
-        cert-manager.io/cluster-issuer: letsencrypt-prod,
-        nginx.ingress.kubernetes.io/rewrite-target: /$2,
-        nginx.ingress.kubernetes.io/use-regex: "true"
-      }
-
-      ## @param argo-workflows.server.ingress.hosts Ingress hosts
-      ## Add host names (without http(s):// or path) that map to the argo server service.
-      ## You may need to add multiple hosts if you have multiple DNS names that map to the
-      ## same service.
-      ##
-      hosts:
-        - api.test.dataone.org
-
-      ## @param argo-workflows.server.ingress.paths Ingress endpoint paths
-      ## If you are using a path other than '/', make sure to also set
-      ## server.baseHref to match!
-      ##
-      paths:
-        - /ogdc(/|$)(.*)
-
-      ## @param argo-workflows.server.ingress.pathType Path type
-      ## Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
-      ##
-      pathType: ImplementationSpecific
-
-      ## @param argo-workflows.server.ingress.servicePort Ingress service backend port
-      ## This is the port for the argo server service.
-      ##
-      servicePort: 2746
-
-      ## @param argo-workflows.server.ingress.tls [array] Ingress TLS configuration
-      ## Add TLS configuration for the Ingress, if desired.
-      ## This example assumes you have created a TLS secret named
-      ## 'ingress-nginx-tls-cert' in the same namespace as the argo server.
-      ## The TLS secret must contain the certificate and private key for the host(s)
-      ## specified above.
-      ##
-      tls:
-        - hosts:
-            - api.test.dataone.org
-          secretName: ingress-nginx-tls-cert
-
   ## Argo Executor configuration
   executor:
     ## @param argo-workflows.executor.resources.requests.memory Memory requests for the workflow executor
@@ -235,6 +219,9 @@ argo-workflows:
   ## Artifact repository configuration
   artifactRepository:
     ## @param argo-workflows.artifactRepository.archiveLogs Archive the main container logs as an artifact
+    ## Setting to true is not reccomended by the official docs! See:
+    ## https://argo-workflows.readthedocs.io/en/latest/configure-archive-logs/
+    ##
     archiveLogs: false
 
     ## @param argo-workflows.artifactRepository.s3.bucket S3 bucket name
@@ -327,7 +314,18 @@ image:
   repository: ogdc-runner
   tag: latest
 
-## @param ogdc_service_command Command to run the OGDC service
+## @param ogdc_service_command Command to start the OGDC FastAPI service
 ## Default to production fastapi run command
 ##
-ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service.py"
+ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
+
+## @param dataone_node_url DataONE member node URL for metadata retrieval
+dataone_node_url: "https://arcticdata.io/metacat/d1/mn"
+
+## @param internal_s3_endpoint_url Internal S3 endpoint URL for MinIO service
+## This is the URL at which the s3 service is exposed at.
+##
+internal_s3_endpoint_url: "http://qgnet-ogdc-minio:9000"
+
+## @param public_s3_endpoint_url Public S3 endpoint URL for external access
+public_s3_endpoint_url: "http://api.test.dataone.org/ogdc/objectstore/"

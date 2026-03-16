@@ -50,6 +50,20 @@ helm upgrade --install cnpg \
   cnpg/cloudnative-pg
 ```
 
+### NGINX Ingress Controller
+
+[NGINX Ingress](https://github.com/kubernetes/ingress-nginx) is expected to be
+available on the cluster.
+
+**For dev/prod environments**, this should already be installed.
+
+**For local environments** (Rancher Desktop), manually install the ingress
+controller:
+
+```
+helm upgrade --install ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx --namespace ingress-nginx --create-namespace
+```
+
 ## Getting started
 
 
@@ -110,6 +124,7 @@ envsubst < helm/admin/workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```sh
 envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/ogdc-api-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 5. Create OGDC database.
@@ -123,6 +138,12 @@ chart:
 
 ```sh
 helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-local-cluster-values.yaml  --version 1.0.0 --namespace qgnet
+```
+
+6. Create the secret containing a self-signed SSL cert:
+
+```
+./scripts/create-local-tls-cert.sh
 ```
 
 #### Using skaffold
@@ -167,6 +188,7 @@ envsubst < helm/admin/cephfs-releasename-postgres-pvc.yaml | kubectl apply -n "$
 ```sh
 envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst < helm/admin/ogdc-api-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 3. Create a db cluster for OGDC with release-name `ogdc-db` using the DataONE

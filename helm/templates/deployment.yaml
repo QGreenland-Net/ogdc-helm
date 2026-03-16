@@ -26,11 +26,30 @@ spec:
         ports:
         - containerPort: 8000
           name: ogdc-api-port
+        envFrom:
+        - secretRef:
+            name: "{{ .Release.Name }}-api-secrets"
+        - configMapRef:
+            name: "{{ .Release.Name }}-ogdc-service-config"
         env:
-        - name: "ENVIRONMENT"
-          value: {{ .Values.environment }}
-        - name: "OGDC_RUNNER_IMAGE_TAG"
-          value: {{ .Values.image.tag }}
-        - name: "ARGO_WORKFLOWS_SERVICE_URL"
-          # http://qgnet-ogdc-argo-workflows-server.qgnet.svc.cluster.local:2746
-          value: "http://{{ .Release.Name }}-argo-workflows-server.{{ .Release.Namespace }}.svc.cluster.local:2746"
+        # OGDC envvars from secrets
+        - name: OGDC_DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: "ogdc-db-postgres-secrets"
+              key: username
+        - name: OGDC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: "ogdc-db-postgres-secrets"
+              key: password
+        - name: S3_SECRET_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Release.Name }}-secrets"
+              key: rootUser
+        - name: S3_SECRET_KEY_KEY
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Release.Name }}-secrets"
+              key: rootPassword

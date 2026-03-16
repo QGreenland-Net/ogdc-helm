@@ -80,7 +80,7 @@ argo-workflows:
       ## Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
       pathType: ImplementationSpecific
       ## -- Ingress service backend configuration
-      ## This is the port for the argo server service.
+      ## This is the port for the ogdc service
       servicePort: 8000
       ## -- Ingress TLS configuration
       ## Add TLS configuration for the Ingress, if desired.
@@ -126,3 +126,7 @@ image:
   tag: latest
 
 environment: "prod"
+
+ogdc_public_host: "api.dataone.org"
+ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
+dataone_node_url: "https://arcticdata.io/metacat/d1/mn"
