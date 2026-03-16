@@ -314,6 +314,18 @@ image:
   repository: ogdc-runner
   tag: latest
 
+## @param resources.requests.memory Memory requests for OGDC service
+## @param resources.requests.cpu CPU requests for OGDC service
+## @param resources.limits.memory Memory limits for OGDC service
+## @param resources.limits.cpu CPU limits for OGDC service
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "500m"
+  limits: 
+    memory: "2Gi"
+    cpu: "1000m"
+
 ## @param ogdc_service_command Command to start the OGDC FastAPI service
 ## Default to production fastapi run command
 ##
@@ -322,10 +334,45 @@ ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 
 ## @param dataone_node_url DataONE member node URL for metadata retrieval
 dataone_node_url: "https://arcticdata.io/metacat/d1/mn"
 
+## @param ogdc_public_host Public hostname for OGDC service and ingress configuration
+## For local development, set to "localhost" and disable ingress
+## For dev cluster, set to "api.test.dataone.org"
+## For prod cluster, set to "api.dataone.org"
+ogdc_public_host: "api.test.dataone.org"
+
 ## @param internal_s3_endpoint_url Internal S3 endpoint URL for MinIO service
-## This is the URL at which the s3 service is exposed at.
+## This is the URL at which the s3 service is exposed at (cluster-internal)
 ##
 internal_s3_endpoint_url: "http://qgnet-ogdc-minio:9000"
 
 ## @param public_s3_endpoint_url Public S3 endpoint URL for external access
-public_s3_endpoint_url: "http://api.test.dataone.org/ogdc/objectstore/"
+## Uses ogdc_public_host by default
+public_s3_endpoint_url: "https://{{ .Values.ogdc_public_host }}/ogdc/storage/"
+
+## @param environment Environment name (dev, prod, local)
+environment: "dev"
+
+## @section Ingress Configuration
+## Ingress configuration for OGDC API and storage endpoints
+##
+ingress:
+  ## @param ingress.enabled Enable ingress resource for OGDC
+  ## Set to false for local development
+  enabled: true
+
+  ## @param ingress.className IngressClass to use for the ingress resource
+  className: "nginx"
+
+  annotations:
+    ## @param ingress.annotations.cert-manager.io/cluster-issuer cert-manager ClusterIssuer to use for TLS certificate management
+    ## @param ingress.annotations.nginx.ingress.kubernetes.io/rewrite-target Rewrite target for nginx ingress
+    ## @param ingress.annotations.nginx.ingress.kubernetes.io/use-regex Use regex for nginx ingress paths
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+
+  tls:
+    ## @param ingress.tls.enabled Enable TLS for ingress
+    ## @param ingress.tls.secretName Name of the secret containing TLS certificate
+    enabled: true
+    secretName: "ingress-nginx-tls-cert"
