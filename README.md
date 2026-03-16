@@ -236,6 +236,16 @@ helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-clust
 To uninstall the ogdc from the kubernetes cluster, use the
 `./scripts/uninstall-ogdc.sh` script.
 
+**Usage:**
+```bash
+# Specify environment (local, dev, or prod). Defaults to local.
+./scripts/uninstall-ogdc.sh [local|dev|prod]
+```
+
+**Behavior:**
+- In **local** environments: Automatically removes Argo CRDs after uninstalling the Helm release
+- In **dev/prod** environments: Only uninstalls the Helm release; CRDs are preserved as they are managed separately
+
 ### Cleaning up Argo CRDs
 
 The `./scripts/cleanup-argo-crds.sh` script is used to remove Argo Custom Resource Definitions (CRDs) from your cluster. 
