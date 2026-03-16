@@ -47,14 +47,6 @@ argo-workflows:
     ## -- Install and upgrade CRDs
     install: true
 
-  ## Argo Server configuration
-  server:
-    ## Ingress configuration.
-    # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
-    ingress:
-      # -- Enable an ingress resource
-      enabled: false
-
   ## Artifact repository configuration
   artifactRepository:
     s3:
@@ -105,5 +97,9 @@ environment: "local"
 ogdc_service_command: ". ./.venv/bin/activate && fastapi dev --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
 
 
-ogdc_public_host: "localhost:7443"
-ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
+ogdc_public_host: "localhost"
+internal_s3_endpoint_url: "http://qgnet-ogdc-minio:9000"
+public_s3_endpoint_url: "http://localhost:7443/ogdc/storage/"
+
+ingress:
+  enabled: true
