@@ -118,11 +118,29 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 
 ### OGDC Configuration
 
-| Name                       | Description                                    | Value                                                                                              |
-| -------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `image.repository`         | OGDC container image repository                | `ogdc-runner`                                                                                      |
-| `image.tag`                | OGDC container image tag                       | `latest`                                                                                           |
-| `ogdc_service_command`     | Command to start the OGDC FastAPI service      | `. ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py` |
-| `dataone_node_url`         | DataONE member node URL for metadata retrieval | `https://arcticdata.io/metacat/d1/mn`                                                              |
-| `internal_s3_endpoint_url` | Internal S3 endpoint URL for MinIO service     | `http://qgnet-ogdc-minio:9000`                                                                     |
-| `public_s3_endpoint_url`   | Public S3 endpoint URL for external access     | `http://api.test.dataone.org/ogdc/objectstore/`                                                    |
+| Name                        | Description                                                | Value                                                                                              |
+| --------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `image.repository`          | OGDC container image repository                            | `ogdc-runner`                                                                                      |
+| `image.tag`                 | OGDC container image tag                                   | `latest`                                                                                           |
+| `resources.requests.memory` | Memory requests for OGDC service                           | `1Gi`                                                                                              |
+| `resources.requests.cpu`    | CPU requests for OGDC service                              | `500m`                                                                                             |
+| `resources.limits.memory`   | Memory limits for OGDC service                             | `2Gi`                                                                                              |
+| `resources.limits.cpu`      | CPU limits for OGDC service                                | `1000m`                                                                                            |
+| `ogdc_service_command`      | Command to start the OGDC FastAPI service                  | `. ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py` |
+| `dataone_node_url`          | DataONE member node URL for metadata retrieval             | `https://arcticdata.io/metacat/d1/mn`                                                              |
+| `ogdc_public_host`          | Public hostname for OGDC service and ingress configuration | `api.test.dataone.org`                                                                             |
+| `internal_s3_endpoint_url`  | Internal S3 endpoint URL for MinIO service                 | `http://qgnet-ogdc-minio:9000`                                                                     |
+| `public_s3_endpoint_url`    | Public S3 endpoint URL for external access                 | `https://api.test.dataone.org/ogdc/storage/`                                                       |
+| `environment`               | Environment name (dev, prod, local)                        | `dev`                                                                                              |
+
+### Ingress Configuration
+
+| Name                                                             | Description                                                      | Value                    |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------ |
+| `ingress.enabled`                                                | Enable ingress resource for OGDC                                 | `true`                   |
+| `ingress.className`                                              | IngressClass to use for the ingress resource                     | `nginx`                  |
+| `ingress.annotations.cert-manager.io/cluster-issuer`             | cert-manager ClusterIssuer to use for TLS certificate management | `letsencrypt-prod`       |
+| `ingress.annotations.nginx.ingress.kubernetes.io/rewrite-target` | Rewrite target for nginx ingress                                 | `/$2`                    |
+| `ingress.annotations.nginx.ingress.kubernetes.io/use-regex`      | Use regex for nginx ingress paths                                | `true`                   |
+| `ingress.tls.enabled`                                            | Enable TLS for ingress                                           | `true`                   |
+| `ingress.tls.secretName`                                         | Name of the secret containing TLS certificate                    | `ingress-nginx-tls-cert` |

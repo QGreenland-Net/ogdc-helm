@@ -37,62 +37,6 @@ argo-workflows:
     ## -- Install and upgrade CRDs
     install: false
 
-  ## Argo Server configuration
-  server:
-    ## -- Value for base href in index.html. Used if the server is running behind reverse proxy under subpath different from /.
-    ## only updates base url of resources on client side,
-    ## it's expected that a proxy server rewrites the request URL and gets rid of this prefix
-    ## https://github.com/argoproj/argo-workflows/issues/716#issuecomment-433213190
-    baseHref: /ogdc
-
-    ## Ingress configuration.
-    # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
-    ingress:
-      ## -- Enable an ingress resource
-      ## Enable an ingress resource for the Argo server
-      enabled: true
-      # -- Ingress class name
-      ## Your cluster may require this to be set to match your IngressClass resource.
-      ## For nginx ingress controller, use:  ingressClassName: "nginx"
-      ingressClassName: "nginx"
-      # -- Additional ingress annotations
-      ## Add any additional annotations that your ingress controller may need.
-      ## For example, for cert-manager TLS using the 'letsencrypt-prod' ClusterIssuer
-      ## (which must be created separately), and to specify that the backend protocol
-      ## is HTTPS, use the following annotations:
-      annotations: { 
-        cert-manager.io/cluster-issuer: letsencrypt-prod,
-        nginx.ingress.kubernetes.io/rewrite-target: /$2,
-        nginx.ingress.kubernetes.io/use-regex: "true"
-      }
-      ## -- Ingress hosts
-      ## Add host names (without http(s):// or path) that map to the argo server service.
-      ## You may need to add multiple hosts if you have multiple DNS names that map to the
-      ## same service.
-      hosts:
-        - api.dataone.org
-      ## -- Ingress endpoint paths
-      ## If you are using a path other than '/', make sure to also set
-      ## server.baseHref to match!
-      paths:
-        - /ogdc(/|$)(.*)
-      ## -- Path type
-      ## Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types
-      pathType: ImplementationSpecific
-      ## -- Ingress service backend configuration
-      ## This is the port for the ogdc service
-      servicePort: 8000
-      ## -- Ingress TLS configuration
-      ## Add TLS configuration for the Ingress, if desired.
-      ## This example assumes you have created a TLS secret named
-      ## 'ingress-nginx-tls-cert' in the same namespace as the argo server.
-      ## The TLS secret must contain the certificate and private key for the host(s)
-      ## specified above.
-      tls:
-        - hosts:
-            - api.dataone.org
-          secretName: ingress-nginx-tls-cert
-
   ## Artifact repository configuration## Artifact repository configuration
   artifactRepository:
     s3:
@@ -128,5 +72,9 @@ image:
 environment: "prod"
 
 ogdc_public_host: "api.dataone.org"
-ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
+internal_s3_endpoint_url: "http://qgnet-ogdc-minio:9000"
+public_s3_endpoint_url: "https://api.dataone.org/ogdc/storage/"
 dataone_node_url: "https://arcticdata.io/metacat/d1/mn"
+
+ingress:
+  enabled: true
