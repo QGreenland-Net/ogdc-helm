@@ -4,6 +4,12 @@ set -e
 
 ENV="${1:-local}"
 
+# Default release name and namespace if not set in the environment.
+# These must match the values used when creating the admin resources
+# (secrets, PVCs, DB cluster) in helm/admin/.
+export RELEASE_NAME="${RELEASE_NAME:-qgnet-ogdc}"
+export NAMESPACE="${NAMESPACE:-qgnet}"
+
 # Validate environment
 # Only allow local, dev, prod
 # Defaults to local
@@ -37,7 +43,7 @@ helm repo add argo-workflows https://argoproj.github.io/argo-helm
 helm dependency update helm/
 helm dependency build helm/
 
-# `qgnet-ogdc` is the "release name".
-envsubst < "$VALUES_FILE" | helm install \
+# Install OGDC with the appropriate values file for the environment.
+envsubst '${RELEASE_NAME} ${NAMESPACE}' < "$VALUES_FILE" | helm install \
   "$RELEASE_NAME" "$THIS_DIR/../helm" \
   -n "$NAMESPACE" -f -
