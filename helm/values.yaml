@@ -329,3 +329,33 @@ internal_s3_endpoint_url: "http://qgnet-ogdc-minio:9000"
 
 ## @param public_s3_endpoint_url Public S3 endpoint URL for external access
 public_s3_endpoint_url: "http://api.test.dataone.org/ogdc/objectstore/"
+
+## @section OGDC Service Ingress Configuration
+## Ingress for the OGDC service (API + object storage passthrough).
+## The argo-workflows server has its own ingress config under
+## `argo-workflows.server.ingress` above.
+##
+ingress:
+  ## @param ingress.enabled Enable the OGDC service ingress
+  enabled: false
+
+  ## @param ingress.ingressClassName Ingress class name
+  ingressClassName: "nginx"
+
+  ## @param ingress.annotations Additional ingress annotations
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+
+  ## @param ingress.apiPath Ingress path for the OGDC API service
+  apiPath: "/ogdc/api(/|$)(.*)"
+
+  ## @param ingress.storagePath Ingress path for the MinIO object storage
+  storagePath: "/ogdc/storage(/|$)(.*)"
+
+  ## @param ingress.tls Ingress TLS configuration
+  tls: []
+    # - hosts:
+    #     - api.test.dataone.org
+    #   secretName: ingress-nginx-tls-cert
