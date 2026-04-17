@@ -21,7 +21,7 @@ echo "Using release name=${RELEASE_NAME}"
 
 THIS_DIR="$( cd "$(dirname "$0")"; pwd -P )"
 
-helm uninstall $RELEASE_NAME -n $NAMESPACE
+helm uninstall "$RELEASE_NAME" -n "$NAMESPACE"
 
 # Only remove CRDs in local environment. For dev/prod environments, CRDs are managed separately.
 if [[ "$ENV" == "local" ]]; then

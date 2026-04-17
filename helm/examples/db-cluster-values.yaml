@@ -4,7 +4,8 @@
 # Example:
 #   export RELEASE_NAME=qgnet-ogdc NAMESPACE=qgnet
 #   envsubst < helm/examples/db-cluster-values.yaml | \
-#   helm install "${RELEASE_NAME}-db" oci://ghcr.io/dataoneorg/charts/cnpg --namespace "$NAMESPACE" -f -
+#   helm install "${RELEASE_NAME}-db" oci://ghcr.io/dataoneorg/charts/cnpg \
+#     --version 1.0.0 --namespace "$NAMESPACE" -f -
 #
 # See: https://github.com/DataONEorg/dataone-cnpg/ for more information.
 instances: 3
