@@ -152,11 +152,12 @@ envsubst '${RELEASE_NAME}' < helm/admin/ogdc-api-secrets.yaml | kubectl apply -n
 > [Prerequisites](#Prerequisites) above.
 
 
-Create a db cluster for OGDC with release-name `ogdc-db` using the DataONE cnpg
-chart:
+Create a db cluster for OGDC with release-name `${RELEASE_NAME}-db` (e.g.
+`qgnet-ogdc-db` for the local defaults) using the DataONE cnpg chart:
 
 ```sh
-helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-local-cluster-values.yaml  --version 1.0.0 --namespace qgnet
+envsubst '${RELEASE_NAME}' < helm/examples/db-local-cluster-values.yaml | \
+  helm install "${RELEASE_NAME}-db" oci://ghcr.io/dataoneorg/charts/cnpg --namespace "$NAMESPACE" -f -
 ```
 
 6. Create the secret containing a self-signed SSL cert:
@@ -218,8 +219,8 @@ For more information, see the [Argo Workflows CRD installation guide](https://gi
 export RELEASE_NAME=${RELEASE_NAME:-qgnet-ogdc}
 export NAMESPACE=${NAMESPACE:-qgnet}
 
-envsubst < helm/admin/cephfs-releasename-minio-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
-envsubst < helm/admin/cephfs-releasename-workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst '${RELEASE_NAME} ${NAMESPACE}' < helm/admin/cephfs-releasename-minio-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst '${RELEASE_NAME} ${NAMESPACE}' < helm/admin/cephfs-releasename-workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 2. Create credentials for MinIO and postgresql.:
@@ -228,16 +229,17 @@ envsubst < helm/admin/cephfs-releasename-workflow-pvc.yaml | kubectl apply -n "$
 > Each of these secrets files need to be MANUALLY EDITED to reflect the desired secret values in dev/prod. If this is not done, public deafults will be used.
 
 ```sh
-envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
-envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
-envsubst < helm/admin/ogdc-api-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst '${RELEASE_NAME}' < helm/admin/secrets.yaml          | kubectl apply -n "$NAMESPACE" -f -
+envsubst '${RELEASE_NAME}' < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst '${RELEASE_NAME}' < helm/admin/ogdc-api-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
-3. Create a db cluster for OGDC with release-name `ogdc-db` using the DataONE
-   cnpg chart:
+3. Create a db cluster for OGDC with release-name `${RELEASE_NAME}-db` using
+   the DataONE cnpg chart:
 
 ```sh
-helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-cluster-values.yaml  --version 1.0.0 --namespace qgnet
+envsubst '${RELEASE_NAME}' < helm/examples/db-cluster-values.yaml | \
+  helm install "${RELEASE_NAME}-db" oci://ghcr.io/dataoneorg/charts/cnpg --namespace "$NAMESPACE" -f -
 ```
 
 4. Perform the installation for the OGDC service
@@ -364,8 +366,8 @@ If something is not working as expected, start by listing services in the
 ```
 $ kubectl get svc -n qgnet
 NAME                               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
-qgnet-argo-minio                   ClusterIP   10.43.76.177    <none>        9000/TCP,9001/TCP   14m
-qgnet-argo-argo-workflows-server   ClusterIP   10.43.231.175   <none>        2746/TCP            14m
+qgnet-ogdc-minio                        ClusterIP   10.43.76.177    <none>        9000/TCP,9001/TCP   14m
+qgnet-ogdc-argo-workflows-server        ClusterIP   10.43.231.175   <none>        2746/TCP            14m
 ```
 
 ### Argo reports that its artifact repository is not configured
