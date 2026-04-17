@@ -152,7 +152,7 @@ Create a db cluster for OGDC with release-name `${RELEASE_NAME}-db` (e.g.
 ```sh
 envsubst '${RELEASE_NAME}' < helm/examples/db-local-cluster-values.yaml | \
   helm install "${RELEASE_NAME}-db" oci://ghcr.io/dataoneorg/charts/cnpg \
-    --version 1.1.0 --namespace "$NAMESPACE" -f -
+    --version 1.1.2 --namespace "$NAMESPACE" -f -
 ```
 
 6. Create the secret containing a self-signed SSL cert:
@@ -235,7 +235,7 @@ envsubst '${RELEASE_NAME}' < helm/admin/ogdc-api-secrets.yaml | kubectl apply -n
 ```sh
 envsubst '${RELEASE_NAME}' < helm/examples/db-cluster-values.yaml | \
   helm install "${RELEASE_NAME}-db" oci://ghcr.io/dataoneorg/charts/cnpg \
-    --version 1.1.0 --namespace "$NAMESPACE" -f -
+    --version 1.1.2 --namespace "$NAMESPACE" -f -
 ```
 
 4. Perform the installation for the OGDC service
