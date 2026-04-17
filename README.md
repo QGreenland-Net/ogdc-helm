@@ -101,33 +101,49 @@ kubectl create namespace qgnet
 1. Set common variables:
 
 > [!NOTE]
-> for local development, the `RELEASE_NAME` is always expected to be
-> `qgnet-ogdc` and the `NAMESPACE` is expected to `qgnet`. These values are
-> expected by `skaffold` (see `skaffold.yaml`).
+> `RELEASE_NAME` defaults to `qgnet-ogdc` and `NAMESPACE` defaults to `qgnet`
+> throughout the scripts and example values files. Override either envvar to
+> deploy under a different name/namespace — the example values files use
+> `${RELEASE_NAME}` / `${NAMESPACE}` placeholders that are substituted at
+> install time via `envsubst`. The CNPG DB release name is always
+> `${RELEASE_NAME}-db`, and the DB/MinIO/API secrets are named
+> `${RELEASE_NAME}-db-postgres-secrets`, `${RELEASE_NAME}-secrets`, and
+> `${RELEASE_NAME}-api-secrets` respectively.
+>
+> For local development with `skaffold`, the defaults `qgnet-ogdc` / `qgnet`
+> are expected (see `skaffold.yaml`).
 
 ```sh
-export RELEASE_NAME=qgnet-ogdc
-export NAMESPACE=qgnet
+export RELEASE_NAME=qgnet-ogdc   # default
+export NAMESPACE=qgnet           # default
 export OGDC_PV_HOST_PATH=/Users/yourname/your-pv-directory
 ```
+
+> [!NOTE]
+> Throughout this guide, `envsubst` is always invoked with an explicit allowlist
+> of variables (`'${RELEASE_NAME} ${NAMESPACE} ${OGDC_PV_HOST_PATH}'`) so that
+> unrelated shell-style tokens inside yaml (e.g. the nginx ingress `$2` capture
+> group) are preserved verbatim.
 
 2. Create the Workflow and postgres PVs:
 
 ```sh
-envsubst < helm/admin/workflow-pv.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst '${RELEASE_NAME} ${NAMESPACE} ${OGDC_PV_HOST_PATH}' \
+  < helm/admin/workflow-pv.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 3. Create the Workflow and postgres PVCs:
 
 ```sh
-envsubst < helm/admin/workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst '${RELEASE_NAME} ${NAMESPACE}' \
+  < helm/admin/workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 4. Create credentials for MinIO and postgresql:
 ```sh
-envsubst < helm/admin/secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
-envsubst < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
-envsubst < helm/admin/ogdc-api-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst '${RELEASE_NAME}' < helm/admin/secrets.yaml          | kubectl apply -n "$NAMESPACE" -f -
+envsubst '${RELEASE_NAME}' < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
+envsubst '${RELEASE_NAME}' < helm/admin/ogdc-api-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 5. Create OGDC database.

@@ -346,10 +346,12 @@ ingress:
   ## @param ingress.ingressClassName Ingress class name
   ingressClassName: "nginx"
 
-  ## @param ingress.annotations Additional ingress annotations
   annotations:
+    ## @param ingress.annotations.cert-manager.io/cluster-issuer ClusterIssuer to use for TLS certificates
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    ## @param ingress.annotations.nginx.ingress.kubernetes.io/rewrite-target Rewrite target for nginx ingress
     nginx.ingress.kubernetes.io/rewrite-target: /$2
+    ## @param ingress.annotations.nginx.ingress.kubernetes.io/use-regex Enable regex matching for ingress paths
     nginx.ingress.kubernetes.io/use-regex: "true"
 
   ## @param ingress.apiPath Ingress path for the OGDC API service
