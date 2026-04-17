@@ -1,11 +1,14 @@
 # Non-local (dev/prod) configuration for the OGDC CNPG postgres DB cluster.
-# This should be applied once via the the `dataone-cnpg` chart:
-# `helm install ogdc-db oci://ghcr.io/dataoneorg/charts/cnpg -f helm/admin/db-cluster-values.yaml  --version 1.0.0 --namespace qgnet -`
+# This should be applied once via the `dataone-cnpg` chart, using "${RELEASE_NAME}-db" as the CNPG release name
+#
+# Example:
+#   export RELEASE_NAME=qgnet-ogdc NAMESPACE=qgnet
+#   envsubst < helm/examples/db-cluster-values.yaml | \
+#   helm install "${RELEASE_NAME}-db" oci://ghcr.io/dataoneorg/charts/cnpg --namespace "$NAMESPACE" -f -
+#
 # See: https://github.com/DataONEorg/dataone-cnpg/ for more information.
 instances: 3
-# NOTE: `ogdc-db` is the expected release name of the CNPG postgres DB cluster
-# for the OGDC.
-existingSecret: "ogdc-db-postgres-secrets"
+existingSecret: "${RELEASE_NAME}-db-postgres-secrets"
 dbName: ogdc
 dbUser: admin
 persistence:

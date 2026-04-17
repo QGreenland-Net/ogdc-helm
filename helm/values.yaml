@@ -28,11 +28,11 @@ global:
   ##  &passwordSecretName. IF YOU OVERRIDE THIS VALUE IN ANOTHER VALUES-OVERLAY FILE, YOU ALSO
   ## NEED TO OVERRIDE THE VALUES THAT USE THIS ANCHOR - search this file for 'passwordSecretName')
   ##
-  ## IMPORTANT NOTE: make sure you edit this, since IT INCLUDES THE RELEASE NAME! For
-  ## example, if the release name is 'myrelease', the value of name: would be
-  ## 'myrelease-secrets'.
+  ## IMPORTANT NOTE: this value includes the release name. The default here matches
+  ## the default RELEASE_NAME (`qgnet-ogdc`). When overriding the release name, the
+  ## example values files use the `${RELEASE_NAME}-secrets` pattern via envsubst.
   ##
-  passwordsSecret: &passwordSecretName "myrelease-secrets"
+  passwordsSecret: &passwordSecretName "qgnet-ogdc-secrets"
 
   ## @param global.defaultStorageClass Global default StorageClass for Persistent Volume(s)
   ##
@@ -133,14 +133,14 @@ argo-workflows:
       ## @param argo-workflows.controller.persistence.postgresql.passwordSecret.name Secret name containing PostgreSQL password
       ## @param argo-workflows.controller.persistence.postgresql.passwordSecret.key Secret key for PostgreSQL password
       postgresql:
-        host: "ogdc-db-cnpg-rw"
+        host: "qgnet-ogdc-db-cnpg-rw"
         database: "ogdc"
         tableName: "argo_workflows_archive"
         userNameSecret:
-          name: "ogdc-db-postgres-secrets"
+          name: "qgnet-ogdc-db-postgres-secrets"
           key: "username"
         passwordSecret:
-          name: "ogdc-db-postgres-secrets"
+          name: "qgnet-ogdc-db-postgres-secrets"
           key: "password"
 
     ## @param argo-workflows.controller.workflowNamespaces Namespaces where workflow controller will manage workflows
@@ -322,13 +322,17 @@ ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 
 ## @param dataone_node_url DataONE member node URL for metadata retrieval
 dataone_node_url: "https://arcticdata.io/metacat/d1/mn"
 
-## @param internal_s3_endpoint_url Internal S3 endpoint URL for MinIO service
-## This is the URL at which the s3 service is exposed at.
+## @param ogdc_s3_endpoint Internal S3 endpoint URL for MinIO service
+## This is the URL at which the s3 service is exposed at within the cluster.
+## Injected into the ogdc-service pod as `INTERNAL_S3_ENDPOINT_URL`.
 ##
-internal_s3_endpoint_url: "http://qgnet-ogdc-minio:9000"
+ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
 
-## @param public_s3_endpoint_url Public S3 endpoint URL for external access
-public_s3_endpoint_url: "http://api.test.dataone.org/ogdc/objectstore/"
+## @param ogdc_public_host Public host (no scheme, no path) for external access.
+## Combined with a fixed path to produce `PUBLIC_S3_ENDPOINT_URL` in the
+## ogdc-service pod, and also used by the optional OGDC service ingress.
+##
+ogdc_public_host: "api.test.dataone.org"
 
 ## @section OGDC Service Ingress Configuration
 ## Ingress for the OGDC service (API + object storage passthrough).
