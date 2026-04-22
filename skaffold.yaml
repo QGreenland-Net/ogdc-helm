@@ -39,30 +39,6 @@ deploy:
           image.tag: "{{.IMAGE_TAG_ogdc_runner}}"
         valuesFiles:
           - ./helm/examples/values-local-cluster-ogdc-example.yaml
-        # Resolve ${RELEASE_NAME}/${NAMESPACE} placeholders
-        overrides:
-          global:
-            passwordsSecret: "qgnet-ogdc-secrets"
-          argo-workflows:
-            controller:
-              workflowNamespaces:
-                - qgnet
-              persistence:
-                postgresql:
-                  host: "qgnet-ogdc-db-cnpg-rw"
-                  userNameSecret:
-                    name: "qgnet-ogdc-db-postgres-secrets"
-                  passwordSecret:
-                    name: "qgnet-ogdc-db-postgres-secrets"
-            artifactRepository:
-              s3:
-                accessKeySecret:
-                  name: "qgnet-ogdc-secrets"
-                secretKeySecret:
-                  name: "qgnet-ogdc-secrets"
-          minio:
-            existingSecret: "qgnet-ogdc-secrets"
-          ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
 
 portForward:
   # Expose ogdc-runner API at port 8000

@@ -137,7 +137,6 @@ envsubst '${RELEASE_NAME} ${NAMESPACE}' \
 ```sh
 envsubst '${RELEASE_NAME}' < helm/admin/secrets.yaml          | kubectl apply -n "$NAMESPACE" -f -
 envsubst '${RELEASE_NAME}' < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
-envsubst '${RELEASE_NAME}' < helm/admin/ogdc-api-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 5. Create OGDC database.
@@ -235,7 +234,6 @@ envsubst '${RELEASE_NAME} ${NAMESPACE}' < helm/admin/cephfs-releasename-workflow
 ```sh
 envsubst '${RELEASE_NAME}' < helm/admin/secrets.yaml          | kubectl apply -n "$NAMESPACE" -f -
 envsubst '${RELEASE_NAME}' < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
-envsubst '${RELEASE_NAME}' < helm/admin/ogdc-api-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
 3. Create a db cluster for OGDC with release-name `${RELEASE_NAME}-db` using
