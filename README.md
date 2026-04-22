@@ -172,6 +172,15 @@ changes in a local environment. Use the `run-local.sh` script to use skaffold:
 > not work with this project's configuration. We recommend installing skaffold
 > from source for the latest version.
 
+> [!IMPORTANT]
+> If you run `run-local.sh` directly, you must first add the required Helm
+> repositories:
+> ```sh 
+> helm repo add argo https://argoproj.github.io/argo-helm
+> helm repo add minio https://charts.min.io/
+> helm repo update
+> ```
+
 ```
 ./scripts/run-local.sh
 ```
