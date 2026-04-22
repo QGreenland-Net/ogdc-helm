@@ -310,9 +310,16 @@ minio:
 
 ## @param image.repository OGDC container image repository
 ## @param image.tag OGDC container image tag
+## @param image.pullPolicy OGDC container image pull policy
 image:
   repository: ogdc-runner
   tag: latest
+  pullPolicy: IfNotPresent
+
+## @param environment Deployment environment name (local, dev, prod)
+## Injected into the ogdc-service pod as the `ENVIRONMENT` env var.
+##
+environment: ""
 
 ## @param ogdc_service_command Command to start the OGDC FastAPI service
 ## Default to production fastapi run command
@@ -333,6 +340,12 @@ ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
 ## ogdc-service pod, and also used by the optional OGDC service ingress.
 ##
 ogdc_public_host: "api.test.dataone.org"
+
+## @param ogdc_workflow_pvc_name Name of the PVC to use for workflow storage.
+## Injected into the ogdc-service pod as `OGDC_WORKFLOW_PVC_NAME`.
+## Must match the PVC created in helm/admin/ for your cluster.
+##
+ogdc_workflow_pvc_name: "cephfs-qgnet-ogdc-workflow-pvc"
 
 ## @section OGDC Service Ingress Configuration
 ## Ingress for the OGDC service (API + object storage passthrough).

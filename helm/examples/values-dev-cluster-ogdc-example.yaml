@@ -132,7 +132,11 @@ image:
   tag: latest
   pullPolicy: Always
 
+ingress:
+  enabled: true
+
 environment: "dev"
 
 ogdc_public_host: "api.test.dataone.org"
 ogdc_s3_endpoint: "http://${RELEASE_NAME}-minio:9000"
+ogdc_workflow_pvc_name: "cephfs-${RELEASE_NAME}-workflow-pvc"

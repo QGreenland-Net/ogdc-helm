@@ -14,4 +14,4 @@ data:
   API_ROOT_PATH: "/ogdc/api"
   OGDC_DB_HOST: "{{ .Release.Name }}-db-cnpg-rw"
   OGDC_DB_NAME: "ogdc"
-  OGDC_WORKFLOW_PVC_NAME: "cephfs-{{ .Release.Name }}-workflow-pvc"
+  OGDC_WORKFLOW_PVC_NAME: {{ .Values.ogdc_workflow_pvc_name | quote }}

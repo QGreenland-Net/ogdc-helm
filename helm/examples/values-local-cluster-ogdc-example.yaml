@@ -113,3 +113,4 @@ ogdc_service_command: ". ./.venv/bin/activate && fastapi dev --port 8000 --host 
 
 ogdc_public_host: "localhost:7443"
 ogdc_s3_endpoint: "http://${RELEASE_NAME}-minio:9000"
+ogdc_workflow_pvc_name: "${RELEASE_NAME}-workflow-pvc"

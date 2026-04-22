@@ -39,6 +39,31 @@ deploy:
           image.tag: "{{.IMAGE_TAG_ogdc_runner}}"
         valuesFiles:
           - ./helm/examples/values-local-cluster-ogdc-example.yaml
+        # Resolve ${RELEASE_NAME}/${NAMESPACE} placeholders
+        overrides:
+          global:
+            passwordsSecret: "qgnet-ogdc-secrets"
+          argo-workflows:
+            controller:
+              workflowNamespaces:
+                - qgnet
+              persistence:
+                postgresql:
+                  host: "qgnet-ogdc-db-cnpg-rw"
+                  userNameSecret:
+                    name: "qgnet-ogdc-db-postgres-secrets"
+                  passwordSecret:
+                    name: "qgnet-ogdc-db-postgres-secrets"
+            artifactRepository:
+              s3:
+                accessKeySecret:
+                  name: "qgnet-ogdc-secrets"
+                secretKeySecret:
+                  name: "qgnet-ogdc-secrets"
+          minio:
+            existingSecret: "qgnet-ogdc-secrets"
+          ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
+
 
 portForward:
   # Expose ogdc-runner API at port 8000
@@ -60,7 +85,7 @@ portForward:
     port: 5432
     localPort: 5432
   # Expose adminer at port 9090 (8080 is for docs)
-  # Use: http://localhost:9090/?pgsql=ogdc-db-cnpg-rw&username=admin&db=ogdc
+  # Use: http://localhost:9090/?pgsql=qgnet-ogdc-db-cnpg-rw&username=admin&db=ogdc
   # Connect to the postgres database with params:
   #   * System: Postgresql
   #   * Server: postgresql-service
@@ -68,7 +93,7 @@ portForward:
   #   * Password: password
   #   * Database: ogdc
   - resourceType: service
-    resourceName: adminer-service
+    resourceName: qgnet-ogdc-adminer-service
     namespace: qgnet
     port: 8080
     localPort: 9090
