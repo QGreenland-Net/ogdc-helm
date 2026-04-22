@@ -108,9 +108,13 @@ image:
 
 environment: "local"
 
+ingress:
+  enabled: true
+
 # Use fastapi dev server for local dev
 ogdc_service_command: ". ./.venv/bin/activate && fastapi dev --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
 
-ogdc_public_host: "localhost:7443"
+ogdc_public_host: "localhost"
 ogdc_s3_endpoint: "http://${RELEASE_NAME}-minio:9000"
-ogdc_workflow_pvc_name: "${RELEASE_NAME}-workflow-pvc"
+ogdc_public_s3_url: "https://localhost:7443/ogdc/storage"
+ogdc_workflow_pvc_name: "$cephfs-${RELEASE_NAME}-workflow-pvc"

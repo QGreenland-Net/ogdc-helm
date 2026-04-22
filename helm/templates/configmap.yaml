@@ -10,8 +10,9 @@ data:
   ARGO_WORKFLOWS_SERVICE_URL: "http://{{ .Release.Name }}-argo-workflows-server.{{ .Release.Namespace }}.svc.cluster.local:2746"
   ARGO_NAMESPACE: {{ .Release.Namespace | quote }}
   INTERNAL_S3_ENDPOINT_URL: "{{ .Values.ogdc_s3_endpoint }}"
-  PUBLIC_S3_ENDPOINT_URL: "https://{{ .Values.ogdc_public_host }}/ogdc/storage"
+  PUBLIC_S3_ENDPOINT_URL: {{ .Values.ogdc_public_s3_url | default (printf "https://%s/ogdc/storage" .Values.ogdc_public_host) | quote }}
   API_ROOT_PATH: "/ogdc/api"
   OGDC_DB_HOST: "{{ .Release.Name }}-db-cnpg-rw"
   OGDC_DB_NAME: "ogdc"
   OGDC_WORKFLOW_PVC_NAME: {{ .Values.ogdc_workflow_pvc_name | quote }}
+  VIZ_WORKFLOW_IMAGE: {{ .Values.ogdc_viz_workflow_image | quote }}
