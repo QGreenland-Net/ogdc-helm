@@ -118,14 +118,17 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 
 ### OGDC Configuration
 
-| Name                   | Description                                           | Value                                                                                              |
-| ---------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `image.repository`     | OGDC container image repository                       | `ogdc-runner`                                                                                      |
-| `image.tag`            | OGDC container image tag                              | `latest`                                                                                           |
-| `ogdc_service_command` | Command to start the OGDC FastAPI service             | `. ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py` |
-| `dataone_node_url`     | DataONE member node URL for metadata retrieval        | `https://arcticdata.io/metacat/d1/mn`                                                              |
-| `ogdc_s3_endpoint`     | Internal S3 endpoint URL for MinIO service            | `http://qgnet-ogdc-minio:9000`                                                                     |
-| `ogdc_public_host`     | Public host (no scheme, no path) for external access. | `api.test.dataone.org`                                                                             |
+| Name                     | Description                                           | Value                                                                                              |
+| ------------------------ | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `image.repository`       | OGDC container image repository                       | `ogdc-runner`                                                                                      |
+| `image.tag`              | OGDC container image tag                              | `latest`                                                                                           |
+| `image.pullPolicy`       | OGDC container image pull policy                      | `IfNotPresent`                                                                                     |
+| `environment`            | Deployment environment name (local, dev, prod)        | `""`                                                                                               |
+| `ogdc_service_command`   | Command to start the OGDC FastAPI service             | `. ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py` |
+| `dataone_node_url`       | DataONE member node URL for metadata retrieval        | `https://arcticdata.io/metacat/d1/mn`                                                              |
+| `ogdc_s3_endpoint`       | Internal S3 endpoint URL for MinIO service            | `http://qgnet-ogdc-minio:9000`                                                                     |
+| `ogdc_public_host`       | Public host (no scheme, no path) for external access. | `api.test.dataone.org`                                                                             |
+| `ogdc_workflow_pvc_name` | Name of the PVC to use for workflow storage.          | `cephfs-qgnet-ogdc-workflow-pvc`                                                                   |
 
 ### OGDC Service Ingress Configuration
 
