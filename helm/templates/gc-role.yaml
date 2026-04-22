@@ -8,7 +8,7 @@ metadata:
   annotations:
     workflows.argoproj.io/description: |
       This is the minimum recommended permissions needed if you want to use artifact GC.
-  name: artifactgc
+  name: {{ .Release.Name }}-artifactgc
   namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups:
