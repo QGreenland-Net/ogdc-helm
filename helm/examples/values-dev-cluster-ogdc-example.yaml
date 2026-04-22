@@ -2,9 +2,10 @@
 ##
 ## example:
 ##
-##  helm upgrade --install ogdc --debug -n qgnet \
-##                          -f ./helm/examples/values-dev-cluster-ogdc-example.yaml \
-##                          oci://ghcr.io/qgreenland-net/charts/ogdc --version [version]
+##  export RELEASE_NAME=qgnet-ogdc NAMESPACE=qgnet
+##  envsubst < ./helm/examples/values-dev-cluster-ogdc-example.yaml | \
+##  helm upgrade --install "$RELEASE_NAME" --debug -n "$NAMESPACE" \
+##      -f - oci://ghcr.io/qgreenland-net/charts/ogdc
 ##
 ## (or to install from local helm chart code, replace:
 ##  oci://ghcr.io/qgreenland-net/charts/ogdc --version [version]
@@ -21,29 +22,33 @@ global:
   ## (Note the actual key passwordsSecret is not used anywhere; only the yaml anchor/alias
   ##  &passwordSecretName. IF YOU OVERRIDE THIS VALUE IN ANOTHER VALUES-OVERLAY FILE, YOU ALSO
   ## NEED TO OVERRIDE THE VALUES THAT USE THIS ANCHOR - search this file for 'passwordSecretName')
-  ##
-  ## IMPORTANT NOTE: make sure you edit this, since IT INCLUDES THE RELEASE NAME! For
-  ## example, if the release name is 'myrelease', the value of name: would be
-  ## 'myrelease-secrets'.
-  ##
   passwordsSecret: &passwordSecretName ${RELEASE_NAME}-secrets
 
 ## argo-workflows configuration
 ## See https://argoproj.github.io/argo-workflows/
 argo-workflows:
 
-  ## Custom resource configuration
   crds:
-    ## -- Install and upgrade CRDs
     install: false
+
+  controller:
+    workflowNamespaces:
+      - ${NAMESPACE}
+
+    persistence:
+      postgresql:
+        host: "${RELEASE_NAME}-db-cnpg-rw"
+        database: "ogdc"
+        tableName: "argo_workflows_archive"
+        userNameSecret:
+          name: "${RELEASE_NAME}-db-postgres-secrets"
+          key: "username"
+        passwordSecret:
+          name: "${RELEASE_NAME}-db-postgres-secrets"
+          key: "password"
 
   ## Argo Server configuration
   server:
-    ## -- Value for base href in index.html. Used if the server is running behind reverse proxy under subpath different from /.
-    ## only updates base url of resources on client side,
-    ## it's expected that a proxy server rewrites the request URL and gets rid of this prefix
-    ## https://github.com/argoproj/argo-workflows/issues/716#issuecomment-433213190
-    baseHref: /ogdc
 
     ## Ingress configuration.
     # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
@@ -93,7 +98,7 @@ argo-workflows:
             - api.test.dataone.org
           secretName: ingress-nginx-tls-cert
 
-  ## Artifact repository configuration## Artifact repository configuration
+  ## Artifact repository configuration
   artifactRepository:
     s3:
       ## Note the `key` attribute is not the actual secret, it's the PATH to
@@ -127,7 +132,11 @@ image:
   tag: latest
   pullPolicy: Always
 
+ingress:
+  enabled: true
+
 environment: "dev"
 
 ogdc_public_host: "api.test.dataone.org"
-ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
+ogdc_s3_endpoint: "http://${RELEASE_NAME}-minio:9000"
+ogdc_workflow_pvc_name: "cephfs-${RELEASE_NAME}-workflow-pvc"

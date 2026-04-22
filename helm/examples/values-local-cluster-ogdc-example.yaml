@@ -2,12 +2,11 @@
 ##
 ## example:
 ##
-##  helm upgrade --install ogdc --debug -n qgnet --create-namespace \
-##                          -f ./helm/examples/values-dev-cluster-ogdc-example.yaml \
-##                          oci://ghcr.io/qgreenland-net/charts/ogdc --version [version]
+##  export RELEASE_NAME=qgnet-ogdc NAMESPACE=qgnet
+##  envsubst < ./helm/examples/values-local-cluster-ogdc-example.yaml | \
+##  helm upgrade --install "$RELEASE_NAME" --debug -n "$NAMESPACE" \
+##      -f - oci://ghcr.io/qgreenland-net/charts/ogdc
 ##
-## (or to install from local helm chart code, replace: oci://ghcr.io/qgreenland-net/charts/ogdc
-##  with: ./helm)
 ## see values.yaml for full documentation on the following parameters
 ##
 
@@ -19,10 +18,7 @@ global:
   ## (Note the actual key passwordsSecret is not used anywhere; only the yaml anchor/alias
   ##  &passwordSecretName. IF YOU OVERRIDE THIS VALUE IN ANOTHER VALUES-OVERLAY FILE, YOU ALSO
   ## NEED TO OVERRIDE THE VALUES THAT USE THIS ANCHOR - search this file for 'passwordSecretName')
-  ## NOTE: in local development, the release name is expected to be
-  ## `qgnet-ogdc`. If this changes, the value here should be updated:
-  ## `{RELEASE_NAME}-secrets`.
-  passwordsSecret: &passwordSecretName qgnet-ogdc-secrets
+  passwordsSecret: &passwordSecretName ${RELEASE_NAME}-secrets
 
   ## @param global.defaultStorageClass Global default StorageClass for Persistent Volume(s)
   ##
@@ -47,7 +43,18 @@ argo-workflows:
     ## -- Install and upgrade CRDs
     install: true
 
-  ## Argo Server configuration
+  controller:
+    workflowNamespaces:
+      - ${NAMESPACE}
+
+    persistence:
+      postgresql:
+        host: "${RELEASE_NAME}-db-cnpg-rw"
+        userNameSecret:
+          name: "${RELEASE_NAME}-db-postgres-secrets"
+        passwordSecret:
+          name: "${RELEASE_NAME}-db-postgres-secrets"
+
   server:
     ## Ingress configuration.
     # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
@@ -101,9 +108,13 @@ image:
 
 environment: "local"
 
+ingress:
+  enabled: true
+
 # Use fastapi dev server for local dev
 ogdc_service_command: ". ./.venv/bin/activate && fastapi dev --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
 
-
-ogdc_public_host: "localhost:7443"
-ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
+ogdc_public_host: "localhost"
+ogdc_s3_endpoint: "http://${RELEASE_NAME}-minio:9000"
+ogdc_public_s3_url: "https://localhost:7443/ogdc/storage"
+ogdc_workflow_pvc_name: "$cephfs-${RELEASE_NAME}-workflow-pvc"
