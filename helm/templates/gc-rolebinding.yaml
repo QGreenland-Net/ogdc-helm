@@ -5,7 +5,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: gc-rolebinding
+  name: {{ .Release.Name }}-gc-rolebinding
   namespace: {{ .Release.Namespace }}
 subjects:
 - kind: ServiceAccount
@@ -13,5 +13,5 @@ subjects:
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
-  name: artifactgc
+  name: {{ .Release.Name }}-artifactgc
   apiGroup: rbac.authorization.k8s.io

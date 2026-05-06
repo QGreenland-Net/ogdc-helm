@@ -1,42 +1,35 @@
-{{- if .Values.ingress.enabled -}}
+{{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "ogdc.fullname" . }}-ingress
-  labels:
-    {{- include "ogdc.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  name: {{ .Release.Name }}-ingress
+  namespace: {{ .Release.Namespace }}
   annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
 spec:
-  {{- if .Values.ingress.className }}
-  ingressClassName: {{ .Values.ingress.className }}
-  {{- end }}
-  {{- if .Values.ingress.tls.enabled }}
+  ingressClassName: {{ .Values.ingress.ingressClassName | quote }}
+  {{- with .Values.ingress.tls }}
   tls:
-  - hosts:
-      - {{ .Values.ogdc_public_host | quote }}
-    secretName: {{ .Values.ingress.tls.secretName }}
+    {{- toYaml . | nindent 4 }}
   {{- end }}
   rules:
   - host: {{ .Values.ogdc_public_host | quote }}
     http:
       paths:
-      - path: /ogdc/api(/|$)(.*)
-        pathType: Prefix
+      - path: {{ .Values.ingress.apiPath | quote }}
+        pathType: ImplementationSpecific
         backend:
           service:
-            name: ogdc-service-service
+            name: {{ .Release.Name }}-service
             port:
               number: 8000
       # TODO: this will need some re-thinking based on how we deal with
-      # https://github.com/QGreenland-Net/ogdc-helm/issues/46. 
-      - path: /ogdc/storage(/|$)(.*)
-        pathType: Prefix
+      # https://github.com/QGreenland-Net/ogdc-helm/issues/46.
+      - path: {{ .Values.ingress.storagePath | quote }}
+        pathType: ImplementationSpecific
         backend:
           service:
-            name: qgnet-ogdc-minio
+            name: {{ .Release.Name }}-minio
             port:
               number: 9000
 {{- end }}
