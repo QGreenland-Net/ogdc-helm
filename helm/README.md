@@ -43,10 +43,12 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 
 ### Global Configuration
 
-| Name                         | Description                                             | Value                |
-| ---------------------------- | ------------------------------------------------------- | -------------------- |
-| `global.passwordsSecret`     | The name of the Secret containing application passwords | `qgnet-ogdc-secrets` |
-| `global.defaultStorageClass` | Global default StorageClass for Persistent Volume(s)    | `local-path`         |
+| Name                         | Description                                                    | Value                |
+| ---------------------------- | -------------------------------------------------------------- | -------------------- |
+| `global.passwordsSecret`     | The name of the Secret containing application passwords        | `qgnet-ogdc-secrets` |
+| `global.defaultStorageClass` | Global default StorageClass for Persistent Volume(s)           | `local-path`         |
+| `nameOverride`               | String to partially override chart name-derived resource names | `""`                 |
+| `fullnameOverride`           | String to fully override chart name-derived resource names     | `""`                 |
 
 ### Argo Workflows Configuration
 
@@ -118,21 +120,23 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 
 ### OGDC Configuration
 
-| Name                     | Description                                           | Value                                                                                              |
-| ------------------------ | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `image.repository`       | OGDC container image repository                       | `ogdc-runner`                                                                                      |
-| `image.tag`              | OGDC container image tag                              | `latest`                                                                                           |
-| `image.pullPolicy`       | OGDC container image pull policy                      | `IfNotPresent`                                                                                     |
-| `environment`            | Deployment environment name (local, dev, prod)        | `""`                                                                                               |
-| `ogdc_service_command`   | Command to start the OGDC FastAPI service             | `. ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py` |
-| `dataone_node_url`       | DataONE member node URL for metadata retrieval        | `https://arcticdata.io/metacat/d1/mn`                                                              |
-| `ogdc_s3_endpoint`       | Internal S3 endpoint URL for MinIO service            | `http://qgnet-ogdc-minio:9000`                                                                     |
-| `ogdc_public_host`       | Public host (no scheme, no path) for external access. | `api.test.dataone.org`                                                                             |
-| `ogdc_workflow_pvc_name` | Name of the PVC to use for workflow storage.          | `cephfs-qgnet-ogdc-workflow-pvc`                                                                   |
-| `resources.requests.memory` | Memory requests for OGDC service                           | `1Gi`                                                                                              |
-| `resources.requests.cpu`    | CPU requests for OGDC service                              | `500m`                                                                                             |
-| `resources.limits.memory`   | Memory limits for OGDC service                             | `2Gi`                                                                                              |
-| `resources.limits.cpu`      | CPU limits for OGDC service                                | `1000m`                                                                                            |
+| Name                        | Description                                           | Value                                                                                              |
+| --------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `image.repository`          | OGDC container image repository                       | `ogdc-runner`                                                                                      |
+| `image.tag`                 | OGDC container image tag                              | `latest`                                                                                           |
+| `image.pullPolicy`          | OGDC container image pull policy                      | `IfNotPresent`                                                                                     |
+| `environment`               | Deployment environment name (local, dev, prod)        | `""`                                                                                               |
+| `resources.requests.memory` | Memory requests for OGDC service                      | `1Gi`                                                                                              |
+| `resources.requests.cpu`    | CPU requests for OGDC service                         | `500m`                                                                                             |
+| `resources.limits.memory`   | Memory limits for OGDC service                        | `2Gi`                                                                                              |
+| `resources.limits.cpu`      | CPU limits for OGDC service                           | `1000m`                                                                                            |
+| `ogdc_service_command`      | Command to start the OGDC FastAPI service             | `. ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py` |
+| `dataone_node_url`          | DataONE member node URL for metadata retrieval        | `https://arcticdata.io/metacat/d1/mn`                                                              |
+| `ogdc_s3_endpoint`          | Internal S3 endpoint URL for MinIO service            | `http://qgnet-ogdc-minio:9000`                                                                     |
+| `ogdc_public_host`          | Public host (no scheme, no path) for external access. | `api.test.dataone.org`                                                                             |
+| `ogdc_public_s3_url`        | Public S3 endpoint URL for external access.           | `""`                                                                                               |
+| `ogdc_workflow_pvc_name`    | Name of the PVC to use for workflow storage.          | `cephfs-qgnet-ogdc-workflow-pvc`                                                                   |
+| `ogdc_viz_workflow_image`   | Container image used for visualization workflow pods. | `ghcr.io/permafrostdiscoverygateway/viz-workflow:latest`                                           |
 
 ### OGDC Service Ingress Configuration
 

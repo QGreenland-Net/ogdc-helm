@@ -132,6 +132,7 @@ image:
   tag: latest
   pullPolicy: Always
 
+# Ingress configuration
 ingress:
   enabled: true
 
@@ -139,7 +140,6 @@ environment: "dev"
 
 ogdc_public_host: "api.test.dataone.org"
 ogdc_s3_endpoint: "http://${RELEASE_NAME}-minio:9000"
+ogdc_public_s3_url: "https://api.test.dataone.org/ogdc/storage"
 ogdc_workflow_pvc_name: "cephfs-${RELEASE_NAME}-workflow-pvc"
-
-ingress:
-  enabled: true
+ogdc_viz_workflow_image: "ghcr.io/permafrostdiscoverygateway/viz-workflow:latest"

@@ -54,3 +54,5 @@ spec:
             secretKeyRef:
               name: "{{ .Release.Name }}-secrets"
               key: rootPassword
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
