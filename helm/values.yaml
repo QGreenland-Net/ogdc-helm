@@ -415,37 +415,48 @@ viz_workflow:
   ## Recipes can override this through workflow.parallel.partition_size.
   default_partition_size: 1000
 
-  ## @param viz_workflow.resources Resources for visualization workflow pods.
   resources:
-    ## @param viz_workflow.resources.stage Resources for staging and web tile worker pods.
     stage:
+      ## @param viz_workflow.resources.stage.requests.cpu CPU requests for staging and web tile worker pods.
+      ## @param viz_workflow.resources.stage.requests.memory Memory requests for staging and web tile worker pods.
       requests:
         cpu: "500m"
         memory: "2Gi"
+      ## @param viz_workflow.resources.stage.limits.cpu CPU limits for staging and web tile worker pods.
+      ## @param viz_workflow.resources.stage.limits.memory Memory limits for staging and web tile worker pods.
       limits:
         cpu: "2"
         memory: "6Gi"
-    ## @param viz_workflow.resources.raster Resources for raster and composite worker pods.
     raster:
+      ## @param viz_workflow.resources.raster.requests.cpu CPU requests for raster and composite worker pods.
+      ## @param viz_workflow.resources.raster.requests.memory Memory requests for raster and composite worker pods.
       requests:
         cpu: "1"
         memory: "4Gi"
+      ## @param viz_workflow.resources.raster.limits.cpu CPU limits for raster and composite worker pods.
+      ## @param viz_workflow.resources.raster.limits.memory Memory limits for raster and composite worker pods.
       limits:
         cpu: "4"
         memory: "12Gi"
-    ## @param viz_workflow.resources.threedtile Resources for 3D tile worker pods.
     threedtile:
+      ## @param viz_workflow.resources.threedtile.requests.cpu CPU requests for 3D tile worker pods.
+      ## @param viz_workflow.resources.threedtile.requests.memory Memory requests for 3D tile worker pods.
       requests:
         cpu: "2"
         memory: "4Gi"
+      ## @param viz_workflow.resources.threedtile.limits.cpu CPU limits for 3D tile worker pods.
+      ## @param viz_workflow.resources.threedtile.limits.memory Memory limits for 3D tile worker pods.
       limits:
         cpu: "4"
         memory: "8Gi"
-    ## @param viz_workflow.resources.discovery Resources for discovery worker pods.
     discovery:
+      ## @param viz_workflow.resources.discovery.requests.cpu CPU requests for discovery worker pods.
+      ## @param viz_workflow.resources.discovery.requests.memory Memory requests for discovery worker pods.
       requests:
         cpu: "250m"
         memory: "512Mi"
+      ## @param viz_workflow.resources.discovery.limits.cpu CPU limits for discovery worker pods.
+      ## @param viz_workflow.resources.discovery.limits.memory Memory limits for discovery worker pods.
       limits:
         cpu: "500m"
         memory: "1Gi"
