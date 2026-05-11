@@ -15,4 +15,14 @@ data:
   OGDC_DB_HOST: "{{ .Release.Name }}-db-cnpg-rw"
   OGDC_DB_NAME: "ogdc"
   OGDC_WORKFLOW_PVC_NAME: {{ .Values.ogdc_workflow_pvc_name | quote }}
+  OGDC_MAX_PARALLEL_LIMIT: {{ .Values.ogdc_max_parallel_limit | quote }}
+  ARGO_WORKFLOW_RETRY_ENABLED: {{ .Values.argo_workflow_retry.enabled | quote }}
+  ARGO_WORKFLOW_RETRY_LIMIT: {{ .Values.argo_workflow_retry.limit | quote }}
+  ARGO_WORKFLOW_RETRY_POLICY: {{ .Values.argo_workflow_retry.policy | quote }}
   VIZ_WORKFLOW_IMAGE: {{ .Values.ogdc_viz_workflow_image | quote }}
+  VIZ_WORKFLOW_IMAGE_PULL_POLICY: {{ .Values.viz_workflow.image_pull_policy | quote }}
+  {{- with .Values.viz_workflow.setup_image }}
+  VIZ_WORKFLOW_SETUP_IMAGE: {{ . | quote }}
+  {{- end }}
+  VIZ_WORKFLOW_DEFAULT_PARTITION_SIZE: {{ .Values.viz_workflow.default_partition_size | quote }}
+  VIZ_WORKFLOW_RESOURCES: {{ .Values.viz_workflow.resources | toJson | quote }}

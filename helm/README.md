@@ -138,6 +138,14 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 | `ogdc_workflow_pvc_name`    | Name of the PVC to use for workflow storage.          | `cephfs-qgnet-ogdc-workflow-pvc`                                                                   |
 | `ogdc_viz_workflow_image`   | Container image used for visualization workflow pods. | `ghcr.io/permafrostdiscoverygateway/viz-workflow:latest`                                           |
 
+### OGDC Workflow Runtime Configuration
+
+| Name                          | Description                                                        | Value              |
+| ----------------------------- | ------------------------------------------------------------------ | ------------------ |
+| `argo_workflow_retry.enabled` | Enable workflow-level retry defaults. Set as YAML `true`/`false`. | `true`             |
+| `argo_workflow_retry.limit`   | Number of retry attempts for workflow tasks                        | `3`                |
+| `argo_workflow_retry.policy`  | Argo retry policy for workflow tasks                               | `OnTransientError` |
+
 ### OGDC Service Ingress Configuration
 
 | Name                                                             | Description                               | Value                    |

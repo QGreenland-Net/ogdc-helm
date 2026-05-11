@@ -376,10 +376,79 @@ ogdc_public_s3_url: ""
 ##
 ogdc_workflow_pvc_name: "cephfs-qgnet-ogdc-workflow-pvc"
 
+## @param ogdc_max_parallel_limit Maximum number of parallel workflow tasks.
+## Injected into the ogdc-service pod as `OGDC_MAX_PARALLEL_LIMIT`.
+##
+ogdc_max_parallel_limit: 5
+
 ## @param ogdc_viz_workflow_image Container image used for visualization workflow pods.
 ## Injected into the ogdc-service pod as `VIZ_WORKFLOW_IMAGE`.
 ##
 ogdc_viz_workflow_image: "ghcr.io/permafrostdiscoverygateway/viz-workflow:latest"
+
+## @section OGDC Workflow Runtime Configuration
+## Defaults applied by ogdc-runner when constructing Argo workflows.
+##
+argo_workflow_retry:
+  ## @param argo_workflow_retry.enabled Enable workflow-level retry defaults.
+  ## Injected into the ogdc-service pod as `ARGO_WORKFLOW_RETRY_ENABLED`.
+  ## Set as a YAML boolean: true or false.
+  enabled: true
+
+  ## @param argo_workflow_retry.limit Number of retry attempts for workflow tasks.
+  ## Injected into the ogdc-service pod as `ARGO_WORKFLOW_RETRY_LIMIT`.
+  limit: 3
+
+  ## @param argo_workflow_retry.policy Argo retry policy for workflow tasks.
+  ## Injected into the ogdc-service pod as `ARGO_WORKFLOW_RETRY_POLICY`.
+  policy: "OnTransientError"
+
+viz_workflow:
+  ## @param viz_workflow.image_pull_policy Image pull policy for viz worker pods.
+  image_pull_policy: "IfNotPresent"
+
+  ## @param viz_workflow.setup_image Container image used by the viz setup pod.
+  ## Defaults to the configured ogdc-runner image when unset.
+  setup_image: ""
+
+  ## @param viz_workflow.default_partition_size Default partition size for viz parallel fan-out.
+  ## Recipes can override this through workflow.parallel.partition_size.
+  default_partition_size: 1000
+
+  ## @param viz_workflow.resources Resources for visualization workflow pods.
+  resources:
+    ## @param viz_workflow.resources.stage Resources for staging and web tile worker pods.
+    stage:
+      requests:
+        cpu: "500m"
+        memory: "2Gi"
+      limits:
+        cpu: "2"
+        memory: "6Gi"
+    ## @param viz_workflow.resources.raster Resources for raster and composite worker pods.
+    raster:
+      requests:
+        cpu: "1"
+        memory: "4Gi"
+      limits:
+        cpu: "4"
+        memory: "12Gi"
+    ## @param viz_workflow.resources.threedtile Resources for 3D tile worker pods.
+    threedtile:
+      requests:
+        cpu: "2"
+        memory: "4Gi"
+      limits:
+        cpu: "4"
+        memory: "8Gi"
+    ## @param viz_workflow.resources.discovery Resources for discovery worker pods.
+    discovery:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
 
 ## @section OGDC Service Ingress Configuration
 ## Ingress for the OGDC service (API + object storage passthrough).
