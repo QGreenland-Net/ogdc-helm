@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: adminer
+  name: {{ .Release.Name }}-adminer
   namespace: {{ .Release.Namespace }}
   labels:
     app: adminer

@@ -43,10 +43,10 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 
 ### Global Configuration
 
-| Name                         | Description                                             | Value               |
-| ---------------------------- | ------------------------------------------------------- | ------------------- |
-| `global.passwordsSecret`     | The name of the Secret containing application passwords | `myrelease-secrets` |
-| `global.defaultStorageClass` | Global default StorageClass for Persistent Volume(s)    | `local-path`        |
+| Name                         | Description                                             | Value                |
+| ---------------------------- | ------------------------------------------------------- | -------------------- |
+| `global.passwordsSecret`     | The name of the Secret containing application passwords | `qgnet-ogdc-secrets` |
+| `global.defaultStorageClass` | Global default StorageClass for Persistent Volume(s)    | `local-path`         |
 
 ### Argo Workflows Configuration
 
@@ -72,12 +72,12 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 | `argo-workflows.controller.persistence.archiveLabelSelector.matchExpressions[1].key`      | Label selector key for second workflow archive condition                                   | `workflows.argoproj.io/phase`      |
 | `argo-workflows.controller.persistence.archiveLabelSelector.matchExpressions[1].operator` | Label selector operator for second workflow archive condition                              | `In`                               |
 | `argo-workflows.controller.persistence.archiveLabelSelector.matchExpressions[1].values`   | Label selector values for second workflow archive condition                                | `["Succeeded"]`                    |
-| `argo-workflows.controller.persistence.postgresql.host`                                   | PostgreSQL database host for workflow archive                                              | `ogdc-db-cnpg-rw`                  |
+| `argo-workflows.controller.persistence.postgresql.host`                                   | PostgreSQL database host for workflow archive                                              | `qgnet-ogdc-db-cnpg-rw`            |
 | `argo-workflows.controller.persistence.postgresql.database`                               | PostgreSQL database name for workflow archive                                              | `ogdc`                             |
 | `argo-workflows.controller.persistence.postgresql.tableName`                              | PostgreSQL table name for workflow archive                                                 | `argo_workflows_archive`           |
-| `argo-workflows.controller.persistence.postgresql.userNameSecret.name`                    | Secret name containing PostgreSQL username                                                 | `ogdc-db-postgres-secrets`         |
+| `argo-workflows.controller.persistence.postgresql.userNameSecret.name`                    | Secret name containing PostgreSQL username                                                 | `qgnet-ogdc-db-postgres-secrets`   |
 | `argo-workflows.controller.persistence.postgresql.userNameSecret.key`                     | Secret key for PostgreSQL username                                                         | `username`                         |
-| `argo-workflows.controller.persistence.postgresql.passwordSecret.name`                    | Secret name containing PostgreSQL password                                                 | `ogdc-db-postgres-secrets`         |
+| `argo-workflows.controller.persistence.postgresql.passwordSecret.name`                    | Secret name containing PostgreSQL password                                                 | `qgnet-ogdc-db-postgres-secrets`   |
 | `argo-workflows.controller.persistence.postgresql.passwordSecret.key`                     | Secret key for PostgreSQL password                                                         | `password`                         |
 | `argo-workflows.controller.workflowNamespaces`                                            | Namespaces where workflow controller will manage workflows                                 | `["qgnet"]`                        |
 | `argo-workflows.controller.workflowDefaults.spec.podGC.strategy`                          | Automatically cleanup pods on successful workflow completion                               | `OnWorkflowSuccess`                |
@@ -96,33 +96,49 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 | `argo-workflows.artifactRepository.archiveLogs`                                           | Archive the main container logs as an artifact                                             | `false`                            |
 | `argo-workflows.artifactRepository.s3.bucket`                                             | S3 bucket name                                                                             | `argo-workflows`                   |
 | `argo-workflows.artifactRepository.s3.endpoint`                                           | S3 endpoint                                                                                | `{{ .Release.Name }}-minio:9000`   |
-| `argo-workflows.artifactRepository.s3.accessKeySecret.name`                               | Secret name containing S3 access key                                                       | `myrelease-secrets`                |
+| `argo-workflows.artifactRepository.s3.accessKeySecret.name`                               | Secret name containing S3 access key                                                       | `qgnet-ogdc-secrets`               |
 | `argo-workflows.artifactRepository.s3.accessKeySecret.key`                                | Secret key for S3 access key                                                               | `rootUser`                         |
-| `argo-workflows.artifactRepository.s3.secretKeySecret.name`                               | Secret name containing S3 secret key                                                       | `myrelease-secrets`                |
+| `argo-workflows.artifactRepository.s3.secretKeySecret.name`                               | Secret name containing S3 secret key                                                       | `qgnet-ogdc-secrets`               |
 | `argo-workflows.artifactRepository.s3.secretKeySecret.key`                                | Secret key for S3 secret key                                                               | `rootPassword`                     |
 | `argo-workflows.artifactRepository.s3.insecure`                                           | Disable TLS for S3 connection                                                              | `true`                             |
 
 ### MinIO Configuration
 
-| Name                              | Description                                       | Value               |
-| --------------------------------- | ------------------------------------------------- | ------------------- |
-| `minio.mode`                      | MinIO mode (standalone or distributed)            | `standalone`        |
-| `minio.replicas`                  | Number of MinIO containers running                | `1`                 |
-| `minio.buckets`                   | List of buckets to be created after minio install | `[]`                |
-| `minio.persistence.enabled`       | Enable persistence using Persistent Volume Claims | `true`              |
-| `minio.existingSecret`            | Use existing Secret that store MinIO credentials  | `myrelease-secrets` |
-| `minio.resources.requests.memory` | Memory requests for minio                         | `1Gi`               |
-| `minio.resources.requests.cpu`    | CPU requests for minio                            | `200m`              |
-| `minio.resources.limits.memory`   | Memory limits for minio                           | `2Gi`               |
-| `minio.resources.limits.cpu`      | CPU limits for minio                              | `500m`              |
+| Name                              | Description                                       | Value                |
+| --------------------------------- | ------------------------------------------------- | -------------------- |
+| `minio.mode`                      | MinIO mode (standalone or distributed)            | `standalone`         |
+| `minio.replicas`                  | Number of MinIO containers running                | `1`                  |
+| `minio.buckets`                   | List of buckets to be created after minio install | `[]`                 |
+| `minio.persistence.enabled`       | Enable persistence using Persistent Volume Claims | `true`               |
+| `minio.existingSecret`            | Use existing Secret that store MinIO credentials  | `qgnet-ogdc-secrets` |
+| `minio.resources.requests.memory` | Memory requests for minio                         | `1Gi`                |
+| `minio.resources.requests.cpu`    | CPU requests for minio                            | `200m`               |
+| `minio.resources.limits.memory`   | Memory limits for minio                           | `2Gi`                |
+| `minio.resources.limits.cpu`      | CPU limits for minio                              | `500m`               |
 
 ### OGDC Configuration
 
-| Name                       | Description                                    | Value                                                                                              |
-| -------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `image.repository`         | OGDC container image repository                | `ogdc-runner`                                                                                      |
-| `image.tag`                | OGDC container image tag                       | `latest`                                                                                           |
-| `ogdc_service_command`     | Command to start the OGDC FastAPI service      | `. ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py` |
-| `dataone_node_url`         | DataONE member node URL for metadata retrieval | `https://arcticdata.io/metacat/d1/mn`                                                              |
-| `internal_s3_endpoint_url` | Internal S3 endpoint URL for MinIO service     | `http://qgnet-ogdc-minio:9000`                                                                     |
-| `public_s3_endpoint_url`   | Public S3 endpoint URL for external access     | `http://api.test.dataone.org/ogdc/objectstore/`                                                    |
+| Name                     | Description                                           | Value                                                                                              |
+| ------------------------ | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `image.repository`       | OGDC container image repository                       | `ogdc-runner`                                                                                      |
+| `image.tag`              | OGDC container image tag                              | `latest`                                                                                           |
+| `image.pullPolicy`       | OGDC container image pull policy                      | `IfNotPresent`                                                                                     |
+| `environment`            | Deployment environment name (local, dev, prod)        | `""`                                                                                               |
+| `ogdc_service_command`   | Command to start the OGDC FastAPI service             | `. ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py` |
+| `dataone_node_url`       | DataONE member node URL for metadata retrieval        | `https://arcticdata.io/metacat/d1/mn`                                                              |
+| `ogdc_s3_endpoint`       | Internal S3 endpoint URL for MinIO service            | `http://qgnet-ogdc-minio:9000`                                                                     |
+| `ogdc_public_host`       | Public host (no scheme, no path) for external access. | `api.test.dataone.org`                                                                             |
+| `ogdc_workflow_pvc_name` | Name of the PVC to use for workflow storage.          | `cephfs-qgnet-ogdc-workflow-pvc`                                                                   |
+
+### OGDC Service Ingress Configuration
+
+| Name                                                             | Description                               | Value                    |
+| ---------------------------------------------------------------- | ----------------------------------------- | ------------------------ |
+| `ingress.enabled`                                                | Enable the OGDC service ingress           | `false`                  |
+| `ingress.ingressClassName`                                       | Ingress class name                        | `nginx`                  |
+| `ingress.annotations.cert-manager.io/cluster-issuer`             | ClusterIssuer to use for TLS certificates | `letsencrypt-prod`       |
+| `ingress.annotations.nginx.ingress.kubernetes.io/rewrite-target` | Rewrite target for nginx ingress          | `/$2`                    |
+| `ingress.annotations.nginx.ingress.kubernetes.io/use-regex`      | Enable regex matching for ingress paths   | `true`                   |
+| `ingress.apiPath`                                                | Ingress path for the OGDC API service     | `/ogdc/api(/|$)(.*)`     |
+| `ingress.storagePath`                                            | Ingress path for the MinIO object storage | `/ogdc/storage(/|$)(.*)` |
+| `ingress.tls`                                                    | Ingress TLS configuration                 | `[]`                     |

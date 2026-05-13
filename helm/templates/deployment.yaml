@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ogdc-service-deployment
+  name: {{ .Release.Name }}-service-deployment
   namespace: {{ .Release.Namespace }}
   labels:
     app: ogdc-service
@@ -19,6 +19,7 @@ spec:
       containers:
       - name: ogdc-service
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
           - "bash"
           - "-c"
@@ -36,12 +37,12 @@ spec:
         - name: OGDC_DB_USERNAME
           valueFrom:
             secretKeyRef:
-              name: "ogdc-db-postgres-secrets"
+              name: "{{ .Release.Name }}-db-postgres-secrets"
               key: username
         - name: OGDC_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: "ogdc-db-postgres-secrets"
+              name: "{{ .Release.Name }}-db-postgres-secrets"
               key: password
         - name: S3_SECRET_KEY_ID
           valueFrom:

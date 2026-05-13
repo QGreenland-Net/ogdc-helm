@@ -2,13 +2,13 @@
 ##
 ## example:
 ##
-##  helm upgrade --install ogdc --debug -n qgnet \
-##                          -f ./helm/examples/values-prod-cluster-ogdc-example.yaml \
-##                          oci://ghcr.io/qgreenland-net/charts/ogdc --version [version]
+##  export RELEASE_NAME=qgnet-ogdc NAMESPACE=qgnet
+##  envsubst < ./helm/examples/values-prod-cluster-ogdc-example.yaml | \
+##  helm upgrade --install "$RELEASE_NAME" --debug -n "$NAMESPACE" \
+##      -f - oci://ghcr.io/qgreenland-net/charts/ogdc --version [version]
 ##
 ## (or to install from local helm chart code, replace:
-##  oci://ghcr.io/qgreenland-net/charts/ogdc --version [version]
-##  with: ./helm)
+##  oci://ghcr.io/qgreenland-net/charts/ogdc with: ./helm)
 ##
 ## see values.yaml for full documentation on the following parameters
 ##
@@ -22,11 +22,7 @@ global:
   ##  &passwordSecretName. IF YOU OVERRIDE THIS VALUE IN ANOTHER VALUES-OVERLAY FILE, YOU ALSO
   ## NEED TO OVERRIDE THE VALUES THAT USE THIS ANCHOR - search this file for 'passwordSecretName')
   ##
-  ## IMPORTANT NOTE: make sure you edit this, since IT INCLUDES THE RELEASE NAME! For
-  ## example, if the release name is 'myrelease', the value of name: would be
-  ## 'myrelease-secrets'.
-  ##
-  passwordsSecret: &passwordSecretName qgnet-ogdc-secrets
+  passwordsSecret: &passwordSecretName ${RELEASE_NAME}-secrets
 
 ## argo-workflows configuration
 ## See https://argoproj.github.io/argo-workflows/
@@ -37,13 +33,29 @@ argo-workflows:
     ## -- Install and upgrade CRDs
     install: false
 
+  controller:
+    workflowNamespaces:
+      - ${NAMESPACE}
+
+    persistence:
+      postgresql:
+        host: "${RELEASE_NAME}-db-cnpg-rw"
+        database: "ogdc"
+        tableName: "argo_workflows_archive"
+        userNameSecret:
+          name: "${RELEASE_NAME}-db-postgres-secrets"
+          key: "username"
+        passwordSecret:
+          name: "${RELEASE_NAME}-db-postgres-secrets"
+          key: "password"
+
   ## Argo Server configuration
   server:
     ## -- Value for base href in index.html. Used if the server is running behind reverse proxy under subpath different from /.
     ## only updates base url of resources on client side,
     ## it's expected that a proxy server rewrites the request URL and gets rid of this prefix
     ## https://github.com/argoproj/argo-workflows/issues/716#issuecomment-433213190
-    baseHref: /ogdc
+    baseHref: /
 
     ## Ingress configuration.
     # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
@@ -55,12 +67,7 @@ argo-workflows:
       ## Your cluster may require this to be set to match your IngressClass resource.
       ## For nginx ingress controller, use:  ingressClassName: "nginx"
       ingressClassName: "nginx"
-      # -- Additional ingress annotations
-      ## Add any additional annotations that your ingress controller may need.
-      ## For example, for cert-manager TLS using the 'letsencrypt-prod' ClusterIssuer
-      ## (which must be created separately), and to specify that the backend protocol
-      ## is HTTPS, use the following annotations:
-      annotations: { 
+      annotations: {
         cert-manager.io/cluster-issuer: letsencrypt-prod,
         nginx.ingress.kubernetes.io/rewrite-target: /$2,
         nginx.ingress.kubernetes.io/use-regex: "true"
@@ -93,7 +100,7 @@ argo-workflows:
             - api.dataone.org
           secretName: ingress-nginx-tls-cert
 
-  ## Artifact repository configuration## Artifact repository configuration
+  ## Artifact repository configuration
   artifactRepository:
     s3:
       ## Note the `key` attribute is not the actual secret, it's the PATH to
@@ -117,7 +124,7 @@ minio:
     ## A manually managed Persistent Volume and Claim
     ## Requires persistence.enabled: true
     ## If defined, PVC must be created manually before volume will be bound
-    existingClaim: "cephfs-qgnet-ogdc-minio-pvc"
+    existingClaim: "cephfs-${RELEASE_NAME}-minio-pvc"
 
   existingSecret: *passwordSecretName
 
@@ -128,5 +135,6 @@ image:
 environment: "prod"
 
 ogdc_public_host: "api.dataone.org"
-ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
+ogdc_s3_endpoint: "http://${RELEASE_NAME}-minio:9000"
 dataone_node_url: "https://arcticdata.io/metacat/d1/mn"
+ogdc_workflow_pvc_name: "cephfs-${RELEASE_NAME}-workflow-pvc"

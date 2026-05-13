@@ -1,35 +1,35 @@
+{{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ogdc-ingress
-  annotations: 
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/use-regex: "true"
+  name: {{ .Release.Name }}-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
 spec:
+  ingressClassName: {{ .Values.ingress.ingressClassName | quote }}
+  {{- with .Values.ingress.tls }}
   tls:
-  - hosts:
-      - api.dataone.org
-      - api.test.dataone.org
-      - localhost
-    secretName: "ingress-nginx-tls-cert"
-  ingressClassName: "nginx"
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   rules:
-  - http:
+  - host: {{ .Values.ogdc_public_host | quote }}
+    http:
       paths:
-      - path: /ogdc/api(/|$)(.*)
+      - path: {{ .Values.ingress.apiPath | quote }}
         pathType: ImplementationSpecific
         backend:
           service:
-            name: ogdc-service-service
+            name: {{ .Release.Name }}-service
             port:
               number: 8000
       # TODO: this will need some re-thinking based on how we deal with
-      # https://github.com/QGreenland-Net/ogdc-helm/issues/46. 
-      - path: /ogdc/storage(/|$)(.*)
+      # https://github.com/QGreenland-Net/ogdc-helm/issues/46.
+      - path: {{ .Values.ingress.storagePath | quote }}
         pathType: ImplementationSpecific
         backend:
           service:
-            name: qgnet-ogdc-minio
+            name: {{ .Release.Name }}-minio
             port:
               number: 9000
+{{- end }}
