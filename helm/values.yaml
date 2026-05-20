@@ -376,6 +376,18 @@ ogdc_public_s3_url: ""
 ##
 ogdc_workflow_pvc_name: "cephfs-qgnet-ogdc-workflow-pvc"
 
+## @param ogdc_input_pvcs Allowlist of pre-provisioned PVCs that recipes may
+## reference as `pvc_mount` inputs.
+## Injected into the ogdc-service pod as `OGDC_ALLOWED_INPUT_PVCS`.
+## Leave empty to reject all recipe input PVC claims.
+##
+## Example:
+## ogdc_input_pvcs:
+##   - claimName: cephfs-qgnet-ogdc-adc-tiles-pvc
+##     description: ADC Tile Store PVC
+##
+ogdc_input_pvcs: []
+
 ## @param ogdc_max_parallel_limit Maximum number of parallel workflow tasks.
 ## Injected into the ogdc-service pod as `OGDC_MAX_PARALLEL_LIMIT`.
 ##

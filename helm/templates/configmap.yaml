@@ -15,6 +15,7 @@ data:
   OGDC_DB_HOST: "{{ .Release.Name }}-db-cnpg-rw"
   OGDC_DB_NAME: "ogdc"
   OGDC_WORKFLOW_PVC_NAME: {{ .Values.ogdc_workflow_pvc_name | quote }}
+  OGDC_ALLOWED_INPUT_PVCS: {{ .Values.ogdc_input_pvcs | default list | toJson | quote }}
   OGDC_MAX_PARALLEL_LIMIT: {{ .Values.ogdc_max_parallel_limit | quote }}
   ARGO_WORKFLOW_RETRY_ENABLED: {{ .Values.argo_workflow_retry.enabled | quote }}
   ARGO_WORKFLOW_RETRY_LIMIT: {{ .Values.argo_workflow_retry.limit | quote }}
