@@ -337,7 +337,7 @@ resources:
   requests:
     memory: "1Gi"
     cpu: "500m"
-  limits: 
+  limits:
     memory: "2Gi"
     cpu: "1000m"
 
