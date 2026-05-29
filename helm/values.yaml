@@ -43,6 +43,14 @@ global:
   ##
   defaultStorageClass: local-path
 
+## @param nameOverride String to partially override chart name-derived resource names
+##
+nameOverride: ""
+
+## @param fullnameOverride String to fully override chart name-derived resource names
+##
+fullnameOverride: ""
+
 ## @section Argo Workflows Configuration
 ## argo-workflows configuration
 ## See https://argoproj.github.io/argo-workflows/
@@ -321,6 +329,18 @@ image:
 ##
 environment: ""
 
+## @param resources.requests.memory Memory requests for OGDC service
+## @param resources.requests.cpu CPU requests for OGDC service
+## @param resources.limits.memory Memory limits for OGDC service
+## @param resources.limits.cpu CPU limits for OGDC service
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "500m"
+  limits: 
+    memory: "2Gi"
+    cpu: "1000m"
+
 ## @param ogdc_service_command Command to start the OGDC FastAPI service
 ## Default to production fastapi run command
 ##
@@ -338,14 +358,108 @@ ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
 ## @param ogdc_public_host Public host (no scheme, no path) for external access.
 ## Combined with a fixed path to produce `PUBLIC_S3_ENDPOINT_URL` in the
 ## ogdc-service pod, and also used by the optional OGDC service ingress.
+## For local development, set to "localhost".
+## For dev cluster, set to "api.test.dataone.org".
+## For prod cluster, set to "api.dataone.org".
 ##
 ogdc_public_host: "api.test.dataone.org"
+
+## @param ogdc_public_s3_url Public S3 endpoint URL for external access.
+## Injected into the ogdc-service pod as `PUBLIC_S3_ENDPOINT_URL`.
+## Defaults to `https://<ogdc_public_host>/ogdc/storage` when unset.
+##
+ogdc_public_s3_url: ""
 
 ## @param ogdc_workflow_pvc_name Name of the PVC to use for workflow storage.
 ## Injected into the ogdc-service pod as `OGDC_WORKFLOW_PVC_NAME`.
 ## Must match the PVC created in helm/admin/ for your cluster.
 ##
 ogdc_workflow_pvc_name: "cephfs-qgnet-ogdc-workflow-pvc"
+
+## @param ogdc_max_parallel_limit Maximum number of parallel workflow tasks.
+## Injected into the ogdc-service pod as `OGDC_MAX_PARALLEL_LIMIT`.
+##
+ogdc_max_parallel_limit: 5
+
+## @param ogdc_viz_workflow_image Container image used for visualization workflow pods.
+## Injected into the ogdc-service pod as `VIZ_WORKFLOW_IMAGE`.
+##
+ogdc_viz_workflow_image: "ghcr.io/permafrostdiscoverygateway/viz-workflow:latest"
+
+## @section OGDC Workflow Runtime Configuration
+## Defaults applied by ogdc-runner when constructing Argo workflows.
+##
+argo_workflow_retry:
+  ## @param argo_workflow_retry.enabled Enable workflow-level retry defaults.
+  ## Injected into the ogdc-service pod as `ARGO_WORKFLOW_RETRY_ENABLED`.
+  ## Set as a YAML boolean: true or false.
+  enabled: true
+
+  ## @param argo_workflow_retry.limit Number of retry attempts for workflow tasks.
+  ## Injected into the ogdc-service pod as `ARGO_WORKFLOW_RETRY_LIMIT`.
+  limit: 3
+
+  ## @param argo_workflow_retry.policy Argo retry policy for workflow tasks.
+  ## Injected into the ogdc-service pod as `ARGO_WORKFLOW_RETRY_POLICY`.
+  policy: "OnTransientError"
+
+viz_workflow:
+  ## @param viz_workflow.image_pull_policy Image pull policy for viz worker pods.
+  image_pull_policy: "IfNotPresent"
+
+  ## @param viz_workflow.setup_image Container image used by the viz setup pod.
+  ## Defaults to the configured ogdc-runner image when unset.
+  setup_image: ""
+
+  ## @param viz_workflow.default_partition_size Default partition size for viz parallel fan-out.
+  ## Recipes can override this through workflow.parallel.partition_size.
+  default_partition_size: 1000
+
+  resources:
+    stage:
+      ## @param viz_workflow.resources.stage.requests.cpu CPU requests for staging and web tile worker pods.
+      ## @param viz_workflow.resources.stage.requests.memory Memory requests for staging and web tile worker pods.
+      requests:
+        cpu: "500m"
+        memory: "2Gi"
+      ## @param viz_workflow.resources.stage.limits.cpu CPU limits for staging and web tile worker pods.
+      ## @param viz_workflow.resources.stage.limits.memory Memory limits for staging and web tile worker pods.
+      limits:
+        cpu: "2"
+        memory: "6Gi"
+    raster:
+      ## @param viz_workflow.resources.raster.requests.cpu CPU requests for raster and composite worker pods.
+      ## @param viz_workflow.resources.raster.requests.memory Memory requests for raster and composite worker pods.
+      requests:
+        cpu: "1"
+        memory: "4Gi"
+      ## @param viz_workflow.resources.raster.limits.cpu CPU limits for raster and composite worker pods.
+      ## @param viz_workflow.resources.raster.limits.memory Memory limits for raster and composite worker pods.
+      limits:
+        cpu: "4"
+        memory: "12Gi"
+    threedtile:
+      ## @param viz_workflow.resources.threedtile.requests.cpu CPU requests for 3D tile worker pods.
+      ## @param viz_workflow.resources.threedtile.requests.memory Memory requests for 3D tile worker pods.
+      requests:
+        cpu: "2"
+        memory: "4Gi"
+      ## @param viz_workflow.resources.threedtile.limits.cpu CPU limits for 3D tile worker pods.
+      ## @param viz_workflow.resources.threedtile.limits.memory Memory limits for 3D tile worker pods.
+      limits:
+        cpu: "4"
+        memory: "8Gi"
+    discovery:
+      ## @param viz_workflow.resources.discovery.requests.cpu CPU requests for discovery worker pods.
+      ## @param viz_workflow.resources.discovery.requests.memory Memory requests for discovery worker pods.
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      ## @param viz_workflow.resources.discovery.limits.cpu CPU limits for discovery worker pods.
+      ## @param viz_workflow.resources.discovery.limits.memory Memory limits for discovery worker pods.
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
 
 ## @section OGDC Service Ingress Configuration
 ## Ingress for the OGDC service (API + object storage passthrough).

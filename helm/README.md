@@ -43,10 +43,12 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 
 ### Global Configuration
 
-| Name                         | Description                                             | Value                |
-| ---------------------------- | ------------------------------------------------------- | -------------------- |
-| `global.passwordsSecret`     | The name of the Secret containing application passwords | `qgnet-ogdc-secrets` |
-| `global.defaultStorageClass` | Global default StorageClass for Persistent Volume(s)    | `local-path`         |
+| Name                         | Description                                                    | Value                |
+| ---------------------------- | -------------------------------------------------------------- | -------------------- |
+| `global.passwordsSecret`     | The name of the Secret containing application passwords        | `qgnet-ogdc-secrets` |
+| `global.defaultStorageClass` | Global default StorageClass for Persistent Volume(s)           | `local-path`         |
+| `nameOverride`               | String to partially override chart name-derived resource names | `""`                 |
+| `fullnameOverride`           | String to fully override chart name-derived resource names     | `""`                 |
 
 ### Argo Workflows Configuration
 
@@ -118,17 +120,51 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 
 ### OGDC Configuration
 
-| Name                     | Description                                           | Value                                                                                              |
-| ------------------------ | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `image.repository`       | OGDC container image repository                       | `ogdc-runner`                                                                                      |
-| `image.tag`              | OGDC container image tag                              | `latest`                                                                                           |
-| `image.pullPolicy`       | OGDC container image pull policy                      | `IfNotPresent`                                                                                     |
-| `environment`            | Deployment environment name (local, dev, prod)        | `""`                                                                                               |
-| `ogdc_service_command`   | Command to start the OGDC FastAPI service             | `. ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py` |
-| `dataone_node_url`       | DataONE member node URL for metadata retrieval        | `https://arcticdata.io/metacat/d1/mn`                                                              |
-| `ogdc_s3_endpoint`       | Internal S3 endpoint URL for MinIO service            | `http://qgnet-ogdc-minio:9000`                                                                     |
-| `ogdc_public_host`       | Public host (no scheme, no path) for external access. | `api.test.dataone.org`                                                                             |
-| `ogdc_workflow_pvc_name` | Name of the PVC to use for workflow storage.          | `cephfs-qgnet-ogdc-workflow-pvc`                                                                   |
+| Name                        | Description                                           | Value                                                                                              |
+| --------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `image.repository`          | OGDC container image repository                       | `ogdc-runner`                                                                                      |
+| `image.tag`                 | OGDC container image tag                              | `latest`                                                                                           |
+| `image.pullPolicy`          | OGDC container image pull policy                      | `IfNotPresent`                                                                                     |
+| `environment`               | Deployment environment name (local, dev, prod)        | `""`                                                                                               |
+| `resources.requests.memory` | Memory requests for OGDC service                      | `1Gi`                                                                                              |
+| `resources.requests.cpu`    | CPU requests for OGDC service                         | `500m`                                                                                             |
+| `resources.limits.memory`   | Memory limits for OGDC service                        | `2Gi`                                                                                              |
+| `resources.limits.cpu`      | CPU limits for OGDC service                           | `1000m`                                                                                            |
+| `ogdc_service_command`      | Command to start the OGDC FastAPI service             | `. ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py` |
+| `dataone_node_url`          | DataONE member node URL for metadata retrieval        | `https://arcticdata.io/metacat/d1/mn`                                                              |
+| `ogdc_s3_endpoint`          | Internal S3 endpoint URL for MinIO service            | `http://qgnet-ogdc-minio:9000`                                                                     |
+| `ogdc_public_host`          | Public host (no scheme, no path) for external access. | `api.test.dataone.org`                                                                             |
+| `ogdc_public_s3_url`        | Public S3 endpoint URL for external access.           | `""`                                                                                               |
+| `ogdc_workflow_pvc_name`    | Name of the PVC to use for workflow storage.          | `cephfs-qgnet-ogdc-workflow-pvc`                                                                   |
+| `ogdc_max_parallel_limit`   | Maximum number of parallel workflow tasks.            | `5`                                                                                                |
+| `ogdc_viz_workflow_image`   | Container image used for visualization workflow pods. | `ghcr.io/permafrostdiscoverygateway/viz-workflow:latest`                                           |
+
+### OGDC Workflow Runtime Configuration
+
+| Name                                                | Description                                           | Value              |
+| --------------------------------------------------- | ----------------------------------------------------- | ------------------ |
+| `argo_workflow_retry.enabled`                       | Enable workflow-level retry defaults.                 | `true`             |
+| `argo_workflow_retry.limit`                         | Number of retry attempts for workflow tasks.          | `3`                |
+| `argo_workflow_retry.policy`                        | Argo retry policy for workflow tasks.                 | `OnTransientError` |
+| `viz_workflow.image_pull_policy`                    | Image pull policy for viz worker pods.                | `IfNotPresent`     |
+| `viz_workflow.setup_image`                          | Container image used by the viz setup pod.            | `""`               |
+| `viz_workflow.default_partition_size`               | Default partition size for viz parallel fan-out.      | `1000`             |
+| `viz_workflow.resources.stage.requests.cpu`         | CPU requests for staging and web tile worker pods.    | `500m`             |
+| `viz_workflow.resources.stage.requests.memory`      | Memory requests for staging and web tile worker pods. | `2Gi`              |
+| `viz_workflow.resources.stage.limits.cpu`           | CPU limits for staging and web tile worker pods.      | `2`                |
+| `viz_workflow.resources.stage.limits.memory`        | Memory limits for staging and web tile worker pods.   | `6Gi`              |
+| `viz_workflow.resources.raster.requests.cpu`        | CPU requests for raster and composite worker pods.    | `1`                |
+| `viz_workflow.resources.raster.requests.memory`     | Memory requests for raster and composite worker pods. | `4Gi`              |
+| `viz_workflow.resources.raster.limits.cpu`          | CPU limits for raster and composite worker pods.      | `4`                |
+| `viz_workflow.resources.raster.limits.memory`       | Memory limits for raster and composite worker pods.   | `12Gi`             |
+| `viz_workflow.resources.threedtile.requests.cpu`    | CPU requests for 3D tile worker pods.                 | `2`                |
+| `viz_workflow.resources.threedtile.requests.memory` | Memory requests for 3D tile worker pods.              | `4Gi`              |
+| `viz_workflow.resources.threedtile.limits.cpu`      | CPU limits for 3D tile worker pods.                   | `4`                |
+| `viz_workflow.resources.threedtile.limits.memory`   | Memory limits for 3D tile worker pods.                | `8Gi`              |
+| `viz_workflow.resources.discovery.requests.cpu`     | CPU requests for discovery worker pods.               | `250m`             |
+| `viz_workflow.resources.discovery.requests.memory`  | Memory requests for discovery worker pods.            | `512Mi`            |
+| `viz_workflow.resources.discovery.limits.cpu`       | CPU limits for discovery worker pods.                 | `500m`             |
+| `viz_workflow.resources.discovery.limits.memory`    | Memory limits for discovery worker pods.              | `1Gi`              |
 
 ### OGDC Service Ingress Configuration
 
