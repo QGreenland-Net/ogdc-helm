@@ -1,0 +1,9 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: ogdc-rewrite
+  namespace: {{ .Release.Namespace }}
+spec:
+  stripPrefixRegex:
+    regex:
+      - "^/ogdc/(api|storage)"
