@@ -478,10 +478,10 @@ ingress:
     cert-manager.io/cluster-issuer: letsencrypt-prod
 
   ## @param ingress.apiPath Ingress path for the OGDC API service
-  apiPath: "/ogdc/api"
+  apiPath: "/api"
 
   ## @param ingress.storagePath Ingress path for the MinIO object storage
-  storagePath: "/ogdc/storage"
+  storagePath: "/storage"
 
   ## @param ingress.tls Ingress TLS configuration
   tls: []
