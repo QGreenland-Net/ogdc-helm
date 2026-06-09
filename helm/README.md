@@ -171,10 +171,8 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 | Name                                                             | Description                               | Value                    |
 | ---------------------------------------------------------------- | ----------------------------------------- | ------------------------ |
 | `ingress.enabled`                                                | Enable the OGDC service ingress           | `false`                  |
-| `ingress.ingressClassName`                                       | Ingress class name                        | `nginx`                  |
+| `ingress.ingressClassName`                                       | Ingress class name                        | `traefik`                  |
 | `ingress.annotations.cert-manager.io/cluster-issuer`             | ClusterIssuer to use for TLS certificates | `letsencrypt-prod`       |
-| `ingress.annotations.nginx.ingress.kubernetes.io/rewrite-target` | Rewrite target for nginx ingress          | `/$2`                    |
-| `ingress.annotations.nginx.ingress.kubernetes.io/use-regex`      | Enable regex matching for ingress paths   | `true`                   |
-| `ingress.apiPath`                                                | Ingress path for the OGDC API service     | `/ogdc/api(/|$)(.*)`     |
-| `ingress.storagePath`                                            | Ingress path for the MinIO object storage | `/ogdc/storage(/|$)(.*)` |
+| `ingress.apiPath`                                                | Ingress path for the OGDC API service     | `/api(/|$)(.*)`     |
+| `ingress.storagePath`                                            | Ingress path for the MinIO object storage | `/storage(/|$)(.*)` |
 | `ingress.tls`                                                    | Ingress TLS configuration                 | `[]`                     |
