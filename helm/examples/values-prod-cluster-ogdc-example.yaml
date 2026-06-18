@@ -65,7 +65,6 @@ argo-workflows:
       enabled: true
       # -- Ingress class name
       ## Your cluster may require this to be set to match your IngressClass resource.
-      ## For nginx ingress controller, use:  ingressClassName: "nginx"
       ingressClassName: "traefik"
       annotations: {
         cert-manager.io/cluster-issuer: letsencrypt-prod,
@@ -80,11 +79,6 @@ argo-workflows:
       ## This is the port for the ogdc service
       servicePort: 8000
       ## -- Ingress TLS configuration
-      ## Add TLS configuration for the Ingress, if desired.
-      ## This example assumes you have created a TLS secret named
-      ## 'ingress-nginx-tls-cert' in the same namespace as the argo server.
-      ## The TLS secret must contain the certificate and private key for the host(s)
-      ## specified above.
       tls:
         - hosts:
             - ogdc.dataone.org
