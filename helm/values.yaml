@@ -329,6 +329,9 @@ image:
 ##
 environment: ""
 
+## @param access_mode Access mode (authenticated, read-only, open)
+## Injected into the ogdc-service pod as the ACCESS_MODE env var, which is used by
+## the dataone.auth python library to determine access.
 access_mode: "authenticated"
 
 ## @param resources.requests.memory Memory requests for OGDC service
