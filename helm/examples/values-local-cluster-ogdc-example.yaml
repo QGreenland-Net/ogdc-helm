@@ -113,6 +113,7 @@ ingress:
   tls:
     - hosts:
       - localhost
+      secretName: ${RELEASE_NAME}-local-tls-cert
 
 viz_workflow:
   resources:

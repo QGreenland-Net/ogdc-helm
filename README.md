@@ -50,19 +50,28 @@ helm upgrade --install cnpg \
   cnpg/cloudnative-pg
 ```
 
-### NGINX Ingress Controller
+### Traefik Ingress Controller
 
-[NGINX Ingress](https://github.com/kubernetes/ingress-nginx) is expected to be
-available on the cluster.
+For local Rancher Desktop deployments, OGDC uses Traefik for ingress.
 
-**For dev/prod environments**, this should already be installed.
+Rancher Desktop's Kubernetes distribution normally includes Traefik in the
+`kube-system` namespace. Confirm it is available before starting the local
+stack:
 
-**For local environments** (Rancher Desktop), manually install the ingress
-controller:
-
+```sh
+kubectl get service traefik -n kube-system
+kubectl get crd middlewares.traefik.io
 ```
-helm upgrade --install ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx --namespace ingress-nginx --create-namespace
+
+The local Skaffold configuration port-forwards Traefik to:
+
+```text
+http://localhost:7777
+https://localhost:7443
 ```
+
+The OGDC API is exposed at `https://localhost:7443/api`, and object storage is
+exposed at `https://localhost:7443/storage`.
 
 ## Getting started
 
@@ -119,14 +128,14 @@ export NAMESPACE=qgnet           # default
 export OGDC_PV_HOST_PATH=/Users/yourname/your-pv-directory
 ```
 
-2. Create the Workflow and postgres PVs:
+2. Create the Workflow PV:
 
 ```sh
 envsubst '${RELEASE_NAME} ${NAMESPACE} ${OGDC_PV_HOST_PATH}' \
   < helm/admin/workflow-pv.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
-3. Create the Workflow and postgres PVCs:
+3. Create the Workflow PVC:
 
 ```sh
 envsubst '${RELEASE_NAME} ${NAMESPACE}' \
@@ -154,9 +163,14 @@ envsubst '${RELEASE_NAME}' < helm/examples/db-local-cluster-values.yaml | \
     --version 1.1.2 --namespace "$NAMESPACE" -f -
 ```
 
-6. Create the secret containing a self-signed SSL cert:
+6. Create the local TLS secret used by the Traefik ingress.
 
-```
+The local ingress uses HTTPS on `https://localhost:7443`, so Traefik needs a
+Kubernetes TLS secret for `localhost`. The helper script creates a self-signed
+certificate and stores it as `${RELEASE_NAME}-local-tls-cert` in `${NAMESPACE}`.
+This matches `helm/examples/values-local-cluster-ogdc-example.yaml`.
+
+```sh
 ./scripts/create-local-tls-cert.sh
 ```
 

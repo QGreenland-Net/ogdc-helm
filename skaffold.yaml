@@ -64,7 +64,10 @@ deploy:
             existingSecret: "qgnet-ogdc-secrets"
           ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
           ogdc_workflow_pvc_name: "cephfs-qgnet-ogdc-workflow-pvc"
-          ogdc_public_s3_url: "https://localhost:7443/ogdc/storage"
+          ogdc_public_s3_url: "https://localhost:7443/storage"
+          ingress:
+            tls:
+              - secretName: qgnet-ogdc-local-tls-cert
 portForward:
   # Expose ogdc-runner API at port 8000
   - resourceType: service
