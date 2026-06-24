@@ -129,5 +129,5 @@ ingress:
   enabled: true
   tls:
     - hosts:
-        - ogdc.test.dataone.org
+        - ogdc.dataone.org
       secretName: ogdc-tls-cert
