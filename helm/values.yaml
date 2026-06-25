@@ -329,6 +329,11 @@ image:
 ##
 environment: ""
 
+## @param access_mode Access mode (authenticated, read-only, open)
+## Injected into the ogdc-service pod as the ACCESS_MODE env var, which is used by
+## the dataone.auth python library to determine access.
+access_mode: "authenticated"
+
 ## @param resources.requests.memory Memory requests for OGDC service
 ## @param resources.requests.cpu CPU requests for OGDC service
 ## @param resources.limits.memory Memory limits for OGDC service
@@ -483,24 +488,17 @@ ingress:
   enabled: false
 
   ## @param ingress.ingressClassName Ingress class name
-  ingressClassName: "nginx"
+  ingressClassName: "traefik"
 
   annotations:
     ## @param ingress.annotations.cert-manager.io/cluster-issuer ClusterIssuer to use for TLS certificates
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    ## @param ingress.annotations.nginx.ingress.kubernetes.io/rewrite-target Rewrite target for nginx ingress
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    ## @param ingress.annotations.nginx.ingress.kubernetes.io/use-regex Enable regex matching for ingress paths
-    nginx.ingress.kubernetes.io/use-regex: "true"
 
   ## @param ingress.apiPath Ingress path for the OGDC API service
-  apiPath: "/ogdc/api(/|$)(.*)"
+  apiPath: "/api"
 
   ## @param ingress.storagePath Ingress path for the MinIO object storage
-  storagePath: "/ogdc/storage(/|$)(.*)"
+  storagePath: "/storage"
 
   ## @param ingress.tls Ingress TLS configuration
   tls: []
-    # - hosts:
-    #     - api.test.dataone.org
-    #   secretName: ingress-nginx-tls-cert

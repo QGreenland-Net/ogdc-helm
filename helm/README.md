@@ -126,6 +126,7 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 | `image.tag`                 | OGDC container image tag                              | `latest`                                                                                           |
 | `image.pullPolicy`          | OGDC container image pull policy                      | `IfNotPresent`                                                                                     |
 | `environment`               | Deployment environment name (local, dev, prod)        | `""`                                                                                               |
+| `access_mode`               | Access mode (authenticated, read-only, open)          | `authenticated`                                                                                    |
 | `resources.requests.memory` | Memory requests for OGDC service                      | `1Gi`                                                                                              |
 | `resources.requests.cpu`    | CPU requests for OGDC service                         | `500m`                                                                                             |
 | `resources.limits.memory`   | Memory limits for OGDC service                        | `2Gi`                                                                                              |
@@ -179,13 +180,11 @@ ogdc_input_pvcs:
 
 ### OGDC Service Ingress Configuration
 
-| Name                                                             | Description                               | Value                    |
-| ---------------------------------------------------------------- | ----------------------------------------- | ------------------------ |
-| `ingress.enabled`                                                | Enable the OGDC service ingress           | `false`                  |
-| `ingress.ingressClassName`                                       | Ingress class name                        | `nginx`                  |
-| `ingress.annotations.cert-manager.io/cluster-issuer`             | ClusterIssuer to use for TLS certificates | `letsencrypt-prod`       |
-| `ingress.annotations.nginx.ingress.kubernetes.io/rewrite-target` | Rewrite target for nginx ingress          | `/$2`                    |
-| `ingress.annotations.nginx.ingress.kubernetes.io/use-regex`      | Enable regex matching for ingress paths   | `true`                   |
-| `ingress.apiPath`                                                | Ingress path for the OGDC API service     | `/ogdc/api(/|$)(.*)`     |
-| `ingress.storagePath`                                            | Ingress path for the MinIO object storage | `/ogdc/storage(/|$)(.*)` |
-| `ingress.tls`                                                    | Ingress TLS configuration                 | `[]`                     |
+| Name                                                 | Description                               | Value              |
+| ---------------------------------------------------- | ----------------------------------------- | ------------------ |
+| `ingress.enabled`                                    | Enable the OGDC service ingress           | `false`            |
+| `ingress.ingressClassName`                           | Ingress class name                        | `traefik`          |
+| `ingress.annotations.cert-manager.io/cluster-issuer` | ClusterIssuer to use for TLS certificates | `letsencrypt-prod` |
+| `ingress.apiPath`                                    | Ingress path for the OGDC API service     | `/api`             |
+| `ingress.storagePath`                                | Ingress path for the MinIO object storage | `/storage`         |
+| `ingress.tls`                                        | Ingress TLS configuration                 | `[]`               |
