@@ -64,7 +64,10 @@ deploy:
             existingSecret: "qgnet-ogdc-secrets"
           ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
           ogdc_workflow_pvc_name: "cephfs-qgnet-ogdc-workflow-pvc"
-          ogdc_public_s3_url: "https://localhost:7443/ogdc/storage"
+          ogdc_public_s3_url: "https://localhost:7443/storage"
+          ingress:
+            tls:
+              - secretName: qgnet-ogdc-local-tls-cert
 portForward:
   # Expose ogdc-runner API at port 8000
   - resourceType: service
@@ -102,14 +105,14 @@ portForward:
     namespace: qgnet
     port: 9000
     localPort: 9000
-  # nginx ingress controller
+# Traefik ingress controller
   - resourceType: service
-    resourceName: ingress-nginx-controller
-    namespace: ingress-nginx
+    resourceName: traefik
+    namespace: kube-system
     port: 80
     localPort: 7777
   - resourceType: service
-    resourceName: ingress-nginx-controller
-    namespace: ingress-nginx
+    resourceName: traefik
+    namespace: kube-system
     port: 443
     localPort: 7443
