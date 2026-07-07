@@ -329,10 +329,17 @@ image:
 ##
 environment: ""
 
-## @param access_mode Access mode (authenticated, read-only, open)
-## Injected into the ogdc-service pod as the ACCESS_MODE env var, which is used by
-## the dataone.auth python library to determine access.
-access_mode: "authenticated"
+
+## @section API Access - Authentication and Authorization
+##
+auth:
+  ## @param auth.accessMode Access mode (authenticated, read-only, open)
+  ## Injected into the ogdc-service pod as the ACCESS_MODE env var, which is used by
+  ## the dataone.auth python library to determine access.
+  accessMode: "authenticated"
+  ## @param auth.roleName.admin Scope name for the admin role
+  roleName:
+    admin: "ogdc:admin"
 
 ## @param resources.requests.memory Memory requests for OGDC service
 ## @param resources.requests.cpu CPU requests for OGDC service
@@ -349,7 +356,7 @@ resources:
 ## @param ogdc_service_command Command to start the OGDC FastAPI service
 ## Default to production fastapi run command
 ##
-ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
+ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 --forwarded-allow-ips='*' src/ogdc_runner/service/main.py"
 
 ## @param dataone_node_url DataONE member node URL for metadata retrieval
 dataone_node_url: "https://arcticdata.io/metacat/d1/mn"

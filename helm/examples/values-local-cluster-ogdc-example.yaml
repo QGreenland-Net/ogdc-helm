@@ -174,3 +174,6 @@ access_mode: "open"
 ogdc_input_pvcs:
   - claimName: "ogdc-test-pvc"
     description: "Local test input data PVC"
+
+auth:
+  accessMode: "open"

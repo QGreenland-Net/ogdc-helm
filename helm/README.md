@@ -122,11 +122,8 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 
 | Name                        | Description                                           | Value                                                                                              |
 | --------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `image.repository`          | OGDC container image repository                       | `ogdc-runner`                                                                                      |
-| `image.tag`                 | OGDC container image tag                              | `latest`                                                                                           |
-| `image.pullPolicy`          | OGDC container image pull policy                      | `IfNotPresent`                                                                                     |
-| `environment`               | Deployment environment name (local, dev, prod)        | `""`                                                                                               |
-| `access_mode`               | Access mode (authenticated, read-only, open)          | `authenticated`                                                                                    |
+| `auth.accessMode`           | Access mode (authenticated, read-only, open)          | `authenticated`                                                                                    |
+| `auth.roleName.admin`       | Scope name for the admin role                         | `ogdc:admin`                                                                                       |
 | `resources.requests.memory` | Memory requests for OGDC service                      | `1Gi`                                                                                              |
 | `resources.requests.cpu`    | CPU requests for OGDC service                         | `500m`                                                                                             |
 | `resources.limits.memory`   | Memory limits for OGDC service                        | `2Gi`                                                                                              |
