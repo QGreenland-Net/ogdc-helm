@@ -170,6 +170,10 @@ ogdc_s3_endpoint: "http://${RELEASE_NAME}-minio:9000"
 ogdc_public_s3_url: "https://localhost:7443/storage"
 ogdc_workflow_pvc_name: "cephfs-${RELEASE_NAME}-workflow-pvc"
 ogdc_viz_workflow_image: "ghcr.io/permafrostdiscoverygateway/viz-workflow:1.1.0-dev-2"
+access_mode: "open"
+ogdc_input_pvcs:
+  - claimName: "ogdc-test-pvc"
+    description: "Local test input data PVC"
 
 auth:
   accessMode: "open"

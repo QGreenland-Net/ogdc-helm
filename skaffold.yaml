@@ -68,6 +68,9 @@ deploy:
           ingress:
             tls:
               - secretName: qgnet-ogdc-local-tls-cert
+          ogdc_input_pvcs:
+            - claimName: "ogdc-test-pvc"
+              description: "Local test input data PVC"
 portForward:
   # Expose ogdc-runner API at port 8000
   - resourceType: service

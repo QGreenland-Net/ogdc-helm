@@ -134,8 +134,19 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 | `ogdc_public_host`          | Public host (no scheme, no path) for external access. | `api.test.dataone.org`                                                                             |
 | `ogdc_public_s3_url`        | Public S3 endpoint URL for external access.           | `""`                                                                                               |
 | `ogdc_workflow_pvc_name`    | Name of the PVC to use for workflow storage.          | `cephfs-qgnet-ogdc-workflow-pvc`                                                                   |
+| `ogdc_input_pvcs`           | Allowlist of pre-provisioned PVCs recipes may mount.  | `[]`                                                                                               |
 | `ogdc_max_parallel_limit`   | Maximum number of parallel workflow tasks.            | `5`                                                                                                |
 | `ogdc_viz_workflow_image`   | Container image used for visualization workflow pods. | `ghcr.io/permafrostdiscoverygateway/viz-workflow:latest`                                           |
+
+`ogdc_input_pvcs` is rendered into the OGDC service as `OGDC_ALLOWED_INPUT_PVCS`.
+Recipe `pvc_mount` inputs are rejected unless their `claim_name` matches one of
+the configured `claimName` values:
+
+```yaml
+ogdc_input_pvcs:
+  - claimName: cephfs-qgnet-ogdc-adc-tiles-pvc
+    description: ADC Tile Store PVC
+```
 
 ### OGDC Workflow Runtime Configuration
 
