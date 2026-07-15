@@ -1,4 +1,4 @@
-## NEXT_VERSION
+## v0.4.0 (2026-07-14)
 
 - Add parallel visualization workflow configuration and input PVC allowlisting.
 - Add Keycloak authentication, client scopes, and configurable access modes.
