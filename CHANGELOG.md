@@ -1,3 +1,13 @@
+## v0.4.0 (2026-07-14)
+
+- Add parallel visualization workflow configuration and input PVC allowlisting.
+- Add Keycloak authentication, client scopes, and configurable access modes.
+- Replace NGINX ingress with configurable Traefik ingress and middleware.
+- Improve local, development, and production configuration, secrets, PVCs, and
+  database setup.
+- Improve artifact garbage collection, documentation, chart linting, and
+  release packaging.
+
 ## v0.3.0 (2026-04-14)
 
 - Support S3 outputs and local ingress via nginx for workflow data downloads
