@@ -62,7 +62,7 @@ argo-workflows:
   ## equivalents, and start workflow-controller with the --namespaced flag. Use it
   ## in clusters with strict access policy.
   ##
-  singleNamespace: false
+  singleNamespace: true
 
   ## Custom resource configuration
   crds:
