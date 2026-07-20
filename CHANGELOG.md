@@ -1,4 +1,4 @@
-## NEXT_VERSION
+## v0.4.1 (2026-07-20)
 
 - Mount OIDC client configuration from an existing Kubernetes Secret.
 
