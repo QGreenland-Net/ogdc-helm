@@ -122,7 +122,10 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 
 | Name                        | Description                                           | Value                                                                                              |
 | --------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `auth.accessMode`           | Access mode (authenticated, read-only, open)          | `authenticated`                                                                                    |
+| `auth.accessMode`           | Access mode (authenticated, read_only, open)          | `authenticated`                                                                                    |
+| `auth.oidcSecretName`       | Existing Secret containing the OIDC client JSON       | `<release-name>-oidc-config`                                                                       |
+| `auth.oidcSecretKey`        | Secret key containing the complete OIDC client JSON   | `client_secrets.json`                                                                              |
+| `auth.oidcMountPath`        | Read-only OIDC Secret mount directory                 | `/etc/ogdc/oidc`                                                                                   |
 | `auth.roleName.admin`       | Scope name for the admin role                         | `ogdc:admin`                                                                                       |
 | `resources.requests.memory` | Memory requests for OGDC service                      | `1Gi`                                                                                              |
 | `resources.requests.cpu`    | CPU requests for OGDC service                         | `500m`                                                                                             |
@@ -136,7 +139,7 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 | `ogdc_workflow_pvc_name`    | Name of the PVC to use for workflow storage.          | `cephfs-qgnet-ogdc-workflow-pvc`                                                                   |
 | `ogdc_input_pvcs`           | Allowlist of pre-provisioned PVCs recipes may mount.  | `[]`                                                                                               |
 | `ogdc_max_parallel_limit`   | Maximum number of parallel workflow tasks.            | `5`                                                                                                |
-| `ogdc_viz_workflow_image`   | Container image used for visualization workflow pods. | `ghcr.io/permafrostdiscoverygateway/viz-workflow:latest`                                           |
+| `ogdc_viz_workflow_image`   | Container image used for visualization workflow pods. | `ghcr.io/permafrostdiscoverygateway/pdgworkflow:latest`                                           |
 
 `ogdc_input_pvcs` is rendered into the OGDC service as `OGDC_ALLOWED_INPUT_PVCS`.
 Recipe `pvc_mount` inputs are rejected unless their `claim_name` matches one of
@@ -146,6 +149,25 @@ the configured `claimName` values:
 ogdc_input_pvcs:
   - claimName: cephfs-qgnet-ogdc-adc-tiles-pvc
     description: ADC Tile Store PVC
+```
+
+### OIDC client Secret
+
+For authenticated deployments, create the Secret before installing the chart.
+Keep the completed example file outside the repository.
+
+```sh
+kubectl create secret generic "${RELEASE_NAME}-oidc-config" \
+  --namespace "${NAMESPACE}" \
+  --from-file=client_secrets.json=/secure/path/client-secrets.json
+```
+
+The default mount is `/etc/ogdc/oidc/client_secrets.json`. Open and read-only
+modes do not use it. Restart the runner after updating the Secret:
+
+```sh
+kubectl rollout restart deployment/${RELEASE_NAME}-service-deployment \
+  --namespace "${NAMESPACE}"
 ```
 
 ### OGDC Workflow Runtime Configuration

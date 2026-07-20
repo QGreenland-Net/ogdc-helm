@@ -62,7 +62,7 @@ argo-workflows:
   ## equivalents, and start workflow-controller with the --namespaced flag. Use it
   ## in clusters with strict access policy.
   ##
-  singleNamespace: false
+  singleNamespace: true
 
   ## Custom resource configuration
   crds:
@@ -333,10 +333,17 @@ environment: ""
 ## @section API Access - Authentication and Authorization
 ##
 auth:
-  ## @param auth.accessMode Access mode (authenticated, read-only, open)
+  ## @param auth.accessMode Access mode (authenticated, read_only, open)
   ## Injected into the ogdc-service pod as the ACCESS_MODE env var, which is used by
   ## the dataone.auth python library to determine access.
   accessMode: "authenticated"
+  ## @param auth.oidcSecretName Existing Kubernetes Secret containing the OIDC client JSON
+  ## Empty uses `<release-name>-oidc-config`.
+  oidcSecretName: ""
+  ## @param auth.oidcSecretKey Secret key containing the OIDC client JSON
+  oidcSecretKey: "client_secrets.json"
+  ## @param auth.oidcMountPath OIDC Secret mount directory
+  oidcMountPath: "/etc/ogdc/oidc"
   ## @param auth.roleName.admin Scope name for the admin role
   roleName:
     admin: "ogdc:admin"
@@ -408,7 +415,7 @@ ogdc_max_parallel_limit: 5
 ## @param ogdc_viz_workflow_image Container image used for visualization workflow pods.
 ## Injected into the ogdc-service pod as `VIZ_WORKFLOW_IMAGE`.
 ##
-ogdc_viz_workflow_image: "ghcr.io/permafrostdiscoverygateway/viz-workflow:latest"
+ogdc_viz_workflow_image: "ghcr.io/permafrostdiscoverygateway/pdgworkflow:latest"
 
 ## @section OGDC Workflow Runtime Configuration
 ## Defaults applied by ogdc-runner when constructing Argo workflows.

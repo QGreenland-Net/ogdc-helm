@@ -103,6 +103,10 @@ ingress:
 
 environment: "dev"
 
+auth:
+  accessMode: "authenticated"
+  oidcSecretName: "${RELEASE_NAME}-oidc-config"
+
 ogdc_public_host: "ogdc.test.dataone.org"
 ogdc_s3_endpoint: "http://${RELEASE_NAME}-minio:9000"
 ogdc_public_s3_url: "https://ogdc.test.dataone.org/storage"
@@ -110,4 +114,4 @@ ogdc_workflow_pvc_name: "cephfs-${RELEASE_NAME}-workflow-pvc"
 ogdc_input_pvcs:
   - claimName: "cephfs-${RELEASE_NAME}-adc-tiles-pvc"
     description: "ADC Tile Store PVC"
-ogdc_viz_workflow_image: "ghcr.io/permafrostdiscoverygateway/viz-workflow:latest"
+ogdc_viz_workflow_image: "ghcr.io/permafrostdiscoverygateway/pdgworkflow:latest"
