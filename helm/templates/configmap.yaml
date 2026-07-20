@@ -27,5 +27,5 @@ data:
   {{- end }}
   VIZ_WORKFLOW_DEFAULT_PARTITION_SIZE: {{ .Values.viz_workflow.default_partition_size | quote }}
   VIZ_WORKFLOW_RESOURCES: {{ .Values.viz_workflow.resources | toJson | quote }}
-  ACCESS_MODE: {{ .Values.auth.accessMode | quote }}
+  ACCESS_MODE: {{ lower .Values.auth.accessMode | quote }}
   OGDC_SCOPE_ADMIN: {{ .Values.auth.roleName.admin | quote }}

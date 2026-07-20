@@ -1,3 +1,12 @@
+{{- $accessMode := lower .Values.auth.accessMode -}}
+{{- if not (has $accessMode (list "authenticated" "read_only" "open")) -}}
+  {{- fail "auth.accessMode must be one of: authenticated, read_only, open" -}}
+{{- end -}}
+{{- $oidcSecretName := .Values.auth.oidcSecretName | default (printf "%s-oidc-config" .Release.Name) -}}
+{{- $oidcMountPath := .Values.auth.oidcMountPath | trimSuffix "/" -}}
+{{- if and (eq $accessMode "authenticated") (or (not (hasPrefix "/" $oidcMountPath)) (eq $oidcMountPath "")) -}}
+  {{- fail "auth.oidcMountPath must be an absolute, non-root path in authenticated mode" -}}
+{{- end }}
 # Template from: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#creating-a-deployment
 apiVersion: apps/v1
 kind: Deployment
@@ -54,5 +63,25 @@ spec:
             secretKeyRef:
               name: "{{ .Release.Name }}-secrets"
               key: rootPassword
+        {{- if eq $accessMode "authenticated" }}
+        - name: OIDC_CLIENT_SECRETS_FILE
+          value: "{{ $oidcMountPath }}/client_secrets.json"
+        {{- end }}
+        {{- if eq $accessMode "authenticated" }}
+        volumeMounts:
+        - name: oidc-client-secrets
+          mountPath: {{ $oidcMountPath | quote }}
+          readOnly: true
+        {{- end }}
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
+      {{- if eq $accessMode "authenticated" }}
+      volumes:
+      - name: oidc-client-secrets
+        secret:
+          secretName: {{ $oidcSecretName | quote }}
+          defaultMode: 0440
+          items:
+          - key: {{ required "auth.oidcSecretKey is required in authenticated mode" .Values.auth.oidcSecretKey | quote }}
+            path: client_secrets.json
+      {{- end }}
