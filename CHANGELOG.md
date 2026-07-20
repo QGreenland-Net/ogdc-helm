@@ -1,3 +1,7 @@
+## NEXT_VERSION
+
+- Mount OIDC client configuration from an existing Kubernetes Secret.
+
 ## v0.4.0 (2026-07-14)
 
 - Add parallel visualization workflow configuration and input PVC allowlisting.
