@@ -139,7 +139,7 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 | `ogdc_workflow_pvc_name`    | Name of the PVC to use for workflow storage.          | `cephfs-qgnet-ogdc-workflow-pvc`                                                                   |
 | `ogdc_input_pvcs`           | Allowlist of pre-provisioned PVCs recipes may mount.  | `[]`                                                                                               |
 | `ogdc_max_parallel_limit`   | Maximum number of parallel workflow tasks.            | `5`                                                                                                |
-| `ogdc_viz_workflow_image`   | Container image used for visualization workflow pods. | `ghcr.io/permafrostdiscoverygateway/viz-workflow:latest`                                           |
+| `ogdc_viz_workflow_image`   | Container image used for visualization workflow pods. | `ghcr.io/permafrostdiscoverygateway/pdgworkflow:latest`                                           |
 
 `ogdc_input_pvcs` is rendered into the OGDC service as `OGDC_ALLOWED_INPUT_PVCS`.
 Recipe `pvc_mount` inputs are rejected unless their `claim_name` matches one of

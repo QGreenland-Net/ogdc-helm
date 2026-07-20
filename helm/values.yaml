@@ -415,7 +415,7 @@ ogdc_max_parallel_limit: 5
 ## @param ogdc_viz_workflow_image Container image used for visualization workflow pods.
 ## Injected into the ogdc-service pod as `VIZ_WORKFLOW_IMAGE`.
 ##
-ogdc_viz_workflow_image: "ghcr.io/permafrostdiscoverygateway/viz-workflow:latest"
+ogdc_viz_workflow_image: "ghcr.io/permafrostdiscoverygateway/pdgworkflow:latest"
 
 ## @section OGDC Workflow Runtime Configuration
 ## Defaults applied by ogdc-runner when constructing Argo workflows.

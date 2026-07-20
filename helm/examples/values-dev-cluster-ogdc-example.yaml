@@ -114,4 +114,4 @@ ogdc_workflow_pvc_name: "cephfs-${RELEASE_NAME}-workflow-pvc"
 ogdc_input_pvcs:
   - claimName: "cephfs-${RELEASE_NAME}-adc-tiles-pvc"
     description: "ADC Tile Store PVC"
-ogdc_viz_workflow_image: "ghcr.io/permafrostdiscoverygateway/viz-workflow:latest"
+ogdc_viz_workflow_image: "ghcr.io/permafrostdiscoverygateway/pdgworkflow:latest"
