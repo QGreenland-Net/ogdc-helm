@@ -134,4 +134,4 @@ ingress:
   tls:
     - hosts:
         - ogdc.dataone.org
-      secretName: ogdc-tls-cert
+      secretName: ingress-nginx-tls-cert

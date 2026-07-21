@@ -6,7 +6,6 @@ metadata:
   namespace: {{ .Release.Namespace }}
   annotations:
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
-    traefik.ingress.kubernetes.io/router.middlewares: {{ printf "%s-ogdc-rewrite@kubernetescrd" .Release.Namespace | quote }}
 spec:
   ingressClassName: {{ .Values.ingress.ingressClassName | quote }}
   {{- with .Values.ingress.tls }}
@@ -18,7 +17,7 @@ spec:
     http:
       paths:
       - path: {{ .Values.ingress.apiPath | quote }}
-        pathType: Prefix
+        pathType: ImplementationSpecific
         backend:
           service:
             name: {{ .Release.Name }}-service
@@ -27,7 +26,7 @@ spec:
       # TODO: this will need some re-thinking based on how we deal with
       # https://github.com/QGreenland-Net/ogdc-helm/issues/46.
       - path: {{ .Values.ingress.storagePath | quote }}
-        pathType: Prefix
+        pathType: ImplementationSpecific
         backend:
           service:
             name: {{ .Release.Name }}-minio
