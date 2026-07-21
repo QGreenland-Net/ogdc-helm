@@ -99,7 +99,7 @@ ingress:
   tls:
     - hosts:
         - ogdc.test.dataone.org
-      secretName: ogdc-tls-cert
+      secretName: ingress-nginx-tls-cert
 
 environment: "dev"
 

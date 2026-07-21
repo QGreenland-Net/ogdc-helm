@@ -502,17 +502,21 @@ ingress:
   enabled: false
 
   ## @param ingress.ingressClassName Ingress class name
-  ingressClassName: "traefik"
+  ingressClassName: "nginx"
 
   annotations:
     ## @param ingress.annotations.cert-manager.io/cluster-issuer ClusterIssuer to use for TLS certificates
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    ## @param ingress.annotations.nginx.ingress.kubernetes.io/rewrite-target Rewrite target for nginx ingress
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    ## @param ingress.annotations.nginx.ingress.kubernetes.io/use-regex Enable regex matching for ingress paths
+    nginx.ingress.kubernetes.io/use-regex: "true"
 
   ## @param ingress.apiPath Ingress path for the OGDC API service
-  apiPath: "/api"
+  apiPath: "/ogdc/api(/|$)(.*)"
 
   ## @param ingress.storagePath Ingress path for the MinIO object storage
-  storagePath: "/storage"
+  storagePath: "/ogdc/storage(/|$)(.*)"
 
   ## @param ingress.tls Ingress TLS configuration
   tls: []

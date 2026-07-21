@@ -108,14 +108,14 @@ portForward:
     namespace: qgnet
     port: 9000
     localPort: 9000
-# Traefik ingress controller
+  # nginx ingress controller
   - resourceType: service
-    resourceName: traefik
-    namespace: kube-system
+    resourceName: ingress-nginx-controller
+    namespace: ingress-nginx
     port: 80
     localPort: 7777
   - resourceType: service
-    resourceName: traefik
-    namespace: kube-system
+    resourceName: ingress-nginx-controller
+    namespace: ingress-nginx
     port: 443
     localPort: 7443
