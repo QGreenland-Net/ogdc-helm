@@ -385,7 +385,7 @@ ogdc_public_host: "api.test.dataone.org"
 
 ## @param ogdc_public_s3_url Public S3 endpoint URL for external access.
 ## Injected into the ogdc-service pod as `PUBLIC_S3_ENDPOINT_URL`.
-## Defaults to `https://<ogdc_public_host>/ogdc/storage` when unset.
+## Defaults to `https://<ogdc_public_host>/storage` when unset.
 ##
 ogdc_public_s3_url: ""
 
@@ -513,10 +513,10 @@ ingress:
     nginx.ingress.kubernetes.io/use-regex: "true"
 
   ## @param ingress.apiPath Ingress path for the OGDC API service
-  apiPath: "/ogdc/api(/|$)(.*)"
+  apiPath: "/api(/|$)(.*)"
 
   ## @param ingress.storagePath Ingress path for the MinIO object storage
-  storagePath: "/ogdc/storage(/|$)(.*)"
+  storagePath: "/storage(/|$)(.*)"
 
   ## @param ingress.tls Ingress TLS configuration
   tls: []
