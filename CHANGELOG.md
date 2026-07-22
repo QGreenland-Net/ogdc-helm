@@ -1,4 +1,4 @@
-## NEXT_VERSION
+## v0.4.3 (2026-07-22)
 
 - Update path config for ingress. 
 
