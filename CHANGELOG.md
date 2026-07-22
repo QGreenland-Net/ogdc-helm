@@ -1,3 +1,7 @@
+## v0.4.2 (2026-07-22)
+
+- Revert back to using NGINX Ingress.
+
 ## v0.4.1 (2026-07-20)
 
 - Mount OIDC client configuration from an existing Kubernetes Secret.
