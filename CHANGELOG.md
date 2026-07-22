@@ -1,3 +1,7 @@
+## NEXT_VERSION
+
+- Update path config for ingress. 
+
 ## v0.4.2 (2026-07-22)
 
 - Revert back to using NGINX Ingress.
