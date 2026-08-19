@@ -1,3 +1,7 @@
+## v0.4.4 (2026-08-19)
+
+- Move ingress back to Traefik
+
 ## v0.4.3 (2026-07-22)
 
 - Update path config for ingress. 
