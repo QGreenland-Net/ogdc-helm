@@ -286,61 +286,6 @@ argo-workflows:
       ## Set to true only for a plain-http endpoint (local profile).
       insecure: false
 
-## @section MinIO Configuration
-## MinIO configuration
-## See https://min.io/docs/minio/kubernetes/upstream/
-##
-minio:
-  ## @param minio.mode MinIO mode (standalone or distributed)
-  mode: standalone ## other supported values are "distributed"
-
-  ## @param minio.replicas Number of MinIO containers running
-  replicas: 1
-
-  ## @param minio.buckets [array] List of buckets to be created after minio install
-  buckets:
-    - name: argo-workflows
-      ## Policy to be set on the bucket [none|download|upload|public]
-      policy: none
-      ## Purge if bucket exists already
-      purge: false
-
-  ## @param minio.persistence.enabled Enable persistence using Persistent Volume Claims
-  ## Enable persistence using Persistent Volume Claims
-  ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
-  ##
-  persistence:
-    enabled: true
-
-  ## @param minio.existingSecret Use existing Secret that store MinIO credentials
-  ## Use existing Secret that store following variables:
-  ##
-  ## | Chart var             | .data.<key> in Secret    |
-  ## |:----------------------|:-------------------------|
-  ## | rootUser              | rootUser                 |
-  ## | rootPassword          | rootPassword             |
-  ##
-  ## All mentioned variables will be ignored in values file.
-  ## .data.rootUser and .data.rootPassword are mandatory,
-  ## others depend on enabled status of corresponding sections.
-  ##
-  existingSecret: *passwordSecretName
-
-  ## @param minio.resources.requests.memory Memory requests for minio
-  ## @param minio.resources.requests.cpu CPU requests for minio
-  ## @param minio.resources.limits.memory Memory limits for minio
-  ## @param minio.resources.limits.cpu CPU limits for minio
-  ## Configure resource requests and limits
-  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  ##
-  resources:
-    requests:
-      memory: "1Gi"
-      cpu: "200m"
-    limits:
-      memory: "2Gi"
-      cpu: "500m"
-
 ## @section OGDC Configuration
 ## OGDC application configuration
 ##
@@ -396,12 +341,6 @@ ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 
 
 ## @param dataone_node_url DataONE member node URL for metadata retrieval
 dataone_node_url: "https://arcticdata.io/metacat/d1/mn"
-
-## @param ogdc_s3_endpoint Internal S3 endpoint URL for MinIO service
-## This is the URL at which the s3 service is exposed at within the cluster.
-## Injected into the ogdc-service pod as `INTERNAL_S3_ENDPOINT_URL`.
-##
-ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
 
 ## @param ogdc_public_host Public host (no scheme, no path) for external access.
 ## Combined with a fixed path to produce `PUBLIC_S3_ENDPOINT_URL` in the
