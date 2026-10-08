@@ -16,13 +16,14 @@
 
 
 global:
-  ## @param global.passwordsSecret The name of the Secret containing application passwords
-  ## This is the secret deployed using your own private, edited version of `../admin/secrets.yaml`.
-  ##
-  ## (Note the actual key passwordsSecret is not used anywhere; only the yaml anchor/alias
-  ##  &passwordSecretName. IF YOU OVERRIDE THIS VALUE IN ANOTHER VALUES-OVERLAY FILE, YOU ALSO
-  ## NEED TO OVERRIDE THE VALUES THAT USE THIS ANCHOR - search this file for 'passwordSecretName')
-  passwordsSecret: &passwordSecretName ${RELEASE_NAME}-secrets
+  ## S3 object storage. Credentials come from the Secret `${RELEASE_NAME}-s3-credentials`
+  ## (keys accessKeyId / secretAccessKey), deployed from `../admin/secrets.yaml`.
+  s3:
+    ## TEMP/TBD: not provisioned yet. Endpoint and bucket are placeholders.
+    endpoint: "https://s3.anacapa.nceas.ucsb.edu"
+    region: "default"
+    bucket: "ogdc-dev"
+    forcePathStyle: true
 
 ## argo-workflows configuration
 ## See https://argoproj.github.io/argo-workflows/
@@ -59,34 +60,6 @@ argo-workflows:
       ## Enable an ingress resource for the Argo server
       enabled: false
 
-  ## Artifact repository configuration
-  artifactRepository:
-    s3:
-      ## Note the `key` attribute is not the actual secret, it's the PATH to
-      ## the contents in the associated secret, as defined by the `name` attribute.
-      accessKeySecret:
-        name: *passwordSecretName
-        key: rootUser
-      secretKeySecret:
-        name: *passwordSecretName
-        key: rootPassword
-
-
-## MinIO configuration
-minio:
-  ## Enable persistence using Persistent Volume Claims
-  ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
-  ##
-  persistence:
-    enabled: true
-
-    ## A manually managed Persistent Volume and Claim
-    ## Requires persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    existingClaim: "cephfs-${RELEASE_NAME}-minio-pvc"
-
-  existingSecret: *passwordSecretName
-
 # Ensures that local image of ogdc-service is used.
 image:
   repository: "ghcr.io/qgreenland-net/ogdc-runner"
@@ -108,7 +81,6 @@ auth:
   oidcSecretName: "${RELEASE_NAME}-oidc-config"
 
 ogdc_public_host: "ogdc.test.dataone.org"
-ogdc_s3_endpoint: "http://${RELEASE_NAME}-minio:9000"
 ogdc_public_s3_url: "https://ogdc.test.dataone.org/storage"
 ogdc_workflow_pvc_name: "cephfs-${RELEASE_NAME}-workflow-pvc"
 ogdc_input_pvcs:

@@ -12,13 +12,15 @@
 
 
 global:
-  ## @param global.passwordsSecret The name of the Secret containing application passwords
-  ## This is the secret deployed using your own private, edited version of `../admin/secrets.yaml`.
-  ##
-  ## (Note the actual key passwordsSecret is not used anywhere; only the yaml anchor/alias
-  ##  &passwordSecretName. IF YOU OVERRIDE THIS VALUE IN ANOTHER VALUES-OVERLAY FILE, YOU ALSO
-  ## NEED TO OVERRIDE THE VALUES THAT USE THIS ANCHOR - search this file for 'passwordSecretName')
-  passwordsSecret: &passwordSecretName ${RELEASE_NAME}-secrets
+  ## S3 object storage. Credentials come from the Secret `${RELEASE_NAME}-s3-credentials`
+  ## (keys accessKeyId / secretAccessKey), deployed from `../admin/secrets.yaml`.
+  s3:
+    ## TEMP/TBD: placeholder local endpoint; the in-cluster SeaweedFS service that
+    ## serves it is added by the follow-up local-S3 change. Not deployed by this chart yet.
+    endpoint: "http://${RELEASE_NAME}-seaweedfs:8333"
+    region: "default"
+    bucket: "ogdc-local"
+    forcePathStyle: true
 
   ## @param global.defaultStorageClass Global default StorageClass for Persistent Volume(s)
   ##
@@ -65,40 +67,8 @@ argo-workflows:
   ## Artifact repository configuration
   artifactRepository:
     s3:
-      ## Note the `key` attribute is not the actual secret, it's the PATH to
-      ## the contents in the associated secret, as defined by the `name` attribute.
-      accessKeySecret:
-        name: *passwordSecretName
-        key: rootUser
-      secretKeySecret:
-        name: *passwordSecretName
-        key: rootPassword
-
-## MinIO configuration
-minio:
-  ## Enable persistence using Persistent Volume Claims
-  ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
-  ##
-  persistence:
-    enabled: true
-
-    ## minio data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    ## Storage class of PV to bind. By default it looks for standard storage class.
-    ## If the PV uses a different storage class, specify that here.
-    storageClass: *defaultStorageClass
-    ## Persistent Volume Access Mode
-    accessMode: ReadWriteOnce
-    ## Persistent Volume Size
-    size: 5Gi
-
-
-  existingSecret: *passwordSecretName
+      ## plain-http local endpoint (no TLS)
+      insecure: true
 
 # Ensures that local image of ogdc-service is used.
 image:
@@ -166,7 +136,6 @@ viz_workflow:
 ogdc_service_command: ". ./.venv/bin/activate && fastapi dev --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
 
 ogdc_public_host: "localhost"
-ogdc_s3_endpoint: "http://${RELEASE_NAME}-minio:9000"
 ogdc_public_s3_url: "https://localhost:7443/storage"
 ogdc_workflow_pvc_name: "cephfs-${RELEASE_NAME}-workflow-pvc"
 ogdc_viz_workflow_image: "ghcr.io/permafrostdiscoverygateway/pdgworkflow:1.1.0-dev-2"
