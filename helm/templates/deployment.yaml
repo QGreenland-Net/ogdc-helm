@@ -63,6 +63,11 @@ spec:
             secretKeyRef:
               name: {{ .Values.global.s3.credentialsSecret | default (printf "%s-s3-credentials" .Release.Name) | quote }}
               key: secretAccessKey
+        - name: OGDC_STORAGE_LINK_SIGNING_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.s3.credentialsSecret | default (printf "%s-s3-credentials" .Release.Name) | quote }}
+              key: storageLinkSigningKey
         {{- if eq $accessMode "authenticated" }}
         - name: OIDC_CLIENT_SECRETS_FILE
           value: "{{ $oidcMountPath }}/client_secrets.json"
