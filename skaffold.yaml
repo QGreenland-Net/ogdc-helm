@@ -42,7 +42,9 @@ deploy:
         # Resolve ${RELEASE_NAME}/${NAMESPACE} placeholders
         overrides:
           global:
-            passwordsSecret: "qgnet-ogdc-secrets"
+            s3:
+              # TEMP/TBD: placeholder local endpoint, replaced by the local S3 (SeaweedFS) work.
+              endpoint: "http://qgnet-ogdc-seaweedfs:8333"
           argo-workflows:
             controller:
               workflowNamespaces:
@@ -54,15 +56,6 @@ deploy:
                     name: "qgnet-ogdc-db-postgres-secrets"
                   passwordSecret:
                     name: "qgnet-ogdc-db-postgres-secrets"
-            artifactRepository:
-              s3:
-                accessKeySecret:
-                  name: "qgnet-ogdc-secrets"
-                secretKeySecret:
-                  name: "qgnet-ogdc-secrets"
-          minio:
-            existingSecret: "qgnet-ogdc-secrets"
-          ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
           ogdc_workflow_pvc_name: "cephfs-qgnet-ogdc-workflow-pvc"
           ogdc_public_s3_url: "https://localhost:7443/storage"
           ingress:

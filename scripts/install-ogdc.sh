@@ -38,7 +38,6 @@ elif [[ "$ENV" == "prod" ]]; then
 fi
 
 # Add repos and build deps.
-helm repo add minio https://charts.min.io/
 helm repo add argo-workflows https://argoproj.github.io/argo-helm
 helm dependency update helm/
 helm dependency build helm/
