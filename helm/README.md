@@ -16,14 +16,13 @@ Helm chart for Kubernetes Deployment of OGDC
 | Repository | Name | Version |
 |------------|------|---------|
 | https://argoproj.github.io/argo-helm | argo-workflows | 0.45.26 |
-| https://charts.min.io/ | minio | 5.4.0 |
 
 ## Overview
 
 OGDC (Open Geospatial Data Cloud) is a Helm chart for deploying a complete geospatial data processing pipeline on Kubernetes. This chart includes:
 
 - **Argo Workflows**: For orchestrating and managing data processing workflows
-- **MinIO**: S3-compatible object storage for artifacts and data
+- **S3 object storage**: an external S3-compatible store (configured via `global.s3`) for artifacts and data
 - **OGDC Runner**: The main application service
 - **Cloud Native PostgresQL**: CNPG database cluster instance for OGDC backend. 
 
@@ -45,8 +44,12 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 
 | Name                         | Description                                                    | Value                |
 | ---------------------------- | -------------------------------------------------------------- | -------------------- |
-| `global.passwordsSecret`     | The name of the Secret containing application passwords        | `qgnet-ogdc-secrets` |
 | `global.defaultStorageClass` | Global default StorageClass for Persistent Volume(s)           | `local-path`         |
+| `global.s3.endpoint`         | S3 endpoint URL including scheme (required)                    | `""`                 |
+| `global.s3.region`           | S3 region                                                      | `default`            |
+| `global.s3.bucket`           | Bucket for workflow artifacts and outputs (required)           | `""`                 |
+| `global.s3.forcePathStyle`   | Use path-style addressing (`S3_ADDRESSING_STYLE=path`)         | `true`               |
+| `global.s3.credentialsSecret`| Credentials Secret name; empty means `<release>-s3-credentials` | `""`               |
 | `nameOverride`               | String to partially override chart name-derived resource names | `""`                 |
 | `fullnameOverride`           | String to fully override chart name-derived resource names     | `""`                 |
 
@@ -96,27 +99,42 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 | `argo-workflows.executor.resources.limits.memory`                                         | Memory limits for the workflow executor                                                    | `4Gi`                              |
 | `argo-workflows.executor.resources.limits.cpu`                                            | CPU limits for the workflow executor                                                       | `1000m`                            |
 | `argo-workflows.artifactRepository.archiveLogs`                                           | Archive the main container logs as an artifact                                             | `false`                            |
-| `argo-workflows.artifactRepository.s3.bucket`                                             | S3 bucket name                                                                             | `argo-workflows`                   |
-| `argo-workflows.artifactRepository.s3.endpoint`                                           | S3 endpoint                                                                                | `{{ .Release.Name }}-minio:9000`   |
-| `argo-workflows.artifactRepository.s3.accessKeySecret.name`                               | Secret name containing S3 access key                                                       | `qgnet-ogdc-secrets`               |
-| `argo-workflows.artifactRepository.s3.accessKeySecret.key`                                | Secret key for S3 access key                                                               | `rootUser`                         |
-| `argo-workflows.artifactRepository.s3.secretKeySecret.name`                               | Secret name containing S3 secret key                                                       | `qgnet-ogdc-secrets`               |
-| `argo-workflows.artifactRepository.s3.secretKeySecret.key`                                | Secret key for S3 secret key                                                               | `rootPassword`                     |
-| `argo-workflows.artifactRepository.s3.insecure`                                           | Disable TLS for S3 connection                                                              | `true`                             |
+| `argo-workflows.artifactRepository.s3.bucket`                                             | S3 bucket name (templated from `global.s3.bucket`)                                         | `<templated>`                      |
+| `argo-workflows.artifactRepository.s3.endpoint`                                           | S3 host[:port], scheme stripped (templated from `global.s3.endpoint`)                      | `<templated>`                      |
+| `argo-workflows.artifactRepository.s3.region`                                             | S3 region (templated from `global.s3.region`)                                              | `<templated>`                      |
+| `argo-workflows.artifactRepository.s3.accessKeySecret.name`                               | Secret name containing S3 access key (templated from `global.s3.credentialsSecret`)        | `<release>-s3-credentials`         |
+| `argo-workflows.artifactRepository.s3.accessKeySecret.key`                                | Secret key for S3 access key                                                               | `accessKeyId`                      |
+| `argo-workflows.artifactRepository.s3.secretKeySecret.name`                               | Secret name containing S3 secret key (templated from `global.s3.credentialsSecret`)        | `<release>-s3-credentials`         |
+| `argo-workflows.artifactRepository.s3.secretKeySecret.key`                                | Secret key for S3 secret key                                                               | `secretAccessKey`                  |
+| `argo-workflows.artifactRepository.s3.insecure`                                           | Disable TLS for S3 connection (only for a plain-http endpoint)                             | `false`                            |
 
-### MinIO Configuration
+### S3 object storage
 
-| Name                              | Description                                       | Value                |
-| --------------------------------- | ------------------------------------------------- | -------------------- |
-| `minio.mode`                      | MinIO mode (standalone or distributed)            | `standalone`         |
-| `minio.replicas`                  | Number of MinIO containers running                | `1`                  |
-| `minio.buckets`                   | List of buckets to be created after minio install | `[]`                 |
-| `minio.persistence.enabled`       | Enable persistence using Persistent Volume Claims | `true`               |
-| `minio.existingSecret`            | Use existing Secret that store MinIO credentials  | `qgnet-ogdc-secrets` |
-| `minio.resources.requests.memory` | Memory requests for minio                         | `1Gi`                |
-| `minio.resources.requests.cpu`    | CPU requests for minio                            | `200m`               |
-| `minio.resources.limits.memory`   | Memory limits for minio                           | `2Gi`                |
-| `minio.resources.limits.cpu`      | CPU limits for minio                              | `500m`               |
+Since chart 0.5.0 the bundled MinIO subchart is gone; OGDC uses an external S3-compatible
+object store configured only through `global.s3`. `global.s3.endpoint` and
+`global.s3.bucket` are intentionally empty in the base `values.yaml`: the chart refuses to
+render until a values overlay (see `examples/`) sets them, so a forgotten overlay can never
+write to the wrong bucket. The endpoint and bucket in the dev and prod examples are
+TEMP/TBD placeholders: the real store is not provisioned yet.
+
+Credentials come from a pre-created Secret named `<release-name>-s3-credentials` (or
+`global.s3.credentialsSecret`) with keys `accessKeyId`, `secretAccessKey` and
+`storageLinkSigningKey` (generate with `openssl rand -hex 32`). Create it from
+`admin/secrets.yaml`. The ogdc-service pod receives `S3_ENDPOINT_URL` (and the deprecated
+alias `INTERNAL_S3_ENDPOINT_URL`), `S3_BUCKET`, `S3_REGION`, `S3_ADDRESSING_STYLE`,
+`S3_SECRET_KEY_ID`, `S3_SECRET_KEY_KEY` and `OGDC_STORAGE_LINK_SIGNING_KEY`.
+
+Migrating from 0.4.x:
+
+- Remove the `minio:` values block and `ogdc_s3_endpoint`; rendering fails with a message
+  while either is set. Set `global.s3.*` instead.
+- Remove the `argo-workflows.artifactRepository.s3` credential overrides; they now derive
+  from `global.s3`. Set `argo-workflows.artifactRepository.s3.insecure: true` only for a
+  plain-http endpoint.
+- The `<release>-secrets` Secret (MinIO `rootUser`/`rootPassword`) and
+  `global.passwordsSecret` no longer have consumers and were removed. Create
+  `<release>-s3-credentials` instead. `<release>-api-secrets` is unchanged.
+- `admin/cephfs-releasename-minio-pvc.yaml` was deleted.
 
 ### OGDC Configuration
 
@@ -133,7 +151,6 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 | `resources.limits.cpu`      | CPU limits for OGDC service                           | `1000m`                                                                                            |
 | `ogdc_service_command`      | Command to start the OGDC FastAPI service             | `. ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py` |
 | `dataone_node_url`          | DataONE member node URL for metadata retrieval        | `https://arcticdata.io/metacat/d1/mn`                                                              |
-| `ogdc_s3_endpoint`          | Internal S3 endpoint URL for MinIO service            | `http://qgnet-ogdc-minio:9000`                                                                     |
 | `ogdc_public_host`          | Public host (no scheme, no path) for external access. | `api.test.dataone.org`                                                                             |
 | `ogdc_public_s3_url`        | Public S3 endpoint URL for external access.           | `""`                                                                                               |
 | `ogdc_workflow_pvc_name`    | Name of the PVC to use for workflow storage.          | `cephfs-qgnet-ogdc-workflow-pvc`                                                                   |
