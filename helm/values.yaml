@@ -21,19 +21,6 @@
 ## Global configuration parameters for OGDC
 ##
 global:
-  ## @param global.passwordsSecret The name of the Secret containing application passwords
-  ## This is the secret deployed using your own private, edited version of `../admin/secrets.yaml`.
-  ##
-  ## (Note the actual key passwordsSecret is not used anywhere; only the yaml anchor/alias
-  ##  &passwordSecretName. IF YOU OVERRIDE THIS VALUE IN ANOTHER VALUES-OVERLAY FILE, YOU ALSO
-  ## NEED TO OVERRIDE THE VALUES THAT USE THIS ANCHOR - search this file for 'passwordSecretName')
-  ##
-  ## IMPORTANT NOTE: this value includes the release name. The default here matches
-  ## the default RELEASE_NAME (`qgnet-ogdc`). When overriding the release name, the
-  ## example values files use the `${RELEASE_NAME}-secrets` pattern via envsubst.
-  ##
-  passwordsSecret: &passwordSecretName "qgnet-ogdc-secrets"
-
   ## @param global.defaultStorageClass Global default StorageClass for Persistent Volume(s)
   ##
   ## Inspect your cluster to see what storageClass is set as default:
@@ -44,23 +31,25 @@ global:
   defaultStorageClass: local-path
 
   ## S3 object storage (single source of truth). Used by the Argo artifact repository
-  ## (below) and by the ogdc-service pod (INTERNAL_S3_ENDPOINT_URL, S3_BUCKET, S3_REGION,
-  ## S3_FORCE_PATH_STYLE). Credentials are NOT set here: they come from a pre-created
+  ## (below) and by the ogdc-service pod (S3_ENDPOINT_URL, S3_BUCKET, S3_REGION,
+  ## S3_ADDRESSING_STYLE). Credentials are NOT set here: they come from a pre-created
   ## Secret (see global.s3.credentialsSecret and ../admin/secrets.yaml).
   ##
+  ## endpoint and bucket are deliberately empty: the chart refuses to render until an
+  ## overlay sets them (see ../examples/), so a forgotten overlay can never silently
+  ## write to the wrong bucket.
+  ##
   s3:
-    ## @param global.s3.endpoint S3 endpoint URL, including the scheme (e.g. https://s3.example.org[:port])
-    ## TEMP/TBD: not provisioned yet. Placeholder for the NCEAS Ceph RGW endpoint.
-    endpoint: "https://s3.anacapa.nceas.ucsb.edu"
+    ## @param global.s3.endpoint S3 endpoint URL, including the scheme (e.g. https://s3.example.org[:port]). Required.
+    endpoint: ""
 
     ## @param global.s3.region S3 region (Ceph RGW uses `default`)
     region: "default"
 
-    ## @param global.s3.bucket Bucket for workflow artifacts and outputs
-    ## TEMP/TBD: not provisioned yet. Placeholder bucket name.
-    bucket: "ogdc-dev"
+    ## @param global.s3.bucket Bucket for workflow artifacts and outputs. Required.
+    bucket: ""
 
-    ## @param global.s3.forcePathStyle Use path-style addressing (`<endpoint>/<bucket>/<key>`)
+    ## @param global.s3.forcePathStyle Use path-style addressing (`<endpoint>/<bucket>/<key>`); sets S3_ADDRESSING_STYLE to `path`, otherwise `virtual`
     forcePathStyle: true
 
     ## @param global.s3.credentialsSecret Name of the Secret holding keys `accessKeyId` and `secretAccessKey`
