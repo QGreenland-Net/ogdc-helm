@@ -449,6 +449,45 @@ viz_workflow:
         cpu: "500m"
         memory: "1Gi"
 
+## @section Local S3 (SeaweedFS) Configuration
+## Optional in-cluster S3 backend for LOCAL development only (single pod, no HA).
+## When enabled, point `global.s3.endpoint` at `http://<release>-seaweedfs:8333`
+## (see ../examples/values-local-cluster-ogdc-example.yaml). Nothing is rendered
+## when disabled, which is what dev and prod use (they use an external S3).
+## Credentials come from the `global.s3` credentials Secret, never from these values.
+##
+localS3:
+  ## @param localS3.enabled Deploy a single-pod SeaweedFS S3 gateway plus a bucket-creation Job
+  enabled: false
+
+  image:
+    ## @param localS3.image.repository SeaweedFS image repository
+    repository: chrislusf/seaweedfs
+    ## @param localS3.image.tag SeaweedFS image tag (pinned)
+    tag: "4.48"
+    ## @param localS3.image.pullPolicy SeaweedFS image pull policy
+    pullPolicy: IfNotPresent
+
+  persistence:
+    ## @param localS3.persistence.enabled Persist SeaweedFS data on a PVC (otherwise emptyDir)
+    enabled: true
+    ## @param localS3.persistence.size PVC size
+    size: 5Gi
+    ## @param localS3.persistence.storageClass StorageClass; empty uses `global.defaultStorageClass`
+    storageClass: ""
+
+  ## @param localS3.resources.requests.cpu CPU requests for the SeaweedFS pod
+  ## @param localS3.resources.requests.memory Memory requests for the SeaweedFS pod
+  ## @param localS3.resources.limits.cpu CPU limits for the SeaweedFS pod
+  ## @param localS3.resources.limits.memory Memory limits for the SeaweedFS pod
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+
 ## @section OGDC Service Ingress Configuration
 ## Ingress for the OGDC service (API + object storage passthrough).
 ## The argo-workflows server has its own ingress config under
