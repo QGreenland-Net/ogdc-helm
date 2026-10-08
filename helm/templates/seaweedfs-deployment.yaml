@@ -1,0 +1,87 @@
+{{- if .Values.localS3.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-seaweedfs
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: seaweedfs
+spec:
+  replicas: 1
+  # The data volume is ReadWriteOnce, so never run two pods at once.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: seaweedfs
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: seaweedfs
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      # The image ships an unprivileged `seaweed` user (uid/gid 1000).
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: seaweedfs
+          image: "{{ .Values.localS3.image.repository }}:{{ .Values.localS3.image.tag }}"
+          imagePullPolicy: {{ .Values.localS3.image.pullPolicy }}
+          # Single-process mode: master + volume + filer + S3 gateway.
+          command: ["weed"]
+          args:
+            - server
+            - -dir=/data
+            - -ip.bind=0.0.0.0
+            - -s3
+            - -s3.port=8333
+            - -volume.max=0
+            - -master.volumeSizeLimitMB=1024
+          env:
+            # SeaweedFS registers an admin identity from these standard variables,
+            # so the credentials never appear in values or in a rendered ConfigMap.
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ogdc.s3CredentialsSecret" . | quote }}
+                  key: accessKeyId
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ogdc.s3CredentialsSecret" . | quote }}
+                  key: secretAccessKey
+          ports:
+            - name: s3
+              containerPort: 8333
+          readinessProbe:
+            tcpSocket:
+              port: s3
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: s3
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            {{- toYaml .Values.localS3.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          {{- if .Values.localS3.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-seaweedfs
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}
