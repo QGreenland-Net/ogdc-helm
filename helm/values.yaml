@@ -43,6 +43,30 @@ global:
   ##
   defaultStorageClass: local-path
 
+  ## S3 object storage (single source of truth). Used by the Argo artifact repository
+  ## (below) and by the ogdc-service pod (INTERNAL_S3_ENDPOINT_URL, S3_BUCKET, S3_REGION,
+  ## S3_FORCE_PATH_STYLE). Credentials are NOT set here: they come from a pre-created
+  ## Secret (see global.s3.credentialsSecret and ../admin/secrets.yaml).
+  ##
+  s3:
+    ## @param global.s3.endpoint S3 endpoint URL, including the scheme (e.g. https://s3.example.org[:port])
+    ## TEMP/TBD: not provisioned yet. Placeholder for the NCEAS Ceph RGW endpoint.
+    endpoint: "https://s3.anacapa.nceas.ucsb.edu"
+
+    ## @param global.s3.region S3 region (Ceph RGW uses `default`)
+    region: "default"
+
+    ## @param global.s3.bucket Bucket for workflow artifacts and outputs
+    ## TEMP/TBD: not provisioned yet. Placeholder bucket name.
+    bucket: "ogdc-dev"
+
+    ## @param global.s3.forcePathStyle Use path-style addressing (`<endpoint>/<bucket>/<key>`)
+    forcePathStyle: true
+
+    ## @param global.s3.credentialsSecret Name of the Secret holding keys `accessKeyId` and `secretAccessKey`
+    ## Empty means `<release-name>-s3-credentials`. Deploy it from `../admin/secrets.yaml`.
+    credentialsSecret: ""
+
 ## @param nameOverride String to partially override chart name-derived resource names
 ##
 nameOverride: ""
@@ -232,30 +256,35 @@ argo-workflows:
     ##
     archiveLogs: false
 
-    ## @param argo-workflows.artifactRepository.s3.bucket S3 bucket name
-    ## @param argo-workflows.artifactRepository.s3.endpoint S3 endpoint
-    ## @param argo-workflows.artifactRepository.s3.accessKeySecret.name Secret name containing S3 access key
+    ## @param argo-workflows.artifactRepository.s3.bucket S3 bucket name (templated from global.s3.bucket)
+    ## @param argo-workflows.artifactRepository.s3.endpoint S3 host[:port] without scheme (templated from global.s3.endpoint)
+    ## @param argo-workflows.artifactRepository.s3.region S3 region (templated from global.s3.region)
+    ## @param argo-workflows.artifactRepository.s3.accessKeySecret.name Secret name containing S3 access key (templated from global.s3.credentialsSecret)
     ## @param argo-workflows.artifactRepository.s3.accessKeySecret.key Secret key for S3 access key
-    ## @param argo-workflows.artifactRepository.s3.secretKeySecret.name Secret name containing S3 secret key
+    ## @param argo-workflows.artifactRepository.s3.secretKeySecret.name Secret name containing S3 secret key (templated from global.s3.credentialsSecret)
     ## @param argo-workflows.artifactRepository.s3.secretKeySecret.key Secret key for S3 secret key
     ## @param argo-workflows.artifactRepository.s3.insecure Disable TLS for S3 connection
-    ## Store artifact in a S3-compliant object store
+    ## Store artifact in a S3-compliant object store. All fields except `insecure` are
+    ## templated from global.s3 (the argo-workflows chart applies `tpl` to them), so
+    ## overlays should set global.s3 instead of repeating these values.
     ##
     s3:
-      bucket: argo-workflows
-      endpoint: "{{ .Release.Name }}-minio:9000"
+      bucket: "{{ .Values.global.s3.bucket }}"
+      endpoint: '{{ .Values.global.s3.endpoint | trimPrefix "https://" | trimPrefix "http://" }}'
+      region: "{{ .Values.global.s3.region }}"
 
       ## Note the `key` attribute is not the actual secret, it's the PATH to
       ## the contents in the associated secret, as defined by the `name` attribute.
       accessKeySecret:
-        name: *passwordSecretName
-        key: rootUser
+        name: '{{ .Values.global.s3.credentialsSecret | default (printf "%s-s3-credentials" .Release.Name) }}'
+        key: accessKeyId
       secretKeySecret:
-        name: *passwordSecretName
-        key: rootPassword
+        name: '{{ .Values.global.s3.credentialsSecret | default (printf "%s-s3-credentials" .Release.Name) }}'
+        key: secretAccessKey
 
-      ## insecure will disable TLS. Primarily used for minio installs not configured with TLS
-      insecure: true
+      ## insecure disables TLS. It is NOT templated by the argo-workflows chart (literal bool).
+      ## Set to true only for a plain-http endpoint (local profile).
+      insecure: false
 
 ## @section MinIO Configuration
 ## MinIO configuration
@@ -367,76 +396,6 @@ ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 
 
 ## @param dataone_node_url DataONE member node URL for metadata retrieval
 dataone_node_url: "https://arcticdata.io/metacat/d1/mn"
-
-## @section S3 Object Storage Configuration
-## External S3-compatible object storage for workflow artifacts and outputs.
-## Dev and prod point at the NCEAS Ceph RGW (path-style, region `default`).
-## Nothing is provisioned there for OGDC yet, so the endpoint and bucket below
-## are TEMP/TBD placeholders. The local profile uses the bundled SeaweedFS (`localS3`).
-##
-s3:
-  ## @param s3.endpoint S3 API endpoint URL (scheme, host and optional port). REQUIRED.
-  ## TEMP/TBD: NCEAS Ceph RGW endpoint, not yet confirmed for OGDC.
-  endpoint: ""
-
-  ## @param s3.region Region sent to S3. Ceph RGW uses `default`.
-  region: "default"
-
-  ## @param s3.bucket Bucket for workflow artifacts and outputs. REQUIRED.
-  ## TEMP/TBD: placeholder names `ogdc-dev` / `ogdc-prod` until the buckets exist.
-  bucket: ""
-
-  ## @param s3.addressingStyle Addressing style: `path` or `virtual`
-  addressingStyle: path
-
-  ## @param s3.insecure Disable TLS for the S3 connection (local profile only)
-  insecure: false
-
-  ## @param s3.credentialsSecret Secret with keys `accessKeyId` and `secretAccessKey`.
-  ## Empty uses `<release-name>-s3-credentials`. Created outside the chart from
-  ## helm/admin/s3-credentials-secret.yaml.
-  credentialsSecret: ""
-
-  ## Secret with the HMAC key that signs `/storage` download links.
-  storageLinkSigningKeySecret:
-    ## @param s3.storageLinkSigningKeySecret.name Secret name. Empty uses the credentialsSecret.
-    name: ""
-    ## @param s3.storageLinkSigningKeySecret.key Key within that Secret
-    key: storageLinkSigningKey
-
-## @section Local SeaweedFS Configuration
-## Single-pod SeaweedFS (`weed server -s3`) for the local profile only.
-## SeaweedFS is Apache-2.0 and actively maintained. MinIO community edition is
-## in maintenance mode (source-only), which is why it is being dropped.
-## The image tag is pinned to an exact release.
-##
-localS3:
-  ## @param localS3.enabled Deploy SeaweedFS and a bucket-creation Job (local profile only)
-  enabled: false
-
-  ## @param localS3.image.repository SeaweedFS image repository
-  ## @param localS3.image.tag SeaweedFS image tag (pinned)
-  image:
-    repository: chrislusf/seaweedfs
-    tag: "4.48"
-
-  ## @param localS3.persistence.size Size of the SeaweedFS data volume
-  ## @param localS3.persistence.storageClass Storage class. Empty uses global.defaultStorageClass.
-  persistence:
-    size: 10Gi
-    storageClass: ""
-
-  ## @param localS3.resources.requests.memory Memory requests for SeaweedFS
-  ## @param localS3.resources.requests.cpu CPU requests for SeaweedFS
-  ## @param localS3.resources.limits.memory Memory limits for SeaweedFS
-  ## @param localS3.resources.limits.cpu CPU limits for SeaweedFS
-  resources:
-    requests:
-      memory: "512Mi"
-      cpu: "200m"
-    limits:
-      memory: "1Gi"
-      cpu: "500m"
 
 ## @param ogdc_s3_endpoint Internal S3 endpoint URL for MinIO service
 ## This is the URL at which the s3 service is exposed at within the cluster.
