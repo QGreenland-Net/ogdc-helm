@@ -498,7 +498,7 @@ localS3:
       memory: "1Gi"
 
 ## @section OGDC Service Ingress Configuration
-## Ingress for the OGDC service (API + object storage passthrough).
+## Ingress for the OGDC service (API + signed /storage download links).
 ## The argo-workflows server has its own ingress config under
 ## `argo-workflows.server.ingress` above.
 ##
@@ -516,7 +516,7 @@ ingress:
   ## @param ingress.apiPath Ingress path for the OGDC API service
   apiPath: "/api"
 
-  ## @param ingress.storagePath Ingress path for the MinIO object storage
+  ## @param ingress.storagePath Ingress path for signed /storage download links (served by the OGDC service)
   storagePath: "/storage"
 
   ## @param ingress.tls Ingress TLS configuration

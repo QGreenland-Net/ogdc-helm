@@ -24,13 +24,14 @@ spec:
             name: {{ .Release.Name }}-service
             port:
               number: 8000
-      # TODO: this will need some re-thinking based on how we deal with
-      # https://github.com/QGreenland-Net/ogdc-helm/issues/46.
+      # Signed download links (`/storage/<key>?expires=..&signature=..`) are verified
+      # and streamed from S3 by ogdc-service itself, so /storage targets the same
+      # service as the API. The prefix is NOT stripped (see middleware.yaml).
       - path: {{ .Values.ingress.storagePath | quote }}
         pathType: Prefix
         backend:
           service:
-            name: {{ .Release.Name }}-minio
+            name: {{ .Release.Name }}-service
             port:
-              number: 9000
+              number: 8000
 {{- end }}
