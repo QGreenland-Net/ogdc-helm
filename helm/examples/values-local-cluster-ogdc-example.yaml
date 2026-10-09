@@ -33,10 +33,10 @@ global:
 ## See https://argoproj.github.io/argo-workflows/
 argo-workflows:
   ## -- Restrict Argo to operate only in a single namespace (the namespace of the
-  ## Helm release) by apply Roles and RoleBindings instead of the Cluster
-  ## equivalents, and start workflow-controller with the --namespaced flag. Use it
+  ## Helm release) by applying Roles and RoleBindings instead of the Cluster
+  ## equivalents, and start workflow-controller and server with the --namespaced flag. Use it
   ## in clusters with strict access policy.
-  singleNamespace: false
+  singleNamespace: true
 
   ## Custom resource configuration
   crds:

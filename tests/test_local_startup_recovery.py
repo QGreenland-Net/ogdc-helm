@@ -36,6 +36,42 @@ class LocalStartupRecoveryTest(unittest.TestCase):
         self.assertIn("path: /version", service)
         self.assertIn("port: 8000", service)
 
+    def test_argo_controller_and_server_are_namespace_scoped(self):
+        documents = self.rendered.split("\n---\n")
+        deployments = {
+            document.split("name: ", 1)[1].splitlines()[0].strip(): document
+            for document in documents
+            if "kind: Deployment" in document
+            and "app.kubernetes.io/name: argo-workflows-" in document
+        }
+        controller = next(value for key, value in deployments.items() if "workflow-controller" in key)
+        server = next(value for key, value in deployments.items() if key.endswith("-server"))
+        self.assertIn('"--namespaced"', controller)
+        self.assertIn('"--namespaced"', server)
+
+    def test_argo_workflow_rbac_is_namespaced(self):
+        documents = self.rendered.split("\n---\n")
+        controller_rbac = [
+            document for document in documents
+            if "name: t04e2e-argo-workflows-workflow-controller" in document
+            and "\nkind: ClusterRole\n" in document
+        ]
+        server_rbac = [
+            document for document in documents
+            if "name: t04e2e-argo-workflows-server" in document
+            and "\nkind: ClusterRole\n" in document
+        ]
+        self.assertEqual([], controller_rbac)
+        self.assertEqual([], server_rbac)
+        for role_name in ("workflow-controller", "server"):
+            roles = [
+                document for document in documents
+                if f"name: t04e2e-argo-workflows-{role_name}\n" in document
+                and "\nkind: Role\n" in document
+            ]
+            self.assertTrue(roles, f"expected namespace Role for {role_name}")
+            self.assertTrue(all('namespace: "t04e2e"' in role for role in roles))
+
 
 if __name__ == "__main__":
     unittest.main()
