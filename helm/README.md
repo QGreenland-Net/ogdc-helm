@@ -119,7 +119,7 @@ TEMP/TBD placeholders: the real store is not provisioned yet.
 
 Credentials come from a pre-created Secret named `<release-name>-s3-credentials` (or
 `global.s3.credentialsSecret`) with keys `accessKeyId`, `secretAccessKey` and
-`storageLinkSigningKey` (generate with `openssl rand -hex 32`). Create it from
+`storageLinkSigningKey` (generate with `openssl rand -hex 32`; it must be at least 32 characters, and the runner answers `/storage` with 503 when it is shorter or still `your-value-here`). Create it from
 `admin/secrets.yaml`. The ogdc-service pod receives `S3_ENDPOINT_URL` (and the deprecated
 alias `INTERNAL_S3_ENDPOINT_URL`), `S3_BUCKET`, `S3_REGION`, `S3_ADDRESSING_STYLE`,
 `S3_SECRET_KEY_ID`, `S3_SECRET_KEY_KEY` and `OGDC_STORAGE_LINK_SIGNING_KEY`.

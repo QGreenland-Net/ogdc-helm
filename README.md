@@ -144,7 +144,19 @@ envsubst '${RELEASE_NAME} ${NAMESPACE}' \
 ```
 
 4. Create credentials for S3 (`${RELEASE_NAME}-s3-credentials`), the API and postgresql:
+
+   Every `your-value-here` in `helm/admin/secrets.yaml` must be replaced before the file is applied. `storageLinkSigningKey` must be at least 32 random characters (`openssl rand -hex 32`). Otherwise ogdc-service treats the key as not configured and answers `/storage` links with 503. Applying the file unchanged creates placeholder credentials.
+
+   For local clusters only, either skip `secrets.yaml` and let `./scripts/install-ogdc.sh local` create `${RELEASE_NAME}-s3-credentials` with random values (it does this only when the Secret does not already exist), or create the S3 Secret with random values in one step:
 ```sh
+envsubst '${RELEASE_NAME}' < helm/admin/secrets.yaml \
+  | awk '/your-value-here/ { c="openssl rand -hex 16"; c | getline r; close(c); sub(/your-value-here/, r) } { print }' \
+  | kubectl apply -n "$NAMESPACE" -f -
+```
+
+   For dev and prod, replace each `your-value-here` in `helm/admin/secrets.yaml` by hand before running the commands below. For local, do not run the first `envsubst` line below if you used the one-liner above, because it would overwrite the random values with placeholders.
+```sh
+# dev/prod: replace placeholders first. local: skip the secrets.yaml line if you used the one-liner above.
 envsubst '${RELEASE_NAME}' < helm/admin/secrets.yaml          | kubectl apply -n "$NAMESPACE" -f -
 envsubst '${RELEASE_NAME}' < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
