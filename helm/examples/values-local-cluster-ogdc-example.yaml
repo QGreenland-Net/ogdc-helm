@@ -162,8 +162,9 @@ viz_workflow:
         cpu: "500m"
         memory: "1Gi"
 
-# Use fastapi dev server for local dev
-ogdc_service_command: ". ./.venv/bin/activate && fastapi dev --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
+# Use the single-process runner locally so startup failures exit for Kubernetes to restart.
+# This disables FastAPI's file-reload feature in the local cluster.
+ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
 
 ogdc_public_host: "localhost"
 ogdc_s3_endpoint: "http://${RELEASE_NAME}-minio:9000"
