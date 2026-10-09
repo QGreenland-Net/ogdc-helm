@@ -134,7 +134,55 @@ Migrating from 0.4.x:
 - The `<release>-secrets` Secret (MinIO `rootUser`/`rootPassword`) and
   `global.passwordsSecret` no longer have consumers and were removed. Create
   `<release>-s3-credentials` instead. `<release>-api-secrets` is unchanged.
-- `admin/cephfs-releasename-minio-pvc.yaml` was deleted.
+- `admin/cephfs-releasename-minio-pvc.yaml` was deleted. If you applied it, delete the old
+  CephFS PVC yourself once the data is migrated (see below):
+  `kubectl delete pvc -n <namespace> cephfs-<release>-minio-pvc`. Helm never deleted it.
+  (The MinIO subchart's own PVC, if one exists, is `<release>-minio`.)
+- The old MinIO Secret keys (`rootUser`, `rootPassword`) map to `accessKeyId` and
+  `secretAccessKey` of the new Secret, but the old values are not reused automatically.
+- Data in the old MinIO PVC is **not** migrated automatically. Copy it to the new bucket
+  yourself, e.g. with the AWS CLI (placeholders only, never paste real keys into a shell
+  history you share):
+
+  ```sh
+  kubectl port-forward -n <namespace> svc/<release>-minio 9000:9000 &
+  AWS_ACCESS_KEY_ID=<old-rootUser> AWS_SECRET_ACCESS_KEY=<old-rootPassword> \
+    aws --endpoint-url http://localhost:9000 s3 sync s3://<old-bucket> ./minio-export
+  AWS_ACCESS_KEY_ID=<new-accessKeyId> AWS_SECRET_ACCESS_KEY=<new-secretAccessKey> \
+    aws --endpoint-url <global.s3.endpoint> s3 sync ./minio-export s3://<global.s3.bucket>
+  ```
+
+  `rclone sync` between two configured remotes works as well.
+
+#### Environments
+
+- **local** (`examples/values-local-cluster-ogdc-example.yaml`): `localS3.enabled: true`
+  deploys a single-pod [SeaweedFS](https://github.com/seaweedfs/seaweedfs)
+  (`weed server -s3`, port 8333) with a PVC, plus a post-install/upgrade Job that creates
+  `global.s3.bucket` idempotently (`head-bucket`, then `create-bucket`). SeaweedFS reads the
+  admin identity from `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, which come from the
+  same `<release>-s3-credentials` Secret, so no credentials are in values or ConfigMaps.
+  The pod runs as the image's unprivileged uid 1000 (`runAsNonRoot`). The S3 endpoint is
+  plain http, hence `argo-workflows.artifactRepository.s3.insecure: true`.
+  Run it with `./scripts/install-ogdc.sh local` (creates the Secret with random values if it
+  is missing) or `./scripts/run-local.sh` (skaffold, create the Secret first).
+- **dev**: endpoint `https://s3.anacapa.nceas.ucsb.edu`, bucket `ogdc-dev`. TEMP/TBD: the
+  bucket and its credentials are not provisioned yet.
+- **prod**: same endpoint, bucket `ogdc-prod`. TEMP/TBD: not provisioned yet.
+
+Why SeaweedFS for local: it is Apache-2.0 licensed, actively maintained, and runs as a
+single pod with a built-in S3 gateway. MinIO's community edition is in maintenance mode and
+has had license and feature changes, so it is no longer a good default.
+
+#### Public `/storage` links
+
+Workflow outputs are shared as `https://<ogdc_public_host>/storage/<key>?expires=<unix>&signature=<hex>`.
+The ingress sends `/storage` to `<release>-service:8000` without stripping the prefix (the
+`ogdc-rewrite` middleware strips only `^/api`). ogdc-service verifies the HMAC signature
+(`OGDC_STORAGE_LINK_SIGNING_KEY`, Secret key `storageLinkSigningKey`) and streams the object
+from S3 with its own credentials. The chart deliberately has no proxy in front of S3: an S3
+SigV4 presigned URL signs the `Host` header and the path, so any reverse proxy or ingress
+rewrite that changes either one invalidates the link, and the bucket stays private.
 
 ### OGDC Configuration
 
@@ -214,6 +262,25 @@ kubectl rollout restart deployment/${RELEASE_NAME}-service-deployment \
 | `viz_workflow.resources.discovery.limits.cpu`       | CPU limits for discovery worker pods.                 | `500m`             |
 | `viz_workflow.resources.discovery.limits.memory`    | Memory limits for discovery worker pods.              | `1Gi`              |
 
+### Local S3 (SeaweedFS) Configuration
+
+| Name                                  | Description                                                                       | Value                  |
+| ------------------------------------- | --------------------------------------------------------------------------------- | ---------------------- |
+| `localS3.enabled`                     | Deploy a single-pod SeaweedFS S3 gateway plus a bucket-creation Job               | `false`                |
+| `localS3.image.repository`            | SeaweedFS image repository                                                        | `chrislusf/seaweedfs`  |
+| `localS3.image.tag`                   | SeaweedFS image tag (pinned)                                                      | `4.48`                 |
+| `localS3.image.pullPolicy`            | SeaweedFS image pull policy                                                       | `IfNotPresent`         |
+| `localS3.bucketJob.image.repository`  | AWS CLI image used by the bucket-creation Job                                     | `amazon/aws-cli`       |
+| `localS3.bucketJob.image.tag`         | AWS CLI image tag (pinned)                                                        | `2.17.0`               |
+| `localS3.bucketJob.image.pullPolicy`  | AWS CLI image pull policy                                                         | `IfNotPresent`         |
+| `localS3.persistence.enabled`         | Persist SeaweedFS data on a PVC (otherwise emptyDir)                              | `true`                 |
+| `localS3.persistence.size`            | PVC size                                                                          | `5Gi`                  |
+| `localS3.persistence.storageClass`    | StorageClass; empty uses `global.defaultStorageClass`                             | `""`                   |
+| `localS3.resources.requests.cpu`      | CPU requests for the SeaweedFS pod                                                | `100m`                 |
+| `localS3.resources.requests.memory`   | Memory requests for the SeaweedFS pod                                             | `256Mi`                |
+| `localS3.resources.limits.cpu`        | CPU limits for the SeaweedFS pod                                                  | `1`                    |
+| `localS3.resources.limits.memory`     | Memory limits for the SeaweedFS pod                                               | `1Gi`                  |
+
 ### OGDC Service Ingress Configuration
 
 | Name                                                 | Description                               | Value              |
@@ -222,5 +289,5 @@ kubectl rollout restart deployment/${RELEASE_NAME}-service-deployment \
 | `ingress.ingressClassName`                           | Ingress class name                        | `traefik`          |
 | `ingress.annotations.cert-manager.io/cluster-issuer` | ClusterIssuer to use for TLS certificates | `letsencrypt-prod` |
 | `ingress.apiPath`                                    | Ingress path for the OGDC API service     | `/api`             |
-| `ingress.storagePath`                                | Ingress path for the MinIO object storage | `/storage`         |
+| `ingress.storagePath`                                | Ingress path for signed /storage download links (served by the OGDC service) | `/storage`         |
 | `ingress.tls`                                        | Ingress TLS configuration                 | `[]`               |
