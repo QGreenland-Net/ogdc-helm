@@ -1,4 +1,4 @@
-## v0.5.0 (2026-10-08)
+## NEXT_VERSION
 
 - **BREAKING:** Replace the bundled MinIO subchart with an external S3-compatible
   store configured via `global.s3` (endpoint, region, bucket, forcePathStyle,
