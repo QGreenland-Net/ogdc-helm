@@ -35,6 +35,8 @@ deploy:
       - name: qgnet-ogdc
         namespace: qgnet
         chartPath: ./helm
+        # Prerequisite: the qgnet-ogdc-s3-credentials Secret (helm/admin/secrets.yaml,
+        # README step 4). It is read by the local SeaweedFS and by ogdc-service.
         setValueTemplates:
           image.tag: "{{.IMAGE_TAG_ogdc_runner}}"
         valuesFiles:
@@ -43,7 +45,6 @@ deploy:
         overrides:
           global:
             s3:
-              # TEMP/TBD: placeholder local endpoint, replaced by the local S3 (SeaweedFS) work.
               endpoint: "http://qgnet-ogdc-seaweedfs:8333"
           argo-workflows:
             controller:
@@ -96,11 +97,12 @@ portForward:
     namespace: qgnet
     port: 8080
     localPort: 9090
+  # Expose the local SeaweedFS S3 endpoint at port 8333
   - resourceType: service
-    resourceName: qgnet-ogdc-minio
+    resourceName: qgnet-ogdc-seaweedfs
     namespace: qgnet
-    port: 9000
-    localPort: 9000
+    port: 8333
+    localPort: 8333
 # Traefik ingress controller
   - resourceType: service
     resourceName: traefik

@@ -15,8 +15,7 @@ global:
   ## S3 object storage. Credentials come from the Secret `${RELEASE_NAME}-s3-credentials`
   ## (keys accessKeyId / secretAccessKey), deployed from `../admin/secrets.yaml`.
   s3:
-    ## TEMP/TBD: placeholder local endpoint; the in-cluster SeaweedFS service that
-    ## serves it is added by the follow-up local-S3 change. Not deployed by this chart yet.
+    ## In-cluster SeaweedFS S3 gateway (see `localS3` below), reached over plain http.
     endpoint: "http://${RELEASE_NAME}-seaweedfs:8333"
     region: "default"
     bucket: "ogdc-local"
@@ -69,6 +68,11 @@ argo-workflows:
     s3:
       ## plain-http local endpoint (no TLS)
       insecure: true
+
+## Local S3 backend: single-pod SeaweedFS + a Job that creates `global.s3.bucket`.
+## Only for local development; dev/prod use an external S3 and leave this disabled.
+localS3:
+  enabled: true
 
 # Ensures that local image of ogdc-service is used.
 image:
