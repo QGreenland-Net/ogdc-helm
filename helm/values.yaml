@@ -468,6 +468,15 @@ localS3:
     ## @param localS3.image.pullPolicy SeaweedFS image pull policy
     pullPolicy: IfNotPresent
 
+  bucketJob:
+    image:
+      ## @param localS3.bucketJob.image.repository AWS CLI image used by the bucket-creation Job
+      repository: amazon/aws-cli
+      ## @param localS3.bucketJob.image.tag AWS CLI image tag (pinned)
+      tag: "2.17.0"
+      ## @param localS3.bucketJob.image.pullPolicy AWS CLI image pull policy
+      pullPolicy: IfNotPresent
+
   persistence:
     ## @param localS3.persistence.enabled Persist SeaweedFS data on a PVC (otherwise emptyDir)
     enabled: true
