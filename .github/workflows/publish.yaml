@@ -63,7 +63,19 @@ jobs:
 
       - name: "Template Helm chart"
         run: |
-          helm template test helm/ --debug
+          # The base values.yaml deliberately refuses to render until an overlay
+          # sets global.s3, so render every example overlay instead.
+          export RELEASE_NAME=test NAMESPACE=test
+          for env in local dev prod; do
+            echo "Rendering the ${env} example overlay"
+            envsubst '${RELEASE_NAME} ${NAMESPACE}' \
+              < "helm/examples/values-${env}-cluster-ogdc-example.yaml" \
+              | helm template "$RELEASE_NAME" helm/ --namespace "$NAMESPACE" --debug -f - > /dev/null
+          done
+
+      - name: "Test Helm chart render contracts"
+        run: |
+          python3 -m unittest discover -s tests -v
 
       - name: "Package Helm chart"
         run: |
