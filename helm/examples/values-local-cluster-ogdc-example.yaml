@@ -13,7 +13,7 @@
 
 global:
   ## S3 object storage. Credentials come from the Secret `${RELEASE_NAME}-s3-credentials`
-  ## (keys accessKeyId / secretAccessKey), deployed from `../admin/secrets.yaml`.
+  ## (keys accessKeyId, secretAccessKey, storageLinkSigningKey), deployed from `../admin/secrets.yaml`.
   s3:
     ## In-cluster SeaweedFS S3 gateway (see `localS3` below), reached over plain http.
     endpoint: "http://${RELEASE_NAME}-seaweedfs:8333"

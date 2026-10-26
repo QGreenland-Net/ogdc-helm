@@ -52,8 +52,9 @@ global:
     ## @param global.s3.forcePathStyle Use path-style addressing (`<endpoint>/<bucket>/<key>`); sets S3_ADDRESSING_STYLE to `path`, otherwise `virtual`
     forcePathStyle: true
 
-    ## @param global.s3.credentialsSecret Name of the Secret holding keys `accessKeyId` and `secretAccessKey`
+    ## @param global.s3.credentialsSecret Name of the Secret holding keys `accessKeyId`, `secretAccessKey` and `storageLinkSigningKey`
     ## Empty means `<release-name>-s3-credentials`. Deploy it from `../admin/secrets.yaml`.
+    ## All three keys are required: ogdc-service does not start without `storageLinkSigningKey`.
     credentialsSecret: ""
 
 ## @param nameOverride String to partially override chart name-derived resource names
@@ -340,8 +341,9 @@ dataone_node_url: "https://arcticdata.io/metacat/d1/mn"
 ##
 ogdc_public_host: "api.test.dataone.org"
 
-## @param ogdc_public_s3_url Public S3 endpoint URL for external access.
-## Injected into the ogdc-service pod as `PUBLIC_S3_ENDPOINT_URL`.
+## @param ogdc_public_s3_url Public base URL of the signed `/storage` download links served by ogdc-service.
+## Injected into the ogdc-service pod as `PUBLIC_S3_ENDPOINT_URL` (the name is kept for
+## compatibility; it is no longer the object store's URL).
 ## Defaults to `https://<ogdc_public_host>/storage` when unset.
 ##
 ogdc_public_s3_url: ""
@@ -352,8 +354,7 @@ ogdc_public_s3_url: ""
 ##
 ogdc_workflow_pvc_name: "cephfs-qgnet-ogdc-workflow-pvc"
 
-## @param ogdc_input_pvcs Allowlist of pre-provisioned PVCs that recipes may
-## reference as `pvc_mount` inputs.
+## @param ogdc_input_pvcs Allowlist of pre-provisioned PVCs that recipes may reference as `pvc_mount` inputs.
 ## Injected into the ogdc-service pod as `OGDC_ALLOWED_INPUT_PVCS`.
 ## Leave empty to reject all recipe input PVC claims.
 ##

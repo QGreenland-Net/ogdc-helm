@@ -227,13 +227,16 @@ the `${RELEASE_NAME}-s3-credentials` Secret (keys `accessKeyId`,
   chosen over MinIO because it is Apache-2.0 licensed, actively maintained, and
   MinIO's community edition is in maintenance mode.
 * **dev / prod**: an external S3 at `https://s3.anacapa.nceas.ucsb.edu` with
-  buckets `ogdc-dev` / `ogdc-prod` (TEMP/TBD: not provisioned yet).
+  buckets `ogdc-dev` / `ogdc-prod` (TEMP/TBD: not provisioned yet). The chart
+  does not create these buckets: the object store admin creates the bucket and
+  issues keys with read, write, list and delete access to it.
 * Public `/storage/<key>?expires=..&signature=..` links are served by
-  ogdc-service itself, which streams the object from S3.
+  ogdc-service itself, which streams the object from S3, so the bucket stays
+  private and does not need to be reachable from outside the cluster.
 
-Upgrading from MinIO (chart < 0.5.0)? Data in the old MinIO PVC is not
-migrated automatically; see the migration notes in
-[helm/README.md](helm/README.md#s3-object-storage).
+Configuration details, the `/storage` link design, and the upgrade steps from
+MinIO (chart < 0.5.0; data in the old MinIO PVC is not migrated automatically)
+are in [helm/README.md](helm/README.md#s3-object-storage).
 
 ### Dev/Production setup
 
@@ -275,7 +278,7 @@ envsubst '${RELEASE_NAME} ${NAMESPACE}' < helm/admin/cephfs-releasename-workflow
 2. Create credentials for S3 (`${RELEASE_NAME}-s3-credentials`), the API and postgresql.:
 
 > [!WARNING]
-> Each of these secrets files need to be MANUALLY EDITED to reflect the desired secret values in dev/prod. If this is not done, public deafults will be used.
+> Each of these secrets files need to be MANUALLY EDITED to reflect the desired secret values in dev/prod. If this is not done, public defaults will be used.
 
 ```sh
 envsubst '${RELEASE_NAME}' < helm/admin/secrets.yaml          | kubectl apply -n "$NAMESPACE" -f -

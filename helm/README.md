@@ -49,7 +49,7 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 | `global.s3.region`            | S3 region (Ceph RGW uses `default`)                                                                              | `default`    |
 | `global.s3.bucket`            | Bucket for workflow artifacts and outputs. Required.                                                             | `""`         |
 | `global.s3.forcePathStyle`    | Use path-style addressing (`<endpoint>/<bucket>/<key>`); sets S3_ADDRESSING_STYLE to `path`, otherwise `virtual` | `true`       |
-| `global.s3.credentialsSecret` | Name of the Secret holding keys `accessKeyId` and `secretAccessKey`                                              | `""`         |
+| `global.s3.credentialsSecret` | Name of the Secret holding keys `accessKeyId`, `secretAccessKey` and `storageLinkSigningKey`                     | `""`         |
 | `nameOverride`                | String to partially override chart name-derived resource names                                                   | `""`         |
 | `fullnameOverride`            | String to fully override chart name-derived resource names                                                       | `""`         |
 
@@ -119,25 +119,25 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 
 ### API Access - Authentication and Authorization
 
-| Name                        | Description                                                | Value                                                                                                                        |
-| --------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `auth.accessMode`           | Access mode (authenticated, read_only, open)               | `authenticated`                                                                                                              |
-| `auth.oidcSecretName`       | Existing Kubernetes Secret containing the OIDC client JSON | `""`                                                                                                                         |
-| `auth.oidcSecretKey`        | Secret key containing the OIDC client JSON                 | `client_secrets.json`                                                                                                        |
-| `auth.oidcMountPath`        | OIDC Secret mount directory                                | `/etc/ogdc/oidc`                                                                                                             |
-| `auth.roleName.admin`       | Scope name for the admin role                              | `ogdc:admin`                                                                                                                 |
-| `resources.requests.memory` | Memory requests for OGDC service                           | `1Gi`                                                                                                                        |
-| `resources.requests.cpu`    | CPU requests for OGDC service                              | `500m`                                                                                                                       |
-| `resources.limits.memory`   | Memory limits for OGDC service                             | `2Gi`                                                                                                                        |
-| `resources.limits.cpu`      | CPU limits for OGDC service                                | `1000m`                                                                                                                      |
-| `ogdc_service_command`      | Command to start the OGDC FastAPI service                  | `. ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 --forwarded-allow-ips='*' src/ogdc_runner/service/main.py` |
-| `dataone_node_url`          | DataONE member node URL for metadata retrieval             | `https://arcticdata.io/metacat/d1/mn`                                                                                        |
-| `ogdc_public_host`          | Public host (no scheme, no path) for external access.      | `api.test.dataone.org`                                                                                                       |
-| `ogdc_public_s3_url`        | Public S3 endpoint URL for external access.                | `""`                                                                                                                         |
-| `ogdc_workflow_pvc_name`    | Name of the PVC to use for workflow storage.               | `cephfs-qgnet-ogdc-workflow-pvc`                                                                                             |
-| `ogdc_input_pvcs`           | Allowlist of pre-provisioned PVCs that recipes may         | `[]`                                                                                                                         |
-| `ogdc_max_parallel_limit`   | Maximum number of parallel workflow tasks.                 | `5`                                                                                                                          |
-| `ogdc_viz_workflow_image`   | Container image used for visualization workflow pods.      | `ghcr.io/permafrostdiscoverygateway/pdgworkflow:latest`                                                                      |
+| Name                        | Description                                                                         | Value                                                                                                                        |
+| --------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `auth.accessMode`           | Access mode (authenticated, read_only, open)                                        | `authenticated`                                                                                                              |
+| `auth.oidcSecretName`       | Existing Kubernetes Secret containing the OIDC client JSON                          | `""`                                                                                                                         |
+| `auth.oidcSecretKey`        | Secret key containing the OIDC client JSON                                          | `client_secrets.json`                                                                                                        |
+| `auth.oidcMountPath`        | OIDC Secret mount directory                                                         | `/etc/ogdc/oidc`                                                                                                             |
+| `auth.roleName.admin`       | Scope name for the admin role                                                       | `ogdc:admin`                                                                                                                 |
+| `resources.requests.memory` | Memory requests for OGDC service                                                    | `1Gi`                                                                                                                        |
+| `resources.requests.cpu`    | CPU requests for OGDC service                                                       | `500m`                                                                                                                       |
+| `resources.limits.memory`   | Memory limits for OGDC service                                                      | `2Gi`                                                                                                                        |
+| `resources.limits.cpu`      | CPU limits for OGDC service                                                         | `1000m`                                                                                                                      |
+| `ogdc_service_command`      | Command to start the OGDC FastAPI service                                           | `. ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 --forwarded-allow-ips='*' src/ogdc_runner/service/main.py` |
+| `dataone_node_url`          | DataONE member node URL for metadata retrieval                                      | `https://arcticdata.io/metacat/d1/mn`                                                                                        |
+| `ogdc_public_host`          | Public host (no scheme, no path) for external access.                               | `api.test.dataone.org`                                                                                                       |
+| `ogdc_public_s3_url`        | Public base URL of the signed `/storage` download links served by ogdc-service.     | `""`                                                                                                                         |
+| `ogdc_workflow_pvc_name`    | Name of the PVC to use for workflow storage.                                        | `cephfs-qgnet-ogdc-workflow-pvc`                                                                                             |
+| `ogdc_input_pvcs`           | Allowlist of pre-provisioned PVCs that recipes may reference as `pvc_mount` inputs. | `[]`                                                                                                                         |
+| `ogdc_max_parallel_limit`   | Maximum number of parallel workflow tasks.                                          | `5`                                                                                                                          |
+| `ogdc_viz_workflow_image`   | Container image used for visualization workflow pods.                               | `ghcr.io/permafrostdiscoverygateway/pdgworkflow:latest`                                                                      |
 
 ### OGDC Workflow Runtime Configuration
 
@@ -195,3 +195,120 @@ Refer to the [getting started](https://github.com/QGreenland-Net/ogdc-helm?tab=r
 | `ingress.apiPath`                                    | Ingress path for the OGDC API service                                        | `/api`             |
 | `ingress.storagePath`                                | Ingress path for signed /storage download links (served by the OGDC service) | `/storage`         |
 | `ingress.tls`                                        | Ingress TLS configuration                                                    | `[]`               |
+
+<!--
+  The sections below are hand-written. Keep them as level-2 (`##`) headings after
+  `## Parameters`: the readme generator rewrites the `## Parameters` section and
+  drops any prose placed inside it.
+-->
+
+## S3 object storage
+
+Since chart 0.5.0 the bundled MinIO subchart is gone. OGDC uses an S3-compatible
+object store for Argo artifacts and `temporary` recipe outputs, configured only
+through `global.s3`:
+
+- `global.s3.endpoint` (full URL with scheme) and `global.s3.bucket` are empty in
+  `values.yaml` on purpose. The chart refuses to render until an overlay (see
+  `examples/`) sets them, so a forgotten overlay never writes to the wrong bucket.
+- `global.s3.region` defaults to `default` (Ceph RGW). `global.s3.forcePathStyle`
+  (default `true`) sets the runner's `S3_ADDRESSING_STYLE`.
+- Credentials come from a pre-created Secret `<release>-s3-credentials` (or
+  `global.s3.credentialsSecret`) with keys `accessKeyId`, `secretAccessKey` and
+  `storageLinkSigningKey`. Create it from `admin/secrets.yaml`. All three keys are
+  required. Generate `storageLinkSigningKey` with `openssl rand -hex 32`: the runner
+  rejects keys shorter than 32 characters or equal to `your-value-here` and then
+  answers `/storage` links with `503`.
+- ogdc-service receives `S3_ENDPOINT_URL` (plus the deprecated alias
+  `INTERNAL_S3_ENDPOINT_URL`), `S3_BUCKET`, `S3_REGION`, `S3_ADDRESSING_STYLE`,
+  `S3_SECRET_KEY_ID`, `S3_SECRET_KEY_KEY`, `OGDC_STORAGE_LINK_SIGNING_KEY` and
+  `PUBLIC_S3_ENDPOINT_URL`. The Argo artifact repository (`argo-workflows.artifactRepository.s3`)
+  is templated from the same values; only `insecure` is set per environment.
+
+### Environments
+
+- **local** (`examples/values-local-cluster-ogdc-example.yaml`): `localS3.enabled: true`
+  deploys a single-pod [SeaweedFS](https://github.com/seaweedfs/seaweedfs) S3 gateway
+  (port 8333, PVC-backed, runs as uid 1000) and a post-install/upgrade Job that creates
+  `global.s3.bucket` if it is missing. SeaweedFS reads its admin identity from the same
+  credentials Secret. The endpoint is plain http, hence
+  `argo-workflows.artifactRepository.s3.insecure: true`. `./scripts/install-ogdc.sh local`
+  creates the Secret with random values when it is missing; with `./scripts/run-local.sh`
+  (skaffold) create it first. SeaweedFS was chosen because it is Apache-2.0 licensed,
+  maintained, and runs as one pod; MinIO's community edition is in maintenance mode.
+- **dev / prod**: an external S3 (the examples use `https://s3.anacapa.nceas.ucsb.edu`
+  with buckets `ogdc-dev` / `ogdc-prod`; these are TEMP/TBD until the store is
+  provisioned). The chart does not create external buckets: the object store admin
+  must create the bucket and issue keys with read, write, list and delete access to it
+  (delete is used by Argo artifact garbage collection). Keep `localS3.enabled: false`.
+
+### Public `/storage` links
+
+Temporary outputs are shared as
+`https://<ogdc_public_host>/storage/<key>?expires=<unix>&signature=<hex>`
+(base URL: `ogdc_public_s3_url`, default `https://<ogdc_public_host>/storage`). The
+ingress sends `/storage` to `<release>-service:8000` without stripping the prefix (the
+`ogdc-rewrite` middleware strips only `^/api`). ogdc-service verifies the HMAC
+signature and expiry (2 hours) and streams the object from S3 with its own
+credentials, so the bucket stays private and S3 never has to be reachable from
+outside the cluster. S3 presigned URLs are not used because their SigV4 signature
+covers the S3 host and path, which the public URL would change.
+
+### Migrating from 0.4.x (MinIO)
+
+- Remove the `minio:` values block and `ogdc_s3_endpoint`; rendering fails with a
+  message while either is set. Set `global.s3.*` instead.
+- Remove `argo-workflows.artifactRepository.s3` credential overrides; they now derive
+  from `global.s3`. Set `argo-workflows.artifactRepository.s3.insecure: true` only for
+  a plain-http endpoint.
+- The `<release>-secrets` Secret (MinIO `rootUser`/`rootPassword`) and
+  `global.passwordsSecret` have no consumers any more. Create `<release>-s3-credentials`
+  instead; `<release>-api-secrets` is unchanged.
+- `admin/cephfs-releasename-minio-pvc.yaml` was deleted. Helm never deleted that PVC;
+  remove it yourself once its data is migrated:
+  `kubectl delete pvc -n <namespace> cephfs-<release>-minio-pvc`.
+- MinIO data is **not** migrated automatically. Copy it to the new bucket if it is
+  still needed (placeholders only; do not paste real keys into a shared shell history):
+
+  ```sh
+  kubectl port-forward -n <namespace> svc/<release>-minio 9000:9000 &
+  AWS_ACCESS_KEY_ID=<old-rootUser> AWS_SECRET_ACCESS_KEY=<old-rootPassword> \
+    aws --endpoint-url http://localhost:9000 s3 sync s3://argo-workflows ./minio-export
+  AWS_ACCESS_KEY_ID=<new-accessKeyId> AWS_SECRET_ACCESS_KEY=<new-secretAccessKey> \
+    aws --endpoint-url <global.s3.endpoint> s3 sync ./minio-export s3://<global.s3.bucket>
+  ```
+
+  Temporary outputs expire after 7 days anyway, so most deployments can skip this.
+- Output links issued before the upgrade (MinIO presigned URLs) stop working; request
+  a new link with `ogdc-runner get-output`.
+
+## Input PVC allowlist
+
+`ogdc_input_pvcs` is rendered into the OGDC service as `OGDC_ALLOWED_INPUT_PVCS`.
+Recipe `pvc_mount` inputs are rejected unless their `claim_name` matches one of the
+configured `claimName` values:
+
+```yaml
+ogdc_input_pvcs:
+  - claimName: cephfs-qgnet-ogdc-adc-tiles-pvc
+    description: ADC Tile Store PVC
+```
+
+## OIDC client Secret
+
+For authenticated deployments, create the Secret before installing the chart. Keep
+the completed example file outside the repository.
+
+```sh
+kubectl create secret generic "${RELEASE_NAME}-oidc-config" \
+  --namespace "${NAMESPACE}" \
+  --from-file=client_secrets.json=/secure/path/client-secrets.json
+```
+
+The default mount is `/etc/ogdc/oidc/client_secrets.json`. Open and read-only modes
+do not use it. Restart the runner after updating the Secret:
+
+```sh
+kubectl rollout restart deployment/${RELEASE_NAME}-service-deployment \
+  --namespace "${NAMESPACE}"
+```
