@@ -34,10 +34,10 @@ global:
 ## See https://argoproj.github.io/argo-workflows/
 argo-workflows:
   ## -- Restrict Argo to operate only in a single namespace (the namespace of the
-  ## Helm release) by apply Roles and RoleBindings instead of the Cluster
-  ## equivalents, and start workflow-controller with the --namespaced flag. Use it
+  ## Helm release) by applying Roles and RoleBindings instead of the Cluster
+  ## equivalents, and start workflow-controller and server with the --namespaced flag. Use it
   ## in clusters with strict access policy.
-  singleNamespace: false
+  singleNamespace: true
 
   ## Custom resource configuration
   crds:
@@ -136,8 +136,9 @@ viz_workflow:
         cpu: "500m"
         memory: "1Gi"
 
-# Use fastapi dev server for local dev
-ogdc_service_command: ". ./.venv/bin/activate && fastapi dev --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
+# Use the single-process runner locally so startup failures exit for Kubernetes to restart.
+# This disables FastAPI's file-reload feature in the local cluster.
+ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
 
 ogdc_public_host: "localhost"
 ogdc_public_s3_url: "https://localhost:7443/storage"
