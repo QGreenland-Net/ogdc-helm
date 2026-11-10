@@ -11,7 +11,6 @@ data:
   ARGO_NAMESPACE: {{ .Release.Namespace | quote }}
   INTERNAL_S3_ENDPOINT_URL: "{{ .Values.ogdc_s3_endpoint }}"
   PUBLIC_S3_ENDPOINT_URL: {{ .Values.ogdc_public_s3_url | default (printf "https://%s/storage" .Values.ogdc_public_host) | quote }}
-  API_ROOT_PATH: "/api"
   OGDC_DB_HOST: "{{ .Release.Name }}-db-cnpg-rw"
   OGDC_DB_NAME: "ogdc"
   OGDC_WORKFLOW_PVC_NAME: {{ .Values.ogdc_workflow_pvc_name | quote }}
