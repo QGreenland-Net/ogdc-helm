@@ -163,7 +163,7 @@ viz_workflow:
         memory: "1Gi"
 
 # Use fastapi dev server for local dev
-ogdc_service_command: ". ./.venv/bin/activate && fastapi dev --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
+ogdc_service_command: ". ./.venv/bin/activate && fastapi dev --root-path /api --port 8000 --host 0.0.0.0 src/ogdc_runner/service/main.py"
 
 ogdc_public_host: "localhost"
 ogdc_s3_endpoint: "http://${RELEASE_NAME}-minio:9000"
