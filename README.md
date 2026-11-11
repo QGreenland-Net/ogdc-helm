@@ -3,8 +3,9 @@
 [helm](https://helm.sh/) config for the OGDC, which is composed of:
 
 * [Argo](https://argoproj.github.io/): for managing and executing OGDC workflows.
-* [Minio](https://github.com/minio/minio): provides an artifact registry for
-  argo with automatic garbage collection.
+* S3 object storage: an external S3-compatible store (configured via
+  `global.s3`) for argo artifacts and workflow outputs. For local development an
+  in-cluster [SeaweedFS](https://github.com/seaweedfs/seaweedfs) can be enabled.
 * [ogdc-runner](https://github.com/QGreenland-Net/ogdc-runner/) service API,
   which provides an API for users to submit OGDC recipes to the cluster for
   execution. The API translates OGDC recipes into argo workflows that are
@@ -70,7 +71,7 @@ http://localhost:7777
 https://localhost:7443
 ```
 
-The OGDC API is exposed at `https://localhost:7443/api`, and object storage is
+The OGDC API is exposed at `https://localhost:7443/api`, and signed download links are
 exposed at `https://localhost:7443/storage`.
 
 ## Getting started
@@ -115,8 +116,8 @@ kubectl create namespace qgnet
 > deploy under a different name/namespace — the example values files use
 > `${RELEASE_NAME}` / `${NAMESPACE}` placeholders that are substituted at
 > install time via `envsubst`. The CNPG DB release name is always
-> `${RELEASE_NAME}-db`, and the DB/MinIO/API secrets are named
-> `${RELEASE_NAME}-db-postgres-secrets`, `${RELEASE_NAME}-secrets`, and
+> `${RELEASE_NAME}-db`, and the DB/S3/API secrets are named
+> `${RELEASE_NAME}-db-postgres-secrets`, `${RELEASE_NAME}-s3-credentials`, and
 > `${RELEASE_NAME}-api-secrets` respectively.
 >
 > For local development with `skaffold`, the defaults `qgnet-ogdc` / `qgnet`
@@ -142,8 +143,20 @@ envsubst '${RELEASE_NAME} ${NAMESPACE}' \
   < helm/admin/workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
-4. Create credentials for MinIO and postgresql:
+4. Create credentials for S3 (`${RELEASE_NAME}-s3-credentials`), the API and postgresql:
+
+   Every `your-value-here` in `helm/admin/secrets.yaml` must be replaced before the file is applied. `storageLinkSigningKey` must be at least 32 random characters (`openssl rand -hex 32`). Otherwise ogdc-service treats the key as not configured and answers `/storage` links with 503. Applying the file unchanged creates placeholder credentials.
+
+   For local clusters only, either skip `secrets.yaml` and let `./scripts/install-ogdc.sh local` create `${RELEASE_NAME}-s3-credentials` with random values (it does this only when the Secret does not already exist), or create the S3 Secret with random values in one step:
 ```sh
+envsubst '${RELEASE_NAME}' < helm/admin/secrets.yaml \
+  | awk '/your-value-here/ { c="openssl rand -hex 16"; c | getline r; close(c); sub(/your-value-here/, r) } { print }' \
+  | kubectl apply -n "$NAMESPACE" -f -
+```
+
+   For dev and prod, replace each `your-value-here` in `helm/admin/secrets.yaml` by hand before running the commands below. For local, do not run the first `envsubst` line below if you used the one-liner above, because it would overwrite the random values with placeholders.
+```sh
+# dev/prod: replace placeholders first. local: skip the secrets.yaml line if you used the one-liner above.
 envsubst '${RELEASE_NAME}' < helm/admin/secrets.yaml          | kubectl apply -n "$NAMESPACE" -f -
 envsubst '${RELEASE_NAME}' < helm/admin/postgres-secrets.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
@@ -190,7 +203,6 @@ changes in a local environment. Use the `run-local.sh` script to use skaffold:
 > repositories:
 > ```sh 
 > helm repo add argo https://argoproj.github.io/argo-helm
-> helm repo add minio https://charts.min.io/
 > helm repo update
 > ```
 
@@ -201,6 +213,30 @@ changes in a local environment. Use the `run-local.sh` script to use skaffold:
 This will build and deploy the stack to rancher desktop and watch the
 ogdc-runner source for changes. If changes are made, the stack will be rebuilt
 and redeployed to rancher desktop.
+
+### S3 object storage
+
+OGDC reads and writes workflow artifacts and outputs in an S3-compatible bucket
+configured through `global.s3` (endpoint, region, bucket, forcePathStyle) and
+the `${RELEASE_NAME}-s3-credentials` Secret (keys `accessKeyId`,
+`secretAccessKey`, `storageLinkSigningKey`, see `helm/admin/secrets.yaml`).
+
+* **local**: `localS3.enabled: true` (set by the local example values) deploys a
+  single-pod SeaweedFS and creates the bucket. `./scripts/install-ogdc.sh local`
+  creates the Secret with random values if it does not exist yet. SeaweedFS was
+  chosen over MinIO because it is Apache-2.0 licensed, actively maintained, and
+  MinIO's community edition is in maintenance mode.
+* **dev / prod**: an external S3 at `https://s3.dataone.org` with
+  buckets `ogdc-dev` / `ogdc-prod` (TEMP/TBD: not provisioned yet). The chart
+  does not create these buckets: the object store admin creates the bucket and
+  issues keys with read, write, list and delete access to it.
+* Public `/storage/<key>?expires=..&signature=..` links are served by
+  ogdc-service itself, which streams the object from S3, so the bucket stays
+  private and does not need to be reachable from outside the cluster.
+
+Configuration details, the `/storage` link design, and the upgrade steps from
+MinIO (chart < 0.5.0; data in the old MinIO PVC is not migrated automatically)
+are in [helm/README.md](helm/README.md#s3-object-storage).
 
 ### Dev/Production setup
 
@@ -236,14 +272,13 @@ For more information, see the [Argo Workflows CRD installation guide](https://gi
 export RELEASE_NAME=${RELEASE_NAME:-qgnet-ogdc}
 export NAMESPACE=${NAMESPACE:-qgnet}
 
-envsubst '${RELEASE_NAME} ${NAMESPACE}' < helm/admin/cephfs-releasename-minio-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 envsubst '${RELEASE_NAME} ${NAMESPACE}' < helm/admin/cephfs-releasename-workflow-pvc.yaml | kubectl apply -n "$NAMESPACE" -f -
 ```
 
-2. Create credentials for MinIO and postgresql.:
+2. Create credentials for S3 (`${RELEASE_NAME}-s3-credentials`), the API and postgresql.:
 
 > [!WARNING]
-> Each of these secrets files need to be MANUALLY EDITED to reflect the desired secret values in dev/prod. If this is not done, public deafults will be used.
+> Each of these secrets files need to be MANUALLY EDITED to reflect the desired secret values in dev/prod. If this is not done, public defaults will be used.
 
 ```sh
 envsubst '${RELEASE_NAME}' < helm/admin/secrets.yaml          | kubectl apply -n "$NAMESPACE" -f -
@@ -377,26 +412,26 @@ At this point bump-my-version has done it's job so you can create a tag and comm
 ## Troubleshooting
 
 If something is not working as expected, start by listing services in the
-`qgnet` namespace and confirming that `minio`, `argo-workflows-server` and
+`qgnet` namespace and confirming that `seaweedfs` (local only), `argo-workflows-server` and
 `ogdc` services are running (prefixed with the namespace):
 
 ```
 $ kubectl get svc -n qgnet
 NAME                               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
-qgnet-ogdc-minio                        ClusterIP   10.43.76.177    <none>        9000/TCP,9001/TCP   14m
+qgnet-ogdc-seaweedfs                    ClusterIP   10.43.76.177    <none>        8333/TCP            14m
 qgnet-ogdc-argo-workflows-server        ClusterIP   10.43.231.175   <none>        2746/TCP            14m
 ```
 
 ### Argo reports that its artifact repository is not configured
 
 If you have submitted a workflow and Argo's interface reports that there is a
-problem due to the artifact repository not being configured, it might just be
-that the `minio` service is not yet fully operational. Try again after a few
-minutes!
-
-> [!TODO]
-> Is there a way to tell helm to setup minio before the `argo-workflows-server`
-> so we do not run into this issue in the future?
+problem due to the artifact repository not being configured, check the S3
+settings: `global.s3.endpoint` and `global.s3.bucket` must be reachable, the
+`${RELEASE_NAME}-s3-credentials` Secret must exist, and the bucket must exist.
+Locally (`localS3.enabled`), the SeaweedFS pod may still be starting or the
+`${RELEASE_NAME}-seaweedfs-bucket` Job (which creates the bucket) may not have
+finished yet; check both with `kubectl get pods,jobs -n qgnet` and try again
+after a few minutes.
 
 
 ### Local Docker image is not found by Argo

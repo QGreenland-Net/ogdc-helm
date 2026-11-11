@@ -1,0 +1,17 @@
+{{- if .Values.localS3.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-seaweedfs
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: seaweedfs
+spec:
+  selector:
+    app: seaweedfs
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+    - name: s3
+      port: 8333
+      targetPort: s3
+{{- end }}

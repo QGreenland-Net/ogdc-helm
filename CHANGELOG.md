@@ -1,3 +1,18 @@
+## NEXT_VERSION
+
+- **BREAKING:** Replace the bundled MinIO subchart with an external S3-compatible
+  store configured via `global.s3` (endpoint, region, bucket, forcePathStyle,
+  credentialsSecret). The `minio` values and `ogdc_s3_endpoint` were removed;
+  rendering fails with a migration message while they are set.
+- Credentials now come from the `<release>-s3-credentials` Secret (keys
+  `accessKeyId`, `secretAccessKey`, `storageLinkSigningKey`). The old
+  `<release>-secrets` Secret and `admin/cephfs-releasename-minio-pvc.yaml` were
+  removed. Data in the old MinIO PVC is not migrated automatically.
+- Add an optional single-pod SeaweedFS S3 backend for local development
+  (`localS3.enabled`) with an idempotent bucket-creation Job.
+- Serve signed `/storage` links from ogdc-service (ingress targets
+  `<release>-service:8000`; the `ogdc-rewrite` middleware strips only `/api`).
+
 ## v0.4.4 (2026-08-19)
 
 - Move ingress back to Traefik

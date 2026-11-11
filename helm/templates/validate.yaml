@@ -1,0 +1,16 @@
+{{- /*
+Migration guards: fail the render when values from the removed bundled MinIO
+are still set, instead of silently ignoring them. Renders no resources.
+*/ -}}
+{{- if hasKey .Values "ogdc_s3_endpoint" }}
+{{- fail "ogdc_s3_endpoint was removed in chart 0.5.0 (MinIO was replaced by external S3). Set global.s3.endpoint (full URL including scheme) instead. See the 'S3 object storage' section in helm/README.md." }}
+{{- end }}
+{{- if hasKey .Values "minio" }}
+{{- fail "The bundled MinIO subchart was removed in chart 0.5.0, so the 'minio' values no longer apply. Remove them and configure global.s3 (endpoint, region, bucket, forcePathStyle, credentialsSecret) instead. See the 'S3 object storage' section in helm/README.md." }}
+{{- end }}
+{{- if not .Values.global.s3.endpoint }}
+{{- fail "global.s3.endpoint is required (full URL including scheme, e.g. https://s3.example.org). Set it via a values overlay, see helm/examples/ and the 'S3 object storage' section in helm/README.md." }}
+{{- end }}
+{{- if not .Values.global.s3.bucket }}
+{{- fail "global.s3.bucket is required. Set it via a values overlay, see helm/examples/ and the 'S3 object storage' section in helm/README.md." }}
+{{- end }}

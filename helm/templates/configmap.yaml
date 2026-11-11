@@ -9,7 +9,12 @@ data:
   DATAONE_NODE_URL: {{ .Values.dataone_node_url | quote }}
   ARGO_WORKFLOWS_SERVICE_URL: "http://{{ .Release.Name }}-argo-workflows-server.{{ .Release.Namespace }}.svc.cluster.local:2746"
   ARGO_NAMESPACE: {{ .Release.Namespace | quote }}
-  INTERNAL_S3_ENDPOINT_URL: "{{ .Values.ogdc_s3_endpoint }}"
+  S3_ENDPOINT_URL: {{ .Values.global.s3.endpoint | quote }}
+  # Deprecated alias of S3_ENDPOINT_URL, kept for backward compatibility.
+  INTERNAL_S3_ENDPOINT_URL: {{ .Values.global.s3.endpoint | quote }}
+  S3_BUCKET: {{ .Values.global.s3.bucket | quote }}
+  S3_REGION: {{ .Values.global.s3.region | quote }}
+  S3_ADDRESSING_STYLE: {{ ternary "path" "virtual" .Values.global.s3.forcePathStyle | quote }}
   PUBLIC_S3_ENDPOINT_URL: {{ .Values.ogdc_public_s3_url | default (printf "https://%s/storage" .Values.ogdc_public_host) | quote }}
   API_ROOT_PATH: "/api"
   OGDC_DB_HOST: "{{ .Release.Name }}-db-cnpg-rw"

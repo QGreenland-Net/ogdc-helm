@@ -49,3 +49,10 @@ Selector labels
 app.kubernetes.io/name: {{ include "ogdc.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Name of the Secret holding the S3 credentials (keys accessKeyId / secretAccessKey).
+*/}}
+{{- define "ogdc.s3CredentialsSecret" -}}
+{{- .Values.global.s3.credentialsSecret | default (printf "%s-s3-credentials" .Release.Name) -}}
+{{- end }}

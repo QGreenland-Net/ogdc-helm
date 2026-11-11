@@ -21,19 +21,6 @@
 ## Global configuration parameters for OGDC
 ##
 global:
-  ## @param global.passwordsSecret The name of the Secret containing application passwords
-  ## This is the secret deployed using your own private, edited version of `../admin/secrets.yaml`.
-  ##
-  ## (Note the actual key passwordsSecret is not used anywhere; only the yaml anchor/alias
-  ##  &passwordSecretName. IF YOU OVERRIDE THIS VALUE IN ANOTHER VALUES-OVERLAY FILE, YOU ALSO
-  ## NEED TO OVERRIDE THE VALUES THAT USE THIS ANCHOR - search this file for 'passwordSecretName')
-  ##
-  ## IMPORTANT NOTE: this value includes the release name. The default here matches
-  ## the default RELEASE_NAME (`qgnet-ogdc`). When overriding the release name, the
-  ## example values files use the `${RELEASE_NAME}-secrets` pattern via envsubst.
-  ##
-  passwordsSecret: &passwordSecretName "qgnet-ogdc-secrets"
-
   ## @param global.defaultStorageClass Global default StorageClass for Persistent Volume(s)
   ##
   ## Inspect your cluster to see what storageClass is set as default:
@@ -42,6 +29,33 @@ global:
   ## (e.g. for Rancher Desktop, use:   defaultStorageClass: local-path)
   ##
   defaultStorageClass: local-path
+
+  ## S3 object storage (single source of truth). Used by the Argo artifact repository
+  ## (below) and by the ogdc-service pod (S3_ENDPOINT_URL, S3_BUCKET, S3_REGION,
+  ## S3_ADDRESSING_STYLE). Credentials are NOT set here: they come from a pre-created
+  ## Secret (see global.s3.credentialsSecret and ../admin/secrets.yaml).
+  ##
+  ## endpoint and bucket are deliberately empty: the chart refuses to render until an
+  ## overlay sets them (see ../examples/), so a forgotten overlay can never silently
+  ## write to the wrong bucket.
+  ##
+  s3:
+    ## @param global.s3.endpoint S3 endpoint URL, including the scheme (e.g. https://s3.example.org[:port]). Required.
+    endpoint: ""
+
+    ## @param global.s3.region S3 region (Ceph RGW uses `default`)
+    region: "default"
+
+    ## @param global.s3.bucket Bucket for workflow artifacts and outputs. Required.
+    bucket: ""
+
+    ## @param global.s3.forcePathStyle Use path-style addressing (`<endpoint>/<bucket>/<key>`); sets S3_ADDRESSING_STYLE to `path`, otherwise `virtual`
+    forcePathStyle: true
+
+    ## @param global.s3.credentialsSecret Name of the Secret holding keys `accessKeyId`, `secretAccessKey` and `storageLinkSigningKey`
+    ## Empty means `<release-name>-s3-credentials`. Deploy it from `../admin/secrets.yaml`.
+    ## All three keys are required: ogdc-service does not start without `storageLinkSigningKey`.
+    credentialsSecret: ""
 
 ## @param nameOverride String to partially override chart name-derived resource names
 ##
@@ -232,85 +246,35 @@ argo-workflows:
     ##
     archiveLogs: false
 
-    ## @param argo-workflows.artifactRepository.s3.bucket S3 bucket name
-    ## @param argo-workflows.artifactRepository.s3.endpoint S3 endpoint
-    ## @param argo-workflows.artifactRepository.s3.accessKeySecret.name Secret name containing S3 access key
+    ## @param argo-workflows.artifactRepository.s3.bucket S3 bucket name (templated from global.s3.bucket)
+    ## @param argo-workflows.artifactRepository.s3.endpoint S3 host[:port] without scheme (templated from global.s3.endpoint)
+    ## @param argo-workflows.artifactRepository.s3.region S3 region (templated from global.s3.region)
+    ## @param argo-workflows.artifactRepository.s3.accessKeySecret.name Secret name containing S3 access key (templated from global.s3.credentialsSecret)
     ## @param argo-workflows.artifactRepository.s3.accessKeySecret.key Secret key for S3 access key
-    ## @param argo-workflows.artifactRepository.s3.secretKeySecret.name Secret name containing S3 secret key
+    ## @param argo-workflows.artifactRepository.s3.secretKeySecret.name Secret name containing S3 secret key (templated from global.s3.credentialsSecret)
     ## @param argo-workflows.artifactRepository.s3.secretKeySecret.key Secret key for S3 secret key
     ## @param argo-workflows.artifactRepository.s3.insecure Disable TLS for S3 connection
-    ## Store artifact in a S3-compliant object store
+    ## Store artifact in a S3-compliant object store. All fields except `insecure` are
+    ## templated from global.s3 (the argo-workflows chart applies `tpl` to them), so
+    ## overlays should set global.s3 instead of repeating these values.
     ##
     s3:
-      bucket: argo-workflows
-      endpoint: "{{ .Release.Name }}-minio:9000"
+      bucket: "{{ .Values.global.s3.bucket }}"
+      endpoint: '{{ .Values.global.s3.endpoint | trimPrefix "https://" | trimPrefix "http://" }}'
+      region: "{{ .Values.global.s3.region }}"
 
       ## Note the `key` attribute is not the actual secret, it's the PATH to
       ## the contents in the associated secret, as defined by the `name` attribute.
       accessKeySecret:
-        name: *passwordSecretName
-        key: rootUser
+        name: '{{ .Values.global.s3.credentialsSecret | default (printf "%s-s3-credentials" .Release.Name) }}'
+        key: accessKeyId
       secretKeySecret:
-        name: *passwordSecretName
-        key: rootPassword
+        name: '{{ .Values.global.s3.credentialsSecret | default (printf "%s-s3-credentials" .Release.Name) }}'
+        key: secretAccessKey
 
-      ## insecure will disable TLS. Primarily used for minio installs not configured with TLS
-      insecure: true
-
-## @section MinIO Configuration
-## MinIO configuration
-## See https://min.io/docs/minio/kubernetes/upstream/
-##
-minio:
-  ## @param minio.mode MinIO mode (standalone or distributed)
-  mode: standalone ## other supported values are "distributed"
-
-  ## @param minio.replicas Number of MinIO containers running
-  replicas: 1
-
-  ## @param minio.buckets [array] List of buckets to be created after minio install
-  buckets:
-    - name: argo-workflows
-      ## Policy to be set on the bucket [none|download|upload|public]
-      policy: none
-      ## Purge if bucket exists already
-      purge: false
-
-  ## @param minio.persistence.enabled Enable persistence using Persistent Volume Claims
-  ## Enable persistence using Persistent Volume Claims
-  ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
-  ##
-  persistence:
-    enabled: true
-
-  ## @param minio.existingSecret Use existing Secret that store MinIO credentials
-  ## Use existing Secret that store following variables:
-  ##
-  ## | Chart var             | .data.<key> in Secret    |
-  ## |:----------------------|:-------------------------|
-  ## | rootUser              | rootUser                 |
-  ## | rootPassword          | rootPassword             |
-  ##
-  ## All mentioned variables will be ignored in values file.
-  ## .data.rootUser and .data.rootPassword are mandatory,
-  ## others depend on enabled status of corresponding sections.
-  ##
-  existingSecret: *passwordSecretName
-
-  ## @param minio.resources.requests.memory Memory requests for minio
-  ## @param minio.resources.requests.cpu CPU requests for minio
-  ## @param minio.resources.limits.memory Memory limits for minio
-  ## @param minio.resources.limits.cpu CPU limits for minio
-  ## Configure resource requests and limits
-  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  ##
-  resources:
-    requests:
-      memory: "1Gi"
-      cpu: "200m"
-    limits:
-      memory: "2Gi"
-      cpu: "500m"
+      ## insecure disables TLS. It is NOT templated by the argo-workflows chart (literal bool).
+      ## Set to true only for a plain-http endpoint (local profile).
+      insecure: false
 
 ## @section OGDC Configuration
 ## OGDC application configuration
@@ -368,12 +332,6 @@ ogdc_service_command: ". ./.venv/bin/activate && fastapi run --port 8000 --host 
 ## @param dataone_node_url DataONE member node URL for metadata retrieval
 dataone_node_url: "https://arcticdata.io/metacat/d1/mn"
 
-## @param ogdc_s3_endpoint Internal S3 endpoint URL for MinIO service
-## This is the URL at which the s3 service is exposed at within the cluster.
-## Injected into the ogdc-service pod as `INTERNAL_S3_ENDPOINT_URL`.
-##
-ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
-
 ## @param ogdc_public_host Public host (no scheme, no path) for external access.
 ## Combined with a fixed path to produce `PUBLIC_S3_ENDPOINT_URL` in the
 ## ogdc-service pod, and also used by the optional OGDC service ingress.
@@ -383,8 +341,9 @@ ogdc_s3_endpoint: "http://qgnet-ogdc-minio:9000"
 ##
 ogdc_public_host: "api.test.dataone.org"
 
-## @param ogdc_public_s3_url Public S3 endpoint URL for external access.
-## Injected into the ogdc-service pod as `PUBLIC_S3_ENDPOINT_URL`.
+## @param ogdc_public_s3_url Public base URL of the signed `/storage` download links served by ogdc-service.
+## Injected into the ogdc-service pod as `PUBLIC_S3_ENDPOINT_URL` (the name is kept for
+## compatibility; it is no longer the object store's URL).
 ## Defaults to `https://<ogdc_public_host>/storage` when unset.
 ##
 ogdc_public_s3_url: ""
@@ -395,8 +354,7 @@ ogdc_public_s3_url: ""
 ##
 ogdc_workflow_pvc_name: "cephfs-qgnet-ogdc-workflow-pvc"
 
-## @param ogdc_input_pvcs Allowlist of pre-provisioned PVCs that recipes may
-## reference as `pvc_mount` inputs.
+## @param ogdc_input_pvcs Allowlist of pre-provisioned PVCs that recipes may reference as `pvc_mount` inputs.
 ## Injected into the ogdc-service pod as `OGDC_ALLOWED_INPUT_PVCS`.
 ## Leave empty to reject all recipe input PVC claims.
 ##
@@ -492,8 +450,56 @@ viz_workflow:
         cpu: "500m"
         memory: "1Gi"
 
+## @section Local S3 (SeaweedFS) Configuration
+## Optional in-cluster S3 backend for LOCAL development only (single pod, no HA).
+## When enabled, point `global.s3.endpoint` at `http://<release>-seaweedfs:8333`
+## (see ../examples/values-local-cluster-ogdc-example.yaml). Nothing is rendered
+## when disabled, which is what dev and prod use (they use an external S3).
+## Credentials come from the `global.s3` credentials Secret, never from these values.
+##
+localS3:
+  ## @param localS3.enabled Deploy a single-pod SeaweedFS S3 gateway plus a bucket-creation Job
+  enabled: false
+
+  image:
+    ## @param localS3.image.repository SeaweedFS image repository
+    repository: chrislusf/seaweedfs
+    ## @param localS3.image.tag SeaweedFS image tag (pinned)
+    tag: "4.48"
+    ## @param localS3.image.pullPolicy SeaweedFS image pull policy
+    pullPolicy: IfNotPresent
+
+  bucketJob:
+    image:
+      ## @param localS3.bucketJob.image.repository AWS CLI image used by the bucket-creation Job
+      repository: amazon/aws-cli
+      ## @param localS3.bucketJob.image.tag AWS CLI image tag (pinned)
+      tag: "2.17.0"
+      ## @param localS3.bucketJob.image.pullPolicy AWS CLI image pull policy
+      pullPolicy: IfNotPresent
+
+  persistence:
+    ## @param localS3.persistence.enabled Persist SeaweedFS data on a PVC (otherwise emptyDir)
+    enabled: true
+    ## @param localS3.persistence.size PVC size
+    size: 5Gi
+    ## @param localS3.persistence.storageClass StorageClass; empty uses `global.defaultStorageClass`
+    storageClass: ""
+
+  ## @param localS3.resources.requests.cpu CPU requests for the SeaweedFS pod
+  ## @param localS3.resources.requests.memory Memory requests for the SeaweedFS pod
+  ## @param localS3.resources.limits.cpu CPU limits for the SeaweedFS pod
+  ## @param localS3.resources.limits.memory Memory limits for the SeaweedFS pod
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+
 ## @section OGDC Service Ingress Configuration
-## Ingress for the OGDC service (API + object storage passthrough).
+## Ingress for the OGDC service (API + signed /storage download links).
 ## The argo-workflows server has its own ingress config under
 ## `argo-workflows.server.ingress` above.
 ##
@@ -511,7 +517,7 @@ ingress:
   ## @param ingress.apiPath Ingress path for the OGDC API service
   apiPath: "/api"
 
-  ## @param ingress.storagePath Ingress path for the MinIO object storage
+  ## @param ingress.storagePath Ingress path for signed /storage download links (served by the OGDC service)
   storagePath: "/storage"
 
   ## @param ingress.tls Ingress TLS configuration

@@ -26,7 +26,3 @@ dependencies:
   - name: argo-workflows
     version: 0.45.26
     repository: https://argoproj.github.io/argo-helm
-
-  - name: minio
-    version: 5.4.0
-    repository: https://charts.min.io/
