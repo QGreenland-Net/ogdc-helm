@@ -77,8 +77,8 @@ class ServiceS3ConfigTest(unittest.TestCase):
     def test_configmap_carries_s3_settings(self):
         configmap = _ok(env="dev", show="templates/configmap.yaml")
         for line in (
-            'S3_ENDPOINT_URL: "https://s3.anacapa.nceas.ucsb.edu"',
-            'INTERNAL_S3_ENDPOINT_URL: "https://s3.anacapa.nceas.ucsb.edu"',
+            'S3_ENDPOINT_URL: "https://s3.dataone.org"',
+            'INTERNAL_S3_ENDPOINT_URL: "https://s3.dataone.org"',
             'S3_BUCKET: "ogdc-dev"',
             'S3_REGION: "default"',
             'S3_ADDRESSING_STYLE: "path"',
@@ -116,7 +116,7 @@ class ArgoArtifactRepositoryTest(unittest.TestCase):
         argo = _ok(env="dev", show=ARGO_CONFIGMAP)
         self.assertIn("bucket: ogdc-dev", argo)
         # Argo wants host[:port]; the scheme is stripped from global.s3.endpoint.
-        self.assertIn("endpoint: s3.anacapa.nceas.ucsb.edu\n", argo)
+        self.assertIn("endpoint: s3.dataone.org\n", argo)
         self.assertIn("region: default", argo)
         self.assertIn("insecure: false", argo)
         self.assertIn(f"name: {RELEASE}-s3-credentials", argo)

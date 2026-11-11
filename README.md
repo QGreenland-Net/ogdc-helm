@@ -226,7 +226,7 @@ the `${RELEASE_NAME}-s3-credentials` Secret (keys `accessKeyId`,
   creates the Secret with random values if it does not exist yet. SeaweedFS was
   chosen over MinIO because it is Apache-2.0 licensed, actively maintained, and
   MinIO's community edition is in maintenance mode.
-* **dev / prod**: an external S3 at `https://s3.anacapa.nceas.ucsb.edu` with
+* **dev / prod**: an external S3 at `https://s3.dataone.org` with
   buckets `ogdc-dev` / `ogdc-prod` (TEMP/TBD: not provisioned yet). The chart
   does not create these buckets: the object store admin creates the bucket and
   issues keys with read, write, list and delete access to it.

@@ -236,7 +236,7 @@ through `global.s3`:
   creates the Secret with random values when it is missing; with `./scripts/run-local.sh`
   (skaffold) create it first. SeaweedFS was chosen because it is Apache-2.0 licensed,
   maintained, and runs as one pod; MinIO's community edition is in maintenance mode.
-- **dev / prod**: an external S3 (the examples use `https://s3.anacapa.nceas.ucsb.edu`
+- **dev / prod**: an external S3 (the examples use `https://s3.dataone.org`
   with buckets `ogdc-dev` / `ogdc-prod`; these are TEMP/TBD until the store is
   provisioned). The chart does not create external buckets: the object store admin
   must create the bucket and issue keys with read, write, list and delete access to it
