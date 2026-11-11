@@ -18,8 +18,7 @@ global:
   ## S3 object storage. Credentials come from the Secret `${RELEASE_NAME}-s3-credentials`
   ## (keys accessKeyId, secretAccessKey, storageLinkSigningKey), deployed from `../admin/secrets.yaml`.
   s3:
-    ## TEMP/TBD: not provisioned yet. Endpoint and bucket are placeholders.
-    endpoint: "https://s3.anacapa.nceas.ucsb.edu"
+    endpoint: "https://s3.dataone.org"
     region: "default"
     bucket: "ogdc-prod"
     forcePathStyle: true
