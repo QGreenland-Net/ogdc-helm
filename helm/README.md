@@ -219,8 +219,7 @@ through `global.s3`:
   required. Generate `storageLinkSigningKey` with `openssl rand -hex 32`: the runner
   rejects keys shorter than 32 characters or equal to `your-value-here` and then
   answers `/storage` links with `503`.
-- ogdc-service receives `S3_ENDPOINT_URL` (plus the deprecated alias
-  `INTERNAL_S3_ENDPOINT_URL`), `S3_BUCKET`, `S3_REGION`, `S3_ADDRESSING_STYLE`,
+- ogdc-service receives `S3_ENDPOINT_URL`, `S3_BUCKET`, `S3_REGION`, `S3_ADDRESSING_STYLE`,
   `S3_SECRET_KEY_ID`, `S3_SECRET_KEY_KEY`, `OGDC_STORAGE_LINK_SIGNING_KEY` and
   `PUBLIC_S3_ENDPOINT_URL`. The Argo artifact repository (`argo-workflows.artifactRepository.s3`)
   is templated from the same values; only `insecure` is set per environment.

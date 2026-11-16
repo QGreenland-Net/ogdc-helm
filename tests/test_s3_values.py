@@ -78,7 +78,6 @@ class ServiceS3ConfigTest(unittest.TestCase):
         configmap = _ok(env="dev", show="templates/configmap.yaml")
         for line in (
             'S3_ENDPOINT_URL: "https://s3.dataone.org"',
-            'INTERNAL_S3_ENDPOINT_URL: "https://s3.dataone.org"',
             'S3_BUCKET: "ogdc-dev"',
             'S3_REGION: "default"',
             'S3_ADDRESSING_STYLE: "path"',
