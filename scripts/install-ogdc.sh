@@ -37,8 +37,31 @@ elif [[ "$ENV" == "prod" ]]; then
     VALUES_FILE="$THIS_DIR/../helm/examples/values-prod-cluster-ogdc-example.yaml"
 fi
 
+# The S3 credentials Secret (`${RELEASE_NAME}-s3-credentials`) is created outside
+# helm, from the `-s3-credentials` document in helm/admin/secrets.yaml. For `local`
+# it is created here (with random values) when missing, to be used by the
+# in-cluster SeaweedFS; for dev/prod it must already exist (edit secrets.yaml first).
+S3_SECRET="${RELEASE_NAME}-s3-credentials"
+if ! kubectl get secret "$S3_SECRET" -n "$NAMESPACE" >/dev/null 2>&1; then
+    if [[ "$ENV" != "local" ]]; then
+        echo "Secret $S3_SECRET not found in namespace $NAMESPACE."
+        echo "Edit helm/admin/secrets.yaml and apply it first (see README.md)."
+        exit 1
+    fi
+    echo "Creating Secret $S3_SECRET with random local credentials"
+    awk -v RS='\n---\n' '/kind: Secret/ && /-s3-credentials/' "$THIS_DIR/../helm/admin/secrets.yaml" \
+      | envsubst '${RELEASE_NAME}' \
+      | while IFS= read -r line; do
+          if [[ "$line" == *"your-value-here"* ]]; then
+              echo "${line/your-value-here/$(openssl rand -hex 16)}"
+          else
+              echo "$line"
+          fi
+        done \
+      | kubectl apply -n "$NAMESPACE" -f -
+fi
+
 # Add repos and build deps.
-helm repo add minio https://charts.min.io/
 helm repo add argo-workflows https://argoproj.github.io/argo-helm
 helm dependency update helm/
 helm dependency build helm/
