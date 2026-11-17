@@ -1,5 +1,7 @@
 ## NEXT_VERSION
 
+## v0.5.0
+
 - **BREAKING:** Replace the bundled MinIO subchart with an external S3-compatible
   store configured via `global.s3` (endpoint, region, bucket, forcePathStyle,
   credentialsSecret). The `minio` values and `ogdc_s3_endpoint` were removed;
