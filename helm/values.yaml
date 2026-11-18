@@ -146,7 +146,7 @@ argo-workflows:
             values: ["true"]
           - key: workflows.argoproj.io/phase
             operator: In
-            values: ["Succeeded"]
+            values: ["true"]
       ## @param argo-workflows.controller.persistence.postgresql.host PostgreSQL database host for workflow archive
       ## @param argo-workflows.controller.persistence.postgresql.database PostgreSQL database name for workflow archive
       ## @param argo-workflows.controller.persistence.postgresql.tableName PostgreSQL table name for workflow archive
@@ -173,13 +173,16 @@ argo-workflows:
     workflowNamespaces:
       - qgnet
 
+    # Pods that are stuck in a pending phase will eventually timeout.
+    podPendingTimeout: 30m
+
     ## @param argo-workflows.controller.workflowDefaults.spec.podGC.strategy Automatically cleanup pods on successful workflow completion
     ## Ref: https://argo-workflows.readthedocs.io/en/latest/fields/#podgc
     ##
     workflowDefaults:
       spec:
         podGC:
-          strategy: OnWorkflowSuccess
+          strategy: OnPodCompletion
           
     ## @param argo-workflows.controller.metricsConfig.enabled Enables prometheus metrics server
     ## Configure metrics
@@ -243,8 +246,10 @@ argo-workflows:
     ## @param argo-workflows.artifactRepository.archiveLogs Archive the main container logs as an artifact
     ## Setting to true is not reccomended by the official docs! See:
     ## https://argo-workflows.readthedocs.io/en/latest/configure-archive-logs/
-    ##
-    archiveLogs: false
+    ## But setting this to `true` is still better than not having any
+    ## archive. Argo suggests using a native k8s-aware logging tools for a more
+    ## robust solution.
+    archiveLogs: true
 
     ## @param argo-workflows.artifactRepository.s3.bucket S3 bucket name (templated from global.s3.bucket)
     ## @param argo-workflows.artifactRepository.s3.endpoint S3 host[:port] without scheme (templated from global.s3.endpoint)
