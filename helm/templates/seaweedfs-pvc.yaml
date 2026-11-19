@@ -1,0 +1,16 @@
+{{- if and .Values.localS3.enabled .Values.localS3.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-seaweedfs
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: seaweedfs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.localS3.persistence.storageClass | default .Values.global.defaultStorageClass | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.localS3.persistence.size | quote }}
+{{- end }}

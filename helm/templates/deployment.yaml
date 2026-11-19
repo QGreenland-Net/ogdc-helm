@@ -36,6 +36,12 @@ spec:
         ports:
         - containerPort: 8000
           name: ogdc-api-port
+        readinessProbe:
+          httpGet:
+            path: /version
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
         envFrom:
         - secretRef:
             name: "{{ .Release.Name }}-api-secrets"
@@ -56,13 +62,18 @@ spec:
         - name: S3_SECRET_KEY_ID
           valueFrom:
             secretKeyRef:
-              name: "{{ .Release.Name }}-secrets"
-              key: rootUser
+              name: {{ include "ogdc.s3CredentialsSecret" . | quote }}
+              key: accessKeyId
         - name: S3_SECRET_KEY_KEY
           valueFrom:
             secretKeyRef:
-              name: "{{ .Release.Name }}-secrets"
-              key: rootPassword
+              name: {{ include "ogdc.s3CredentialsSecret" . | quote }}
+              key: secretAccessKey
+        - name: OGDC_STORAGE_LINK_SIGNING_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ogdc.s3CredentialsSecret" . | quote }}
+              key: storageLinkSigningKey
         {{- if eq $accessMode "authenticated" }}
         - name: OIDC_CLIENT_SECRETS_FILE
           value: "{{ $oidcMountPath }}/client_secrets.json"

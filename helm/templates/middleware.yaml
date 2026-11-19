@@ -4,6 +4,8 @@ metadata:
   name: ogdc-rewrite
   namespace: {{ .Release.Namespace }}
 spec:
+  # Strip only the `/api` prefix. `/storage/<key>` must reach ogdc-service
+  # unchanged: it serves that route at the app root and verifies the signed link.
   stripPrefixRegex:
     regex:
-      - "^/(api|storage)"
+      - "^/api"
